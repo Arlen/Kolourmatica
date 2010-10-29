@@ -1,4 +1,4 @@
 *.[oa]
 *~
 .sconsign.dblite
-./bin/
+bin/
