@@ -41,6 +41,7 @@ void MainWindow::InitWidgets(){
   pScrollArea_->setFrameShape(QFrame::Panel);
   pScrollArea_->setWidget(pConversion_);
   pScrollArea_->setWidgetResizable(true);
+  pScrollArea_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
   pSplitter_ = new QSplitter(Qt::Vertical);
   pSplitter_->setHandleWidth(12);

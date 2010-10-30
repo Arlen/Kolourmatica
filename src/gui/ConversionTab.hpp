@@ -20,10 +20,16 @@
 
 
 #include <QtGui/QWidget>
+#include <QtCore/QStringList>
+
+#include <boost/array.hpp>
+#include <boost/tuple/tuple.hpp>
+
 
 class QGridLayout;
 class QPushButton;
 class QLineEdit;
+class QComboBox;
 class QLabel;
 
 
@@ -33,26 +39,27 @@ public:
   ConversionTab();
 
 private:
+  typedef boost::tuple<QPushButton*, QLineEdit*, QLineEdit*, QLineEdit*,
+  		       QPushButton*> InputLine;
+  typedef boost::array<InputLine, 22> InputLines;
+
   void InitWidgets();
+  void ClearInputs();
   void SetDoubleValidator(QLineEdit* const pLineEdit);
 
-  QPushButton* pFromXYZ_;
-  QLineEdit* pEditX_;
-  QLineEdit* pEditY_;
-  QLineEdit* pEditZ_;
-  QPushButton* pDisplayXYZ_;
+  QStringList colorSpaces_;
+  QStringList referenceWhites_;
 
-  QPushButton* pFromLuv_;
-  QLineEdit* pEditL_;
-  QLineEdit* pEditu_;
-  QLineEdit* pEditv_;
-  QPushButton* pDisplayLuv_;
+  QLabel* pColorSpace_;
+  QComboBox* pColorSpaces_;
+  QLabel* pSystemColorSpace_;
+  QComboBox* pSystemColorSpaces_;
+  QLabel* pReferenceWhite_;
+  QComboBox* pReferenceWhites_;
+  QLabel* pChromaticAdaptation_;
+  QComboBox* pChromaticAdaptations_;
 
-  QPushButton* pFromRGB_;
-  QLineEdit* pEditR_;
-  QLineEdit* pEditG_;
-  QLineEdit* pEditB_;
-  QPushButton* pDisplayRGB_;
+  InputLines inputLines_;
 
   QGridLayout* pMainLayout_;
 };
