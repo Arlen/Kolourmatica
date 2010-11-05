@@ -28,7 +28,7 @@ class Manager{
 public:
   typedef enum{ ColorSpaceXYZ, ColorSpacexyY, ColorSpaceLuv, ColorSpaceLab,
 		ColorSpacesRGB } ColorSpaceType;
-  static Manager& rInstance();
+  static Manager& Instance();
   ~Manager();
 
 private:

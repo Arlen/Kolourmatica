@@ -22,10 +22,12 @@
 #include <QtGui/QApplication>
 
 #include "../gui/MainWindow.hpp"
+#include "./Manager.hpp"
 
 
 int main(int argc, char* argv[]){
 
+  Manager::Instance();
   QApplication app(argc, argv);
   MainWindow mainWindow;
   mainWindow.show();

@@ -18,15 +18,16 @@
 |*
 |************************************************************************/
 
-#include "Manager.hpp"
 
 #include <iostream>
+
+#include "Manager.hpp"
 
 
 Manager* Manager::pManager_ = NULL;
 bool Manager::deleted_ = false;
 
-Manager& Manager::rInstance(){
+Manager& Manager::Instance(){
 
   if(pManager_ == NULL){
     if(deleted_){
