@@ -19,14 +19,17 @@
 |************************************************************************/
 
 
+#ifndef MAINWINDOW_HPP
+#define MAINWINDOW_HPP
+
 #include <QtGui/QWidget>
+
+class ConversionConsole;
 
 class QVBoxLayout;
 class QSplitter;
 class QTabWidget;
 class QScrollArea;
-
-class ConversionTab;
 
 
 class MainWindow : public QWidget{
@@ -40,5 +43,7 @@ private:
   QVBoxLayout* pMainLayout_;
   QSplitter* pSplitter_;
   QScrollArea* pScrollArea_;
-  ConversionTab* pConversion_;
+  ConversionConsole* pConversion_;
 };
+
+#endif

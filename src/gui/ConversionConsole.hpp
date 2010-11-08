@@ -19,12 +19,18 @@
 |************************************************************************/
 
 
+#ifndef CONVERSIONCONSOLE_HPP
+#define CONVERSIONCONSOLE_HPP
+
+#include "../core/Manager.hpp"
+
+#include "../../../eigen/Eigen/Core"
+
 #include <QtGui/QWidget>
 #include <QtCore/QStringList>
 
 #include <boost/array.hpp>
 #include <boost/tuple/tuple.hpp>
-
 
 class QGridLayout;
 class QPushButton;
@@ -33,18 +39,24 @@ class QComboBox;
 class QLabel;
 
 
-class ConversionTab : public QWidget{
+class ConversionConsole : public QWidget{
+
+Q_OBJECT
 
 public:
-  ConversionTab();
+  ConversionConsole();
 
 private:
-  typedef boost::tuple<QPushButton*, QLineEdit*, QLineEdit*, QLineEdit*,
-  		       QPushButton*> InputLine;
+  typedef boost::tuple<QPushButton*, QLineEdit*, QLineEdit*, QLineEdit*>
+  InputLine;
   typedef boost::array<InputLine, 22> InputLines;
 
   void InitWidgets();
   void ClearInputs();
+  void ConnectConversionButtons();
+  void ConvertAll();
+  void ConnectRefWhiteButton();
+  void ConnectAdaptationButton();
   void SetDoubleValidator(QLineEdit* const pLineEdit);
 
   QStringList colorSpaces_;
@@ -60,6 +72,37 @@ private:
   QComboBox* pChromaticAdaptations_;
 
   InputLines inputLines_;
+  Manager::CSType convertingFrom_;
+  Eigen::Vector3f refWhite_;
+  Eigen::Matrix3f adaptationMethod_;
 
   QGridLayout* pMainLayout_;
+
+private slots:
+  void ConvertFrom_XYZ_To_all();
+  void ConvertFrom_xyY_To_all();
+  void ConvertFrom_Lab_To_all();
+  void ConvertFrom_LCHab_To_all();
+  void ConvertFrom_Luv_To_all();
+  void ConvertFrom_LCHuv_To_all();
+  void ConvertFrom_Adobe_To_all();
+  void ConvertFrom_Apple_To_all();
+  void ConvertFrom_Best_To_all();
+  void ConvertFrom_Beta_To_all();
+  void ConvertFrom_Bruce_To_all();
+  void ConvertFrom_CIE_To_all();
+  void ConvertFrom_ColorMatch_To_all();
+  void ConvertFrom_Don4_To_all();
+  void ConvertFrom_ECI_To_all();
+  void ConvertFrom_EktaSpacePS5_To_all();
+  void ConvertFrom_NTSC_To_all();
+  void ConvertFrom_PALSECAM_To_all();
+  void ConvertFrom_ProPhoto_To_all();
+  void ConvertFrom_SMPTEC_To_all();
+  void ConvertFrom_sRGB_To_all();
+  void ConvertFrom_WideGamut_To_all();
+  void SetRefWhite(int);
+  void SetAdaptationMethod(int);
 };
+
+#endif

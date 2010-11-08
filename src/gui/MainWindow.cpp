@@ -19,13 +19,13 @@
 |************************************************************************/
 
 
+#include "MainWindow.hpp"
+#include "ConversionConsole.hpp"
+
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QSplitter>
 #include <QtGui/QTabWidget>
 #include <QtGui/QScrollArea>
-
-#include "MainWindow.hpp"
-#include "ConversionTab.hpp"
 
 
 MainWindow::MainWindow() : QWidget(){
@@ -35,7 +35,7 @@ MainWindow::MainWindow() : QWidget(){
 
 void MainWindow::InitWidgets(){
 
-  pConversion_ = new ConversionTab;
+  pConversion_ = new ConversionConsole;
 
   pScrollArea_ = new QScrollArea;
   pScrollArea_->setFrameShape(QFrame::Panel);

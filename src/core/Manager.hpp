@@ -26,22 +26,35 @@
 class Manager{
 
 public:
-  typedef enum{ ColorSpaceXYZ, ColorSpacexyY, ColorSpaceLuv, ColorSpaceLab,
-		ColorSpacesRGB } ColorSpaceType;
-  static Manager& Instance();
+  typedef enum{
+    CSXYZ, CSxyY, CSLab, CSLCHab, CSLuv, CSLCHuv, CSAdobeRGB, CSAppleRGB,
+    CSBestRGB, CSBetaRGB, CSBruceRGB, CSCIERGB, CSColorMatchRGB, CSDonRGB4,
+    CSECIRGB, CSEktaSpacePS5, CSNTSCRGB, CSPALSECAMRGB, CSProPhotoRGB,
+    CSSMPTECRGB, CSsRGB, CSWideGamutRGB
+  } CSType;
+
+  typedef enum{
+    RefWhiteA, RefWhiteB, RefWhiteC, RefWhiteD50, RefWhiteD55, RefWhiteD65,
+    RefWhiteD75, RefWhiteE, RefWhiteF2, RefWhitef7, RefWhiteF11
+  } RefWhiteType;
+
+  static const Manager& Instance();
+  void SetSystemColorSpace(CSType cs);
+  void SetWorkingColorSpace(CSType cs);
+
   ~Manager();
 
 private:
-  Manager(){ }
+  Manager();
   Manager(const Manager& ){ }
   Manager& operator=(const Manager& ){ return *pManager_; }
 
   static Manager* pManager_;
   static bool deleted_;
 
-  ColorSpaceType workingColorSpace_;
-  ColorSpaceType systemColorSpace_;
-  ColorSpaceType sourceColorSpace_;
+  CSType working_;
+  CSType system_;
 };
+
 
 #endif

@@ -10,7 +10,7 @@ time.strftime(" %I:%M:%S %p", time.localtime()), \
 print "\t\t---===== Build programe: running =====---\n"
 
 #############  M O C  ##############
-#os.system('moc -o ./src/moc/moc_AbstractWindow.cpp  ./src/gui/AbstractWindow.hpp')
+os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
 
 
 ###########  F L A G S  ############

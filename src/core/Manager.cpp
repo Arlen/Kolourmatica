@@ -19,15 +19,16 @@
 |************************************************************************/
 
 
-#include <iostream>
-
 #include "Manager.hpp"
+
+#include <iostream>
 
 
 Manager* Manager::pManager_ = NULL;
 bool Manager::deleted_ = false;
 
-Manager& Manager::Instance(){
+
+const Manager& Manager::Instance(){
 
   if(pManager_ == NULL){
     if(deleted_){
@@ -40,9 +41,25 @@ Manager& Manager::Instance(){
   return *pManager_;
 }
 
+void Manager::SetSystemColorSpace(CSType cs){
+
+  system_ = cs;
+}
+
+void Manager::SetWorkingColorSpace(CSType cs){
+
+  working_ = cs;
+}
+
+
 Manager::~Manager(){
 
   pManager_ = NULL;
   deleted_ = true;
 }
 
+Manager::Manager(){
+
+  working_ = CSxyY;
+  system_ = CSsRGB;
+}
