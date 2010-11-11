@@ -131,6 +131,8 @@ public:
 			     const float);
   static RGB From_LCHuv_To_RGB(const LCHuv&, const XYZ&, const Matrix3f&,
 			       const float);
+  static RGB From_RGB_To_RGB(const RGB&, const XYZ&, const Matrix3f&,
+			     const float, const Matrix3f&, const float);
   static RGB From_sRGB_To_RGB(const sRGB&, const XYZ&, const Matrix3f&,
 			      const float, const Matrix3f&, const float);
 

@@ -554,6 +554,18 @@ Convert::RGB Convert::From_LCHuv_To_RGB(const LCHuv& rFromLCHuv,
 			 rRefWhite, M, gamma);
 }
 
+Convert::RGB Convert::From_RGB_To_RGB(const RGB& rFromRGB,
+				      const XYZ& rRefWhite,
+				      const Matrix3f& M,
+				      const float gamma,
+				      const Matrix3f& sM,
+				      const float sgamma){
+
+  return
+    From_XYZ_To_RGB(From_RGB_To_XYZ(rFromRGB, rRefWhite, sM, sgamma),
+    		    rRefWhite, M, gamma);
+}
+
 Convert::RGB Convert::From_sRGB_To_RGB(const sRGB& rFromsRGB,
 				       const XYZ& rRefWhite,
 				       const Matrix3f& M,
