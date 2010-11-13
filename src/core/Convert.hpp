@@ -29,10 +29,33 @@
 
 using namespace Eigen;
 
+struct Input{
+
+  Input& operator=(const Input& rI){
+    from_ = rI.from_;
+    white_ = rI.white_;
+    //targetM_ = rI.targetM_;
+    targetM_1_ = rI.targetM_1_;
+    targetGamma_ = rI.targetGamma_;
+    sourceM_ = rI.sourceM_;
+    //sourceM_1_ = rI.sourceM_1_;
+    sourceGamma_ = rI.sourceGamma_;
+    return *this;
+  }
+
+  Eigen::Vector3f from_;
+  Eigen::Vector3f white_;
+  //Eigen::Matrix3f targetM_;
+  Eigen::Matrix3f targetM_1_;
+  float targetGamma_;
+  Eigen::Matrix3f sourceM_;
+  //Eigen::Matrix3f sourceM_1_;
+  float sourceGamma_;
+};
 
 class Convert{
 
-public:
+public: 
   typedef Eigen::Vector3f XYZ;
   typedef Eigen::Vector3f xyY;
   typedef Eigen::Vector3f Lab;
@@ -59,97 +82,70 @@ public:
   static const Matrix3f Bradford_;
 
 
-  static XYZ From_xyY_To_XYZ(const xyY&);
-  static XYZ From_Lab_To_XYZ(const Lab&, const XYZ&);
-  static XYZ From_LCHab_To_XYZ(const LCHab&, const XYZ&);
-  static XYZ From_Luv_To_XYZ(const Luv&, const XYZ&);
-  static XYZ From_LCHuv_To_XYZ(const LCHuv&, const XYZ&);
-  static XYZ From_RGB_To_XYZ(const RGB&, const XYZ&, const Matrix3f&,
-			     const float);
-  static XYZ From_sRGB_To_XYZ(const sRGB&, const XYZ&, const Matrix3f&,
-			      const float);
+  static XYZ From_xyY_To_XYZ(const Input&);
+  static XYZ From_Lab_To_XYZ(const Input&);
+  static XYZ From_LCHab_To_XYZ(const Input&);
+  static XYZ From_Luv_To_XYZ(const Input&);
+  static XYZ From_LCHuv_To_XYZ(const Input&);
+  static XYZ From_RGB_To_XYZ(const Input&);
+  static XYZ From_sRGB_To_XYZ(const Input&);
 
-  static xyY From_XYZ_To_xyY(const XYZ&);
-  static xyY From_Lab_To_xyY(const Lab&, const XYZ&);
-  static xyY From_LCHab_To_xyY(const LCHab&, const XYZ&);
-  static xyY From_Luv_To_xyY(const Luv&, const XYZ&);
-  static xyY From_LCHuv_To_xyY(const LCHuv&, const XYZ&);
-  static xyY From_RGB_To_xyY(const RGB&, const XYZ&, const Matrix3f&,
-			     const float);
-  static xyY From_sRGB_To_xyY(const sRGB&, const XYZ&, const Matrix3f&,
-			      const float);
+  static xyY From_XYZ_To_xyY(const Input&);
+  static xyY From_Lab_To_xyY(const Input&);
+  static xyY From_LCHab_To_xyY(const Input&);
+  static xyY From_Luv_To_xyY(const Input&);
+  static xyY From_LCHuv_To_xyY(const Input&);
+  static xyY From_RGB_To_xyY(const Input&);
+  static xyY From_sRGB_To_xyY(const Input&);
 
-  static Lab From_XYZ_To_Lab(const XYZ&, const XYZ&);
-  static Lab From_xyY_To_Lab(const xyY&, const XYZ&);
-  static Lab From_LCHab_To_Lab(const LCHab&, const XYZ&);
-  static Lab From_Luv_To_Lab(const Luv&, const XYZ&);
-  static Lab From_LCHuv_To_Lab(const LCHuv&, const XYZ&);
-  static Lab From_RGB_To_Lab(const RGB&, const XYZ&, const Matrix3f&,
-			     const float);
-  static Lab From_sRGB_To_Lab(const sRGB&, const XYZ&, const Matrix3f&,
-			      const float);
+  static Lab From_XYZ_To_Lab(const Input&);
+  static Lab From_xyY_To_Lab(const Input&);
+  static Lab From_LCHab_To_Lab(const Input&);
+  static Lab From_Luv_To_Lab(const Input&);
+  static Lab From_LCHuv_To_Lab(const Input&);
+  static Lab From_RGB_To_Lab(const Input&);
+  static Lab From_sRGB_To_Lab(const Input&);
 
-  static LCHab From_XYZ_To_LCHab(const XYZ&, const XYZ&);
-  static LCHab From_xyY_To_LCHab(const xyY&, const XYZ&);
-  static LCHab From_Lab_To_LCHab(const Lab&, const XYZ&);
-  static LCHab From_Luv_To_LCHab(const Luv&, const XYZ&);
-  static LCHab From_LCHuv_To_LCHab(const LCHuv&, const XYZ&);
-  static LCHab From_RGB_To_LCHab(const RGB&, const XYZ&, const Matrix3f&,
-				 const float);
-  static LCHab From_sRGB_To_LCHab(const sRGB&, const XYZ&, const Matrix3f&,
-				  const float);
+  static LCHab From_XYZ_To_LCHab(const Input&);
+  static LCHab From_xyY_To_LCHab(const Input&);
+  static LCHab From_Lab_To_LCHab(const Input&);
+  static LCHab From_Luv_To_LCHab(const Input&);
+  static LCHab From_LCHuv_To_LCHab(const Input&);
+  static LCHab From_RGB_To_LCHab(const Input&);
+  static LCHab From_sRGB_To_LCHab(const Input&);
 
-  static Luv From_XYZ_To_Luv(const XYZ&, const XYZ&);
-  static Luv From_xyY_To_Luv(const xyY&, const XYZ&);
-  static Luv From_Lab_To_Luv(const Lab&, const XYZ&);
-  static Luv From_LCHab_To_Luv(const LCHab&, const XYZ&);
-  static Luv From_LCHuv_To_Luv(const LCHuv&, const XYZ&);
-  static Luv From_RGB_To_Luv(const RGB&, const XYZ&, const Matrix3f&,
-			     const float);
-  static Luv From_sRGB_To_Luv(const sRGB&, const XYZ&, const Matrix3f&,
-			      const float);
+  static Luv From_XYZ_To_Luv(const Input&);
+  static Luv From_xyY_To_Luv(const Input&);
+  static Luv From_Lab_To_Luv(const Input&);
+  static Luv From_LCHab_To_Luv(const Input&);
+  static Luv From_LCHuv_To_Luv(const Input&);
+  static Luv From_RGB_To_Luv(const Input&);
+  static Luv From_sRGB_To_Luv(const Input&);
 
-  static LCHuv From_XYZ_To_LCHuv(const XYZ&, const XYZ&);
-  static LCHuv From_xyY_To_LCHuv(const xyY&, const XYZ&);
-  static LCHuv From_Lab_To_LCHuv(const Lab&, const XYZ&);
-  static LCHuv From_LCHab_To_LCHuv(const LCHab&, const XYZ&);
-  static LCHuv From_Luv_To_LCHuv(const Luv&, const XYZ&);
-  static LCHuv From_RGB_To_LCHuv(const RGB&, const XYZ&, const Matrix3f&,
-				 const float);
-  static LCHuv From_sRGB_To_LCHuv(const sRGB&, const XYZ&, const Matrix3f&,
-				  const float);
+  static LCHuv From_XYZ_To_LCHuv(const Input&);
+  static LCHuv From_xyY_To_LCHuv(const Input&);
+  static LCHuv From_Lab_To_LCHuv(const Input&);
+  static LCHuv From_LCHab_To_LCHuv(const Input&);
+  static LCHuv From_Luv_To_LCHuv(const Input&);
+  static LCHuv From_RGB_To_LCHuv(const Input&);
+  static LCHuv From_sRGB_To_LCHuv(const Input&);
 
-  static RGB From_XYZ_To_RGB(const XYZ&, const XYZ&, const Matrix3f&,
-			     const float);
-  static RGB From_xyY_To_RGB(const xyY&, const XYZ&, const Matrix3f&,
-			     const float);
-  static RGB From_Lab_To_RGB(const Lab&, const XYZ&, const Matrix3f&,
-			     const float);
-  static RGB From_LCHab_To_RGB(const LCHab&, const XYZ&, const Matrix3f&,
-			       const float);
-  static RGB From_Luv_To_RGB(const Luv&, const XYZ&, const Matrix3f&,
-			     const float);
-  static RGB From_LCHuv_To_RGB(const LCHuv&, const XYZ&, const Matrix3f&,
-			       const float);
-  static RGB From_RGB_To_RGB(const RGB&, const XYZ&, const Matrix3f&,
-			     const float, const Matrix3f&, const float);
-  static RGB From_sRGB_To_RGB(const sRGB&, const XYZ&, const Matrix3f&,
-			      const float, const Matrix3f&, const float);
+  static RGB From_XYZ_To_RGB(const Input&);
+  static RGB From_xyY_To_RGB(const Input&);
+  static RGB From_Lab_To_RGB(const Input&);
+  static RGB From_LCHab_To_RGB(const Input&);
+  static RGB From_Luv_To_RGB(const Input&);
+  static RGB From_LCHuv_To_RGB(const Input&);
+  static RGB From_RGB_To_RGB(const Input&);
+  static RGB From_sRGB_To_RGB(const Input&);
 
-  static sRGB From_XYZ_To_sRGB(const XYZ&, const XYZ&, const Matrix3f&,
-			       const float);
-  static sRGB From_xyY_To_sRGB(const xyY&, const XYZ&, const Matrix3f&,
-			       const float);
-  static sRGB From_Lab_To_sRGB(const Lab&, const XYZ&, const Matrix3f&,
-			       const float);
-  static sRGB From_LCHab_To_sRGB(const LCHab&, const XYZ&, const Matrix3f&,
-				 const float);
-  static sRGB From_Luv_To_sRGB(const Luv&, const XYZ&, const Matrix3f&,
-			       const float);
-  static sRGB From_LCHuv_To_sRGB(const LCHuv&, const XYZ&, const Matrix3f&,
-				 const float);
-  static sRGB From_RGB_To_sRGB(const RGB&, const XYZ&, const Matrix3f&,
-			       const float, const Matrix3f&, const float);
+  static sRGB From_XYZ_To_sRGB(const Input&);
+  static sRGB From_xyY_To_sRGB(const Input&);
+  static sRGB From_Lab_To_sRGB(const Input&);
+  static sRGB From_LCHab_To_sRGB(const Input&);
+  static sRGB From_Luv_To_sRGB(const Input&);
+  static sRGB From_LCHuv_To_sRGB(const Input&);
+  static sRGB From_RGB_To_sRGB(const Input&);
 
   static Matrix3f ChromaticAdaptationMatrix(const XYZ&, const XYZ&,
 					    const Matrix3f&);
