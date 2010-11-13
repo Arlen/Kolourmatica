@@ -50,6 +50,8 @@ ConversionConsole::ConversionConsole() : QWidget(){
 		   << "D75" << "E" << "F2" << "F7" << "F11";
   InitWidgets();
   ConnectConversionButtons();
+  ConnectWorkingColorSpaceButton();
+  ConnectSystemColorSpaceButton();
   ConnectRefWhiteButton();
   ConnectAdaptationButton();
 }
@@ -60,12 +62,12 @@ void ConversionConsole::InitWidgets(){
   pMainLayout_->setContentsMargins(0, 2, 0, 2);
   pMainLayout_->setSpacing(1);
 
-  pColorSpace_ = new QLabel("Color Space");
+  pWorkingColorSpace_ = new QLabel("Working Color Space");
   pSystemColorSpace_ = new QLabel("System Color Space");
   pReferenceWhite_ = new QLabel("Reference White");
   pChromaticAdaptation_ = new QLabel("Chromatic Adaptation");
-  pColorSpaces_ = new QComboBox;
-  pColorSpaces_->setMaximumWidth(128);
+  pWorkingColorSpaces_ = new QComboBox;
+  pWorkingColorSpaces_->setMaximumWidth(128);
   pSystemColorSpaces_ = new QComboBox;
   pSystemColorSpaces_->setMaximumWidth(128);
   pReferenceWhites_ = new QComboBox;
@@ -74,7 +76,7 @@ void ConversionConsole::InitWidgets(){
   pChromaticAdaptations_->setMaximumWidth(128);
 
   BOOST_FOREACH(QString& rS, colorSpaces_){
-    pColorSpaces_->addItem(rS);
+    pWorkingColorSpaces_->addItem(rS);
     pSystemColorSpaces_->addItem(rS);
   }
   BOOST_FOREACH(QString& rS, referenceWhites_){
@@ -87,8 +89,8 @@ void ConversionConsole::InitWidgets(){
   pMainLayout_->addItem(new QSpacerItem(128, 1,
 					QSizePolicy::MinimumExpanding,
 					QSizePolicy::Minimum), 0, 0);
-  pMainLayout_->addWidget(pColorSpace_, 0, 1);
-  pMainLayout_->addWidget(pColorSpaces_, 0, 2);
+  pMainLayout_->addWidget(pWorkingColorSpace_, 0, 1);
+  pMainLayout_->addWidget(pWorkingColorSpaces_, 0, 2);
   pMainLayout_->addItem(new QSpacerItem(128, 1,
 					QSizePolicy::MinimumExpanding,
 					QSizePolicy::Minimum), 0, 6);
@@ -152,7 +154,7 @@ void ConversionConsole::InitWidgets(){
     ++col;
   }
   ClearInputs();
-  pColorSpaces_->setCurrentIndex(1);
+  pWorkingColorSpaces_->setCurrentIndex(1);
   pSystemColorSpaces_->setCurrentIndex(20);
   pReferenceWhites_->setCurrentIndex(5);
   pChromaticAdaptations_->setCurrentIndex(2);
@@ -213,6 +215,22 @@ void ConversionConsole::ConnectConversionButtons(){
 		   this, SLOT(ConvertFrom_sRGB_To_all()));
   QObject::connect(inputLines_[21].get<0>(), SIGNAL(clicked()),
 		   this, SLOT(ConvertFrom_WideGamut_To_all()));
+}
+
+void ConversionConsole::ConnectWorkingColorSpaceButton(){
+
+  QObject::connect(pWorkingColorSpaces_,
+		   SIGNAL(currentIndexChanged(int)),
+		   this, SLOT(SetWorkingColorSpace(int)));
+  SetWorkingColorSpace(pWorkingColorSpaces_->currentIndex());
+}
+
+void ConversionConsole::ConnectSystemColorSpaceButton(){
+
+  QObject::connect(pSystemColorSpaces_,
+		   SIGNAL(currentIndexChanged(int)),
+		   this, SLOT(SetSystemColorSpace(int)));
+  SetSystemColorSpace(pSystemColorSpaces_->currentIndex());
 }
 
 void ConversionConsole::ConnectRefWhiteButton(){
@@ -305,58 +323,90 @@ void ConversionConsole::ConvertFrom_WideGamut_To_all(){
   convertingFrom_ = Manager::CSWideGamutRGB; ConvertAll();
 }
 
+void ConversionConsole::SetWorkingColorSpace(int wcs){
+
+  switch(wcs){
+  case 0:  workingColorSpace_ = Manager::CSXYZ;           break;
+  case 1:  workingColorSpace_ = Manager::CSxyY;           break;
+  case 2:  workingColorSpace_ = Manager::CSLab;           break;
+  case 3:  workingColorSpace_ = Manager::CSLCHab;         break;
+  case 4:  workingColorSpace_ = Manager::CSLuv;           break;
+  case 5:  workingColorSpace_ = Manager::CSLCHuv;         break;
+  case 6:  workingColorSpace_ = Manager::CSAdobeRGB;      break;
+  case 7:  workingColorSpace_ = Manager::CSAppleRGB;      break;
+  case 8:  workingColorSpace_ = Manager::CSBestRGB;       break;
+  case 9:  workingColorSpace_ = Manager::CSBetaRGB;       break;
+  case 10: workingColorSpace_ = Manager::CSBruceRGB;      break;
+  case 11: workingColorSpace_ = Manager::CSCIERGB;        break;
+  case 12: workingColorSpace_ = Manager::CSColorMatchRGB; break;
+  case 13: workingColorSpace_ = Manager::CSDonRGB4;       break;
+  case 14: workingColorSpace_ = Manager::CSECIRGB;        break;
+  case 15: workingColorSpace_ = Manager::CSEktaSpacePS5;  break;
+  case 16: workingColorSpace_ = Manager::CSNTSCRGB;       break;
+  case 17: workingColorSpace_ = Manager::CSPALSECAMRGB;   break;
+  case 18: workingColorSpace_ = Manager::CSProPhotoRGB;   break;
+  case 19: workingColorSpace_ = Manager::CSSMPTECRGB;     break;
+  case 20: workingColorSpace_ = Manager::CSsRGB;          break;
+  case 21: workingColorSpace_ = Manager::CSWideGamutRGB;  break;
+  }
+  Manager::Instance().SetWorkingColorSpace(workingColorSpace_);
+}
+
+void ConversionConsole::SetSystemColorSpace(int scs){
+
+  switch(scs){
+  case 0:  systemColorSpace_ = Manager::CSXYZ;           break;
+  case 1:  systemColorSpace_ = Manager::CSxyY;           break;
+  case 2:  systemColorSpace_ = Manager::CSLab;           break;
+  case 3:  systemColorSpace_ = Manager::CSLCHab;         break;
+  case 4:  systemColorSpace_ = Manager::CSLuv;           break;
+  case 5:  systemColorSpace_ = Manager::CSLCHuv;         break;
+  case 6:  systemColorSpace_ = Manager::CSAdobeRGB;      break;
+  case 7:  systemColorSpace_ = Manager::CSAppleRGB;      break;
+  case 8:  systemColorSpace_ = Manager::CSBestRGB;       break;
+  case 9:  systemColorSpace_ = Manager::CSBetaRGB;       break;
+  case 10: systemColorSpace_ = Manager::CSBruceRGB;      break;
+  case 11: systemColorSpace_ = Manager::CSCIERGB;        break;
+  case 12: systemColorSpace_ = Manager::CSColorMatchRGB; break;
+  case 13: systemColorSpace_ = Manager::CSDonRGB4;       break;
+  case 14: systemColorSpace_ = Manager::CSECIRGB;        break;
+  case 15: systemColorSpace_ = Manager::CSEktaSpacePS5;  break;
+  case 16: systemColorSpace_ = Manager::CSNTSCRGB;       break;
+  case 17: systemColorSpace_ = Manager::CSPALSECAMRGB;   break;
+  case 18: systemColorSpace_ = Manager::CSProPhotoRGB;   break;
+  case 19: systemColorSpace_ = Manager::CSSMPTECRGB;     break;
+  case 20: systemColorSpace_ = Manager::CSsRGB;          break;
+  case 21: systemColorSpace_ = Manager::CSWideGamutRGB;  break;
+  }
+  Manager::Instance().SetSystemColorSpace(systemColorSpace_);
+}
+
 void ConversionConsole::SetRefWhite(int r){
 
   switch(r){
-  case 0:
-    refWhite_ = Convert::IlluminantA_;
-    break;
-  case 1:
-    refWhite_ = Convert::IlluminantB_;
-    break;
-  case 2:
-    refWhite_ = Convert::IlluminantC_;
-    break;
-  case 3:
-    refWhite_ = Convert::IlluminantD50_;
-    break;
-  case 4:
-    refWhite_ = Convert::IlluminantD55_;
-    break;
-  case 5:
-    refWhite_ = Convert::IlluminantD65_;
-    break;
-  case 6:
-    refWhite_ = Convert::IlluminantD75_;
-    break;
-  case 7:
-    refWhite_ = Convert::IlluminantE_;
-    break;
-  case 8:
-    refWhite_ = Convert::IlluminantF2_;
-    break;
-  case 9:
-    refWhite_ = Convert::IlluminantF7_;
-    break;
-  case 10:
-    refWhite_ = Convert::IlluminantF11_;
-    break;
+  case 0: refWhite_ = Convert::IlluminantA_;    break;
+  case 1: refWhite_ = Convert::IlluminantB_;    break;
+  case 2: refWhite_ = Convert::IlluminantC_;    break;
+  case 3: refWhite_ = Convert::IlluminantD50_;  break;
+  case 4: refWhite_ = Convert::IlluminantD55_;  break;
+  case 5: refWhite_ = Convert::IlluminantD65_;  break;
+  case 6: refWhite_ = Convert::IlluminantD75_;  break;
+  case 7: refWhite_ = Convert::IlluminantE_;    break;
+  case 8: refWhite_ = Convert::IlluminantF2_;   break;
+  case 9: refWhite_ = Convert::IlluminantF7_;   break;
+  case 10: refWhite_ = Convert::IlluminantF11_; break;
   }
+  Manager::Instance().SetReferenceWhite(refWhite_);
 }
 
 void ConversionConsole::SetAdaptationMethod(int a){
 
   switch(a){
-  case 0:
-    adaptationMethod_ = Convert::XYZScaling_;
-    break;
-  case 1:
-    adaptationMethod_ = Convert::VonKries_;
-    break;
-  case 2:
-    adaptationMethod_ = Convert::Bradford_;
-    break;
+  case 0: adaptationMethod_ = Convert::XYZScaling_; break;
+  case 1: adaptationMethod_ = Convert::VonKries_;   break;
+  case 2: adaptationMethod_ = Convert::Bradford_;   break;
   }
+  Manager::Instance().SetAdaptationMethod(adaptationMethod_);
 }
 
 void ConversionConsole::ConvertAll(){

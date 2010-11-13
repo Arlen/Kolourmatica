@@ -23,12 +23,11 @@
 
 #include <iostream>
 
-
 Manager* Manager::pManager_ = NULL;
 bool Manager::deleted_ = false;
 
 
-const Manager& Manager::Instance(){
+Manager& Manager::Instance(){
 
   if(pManager_ == NULL){
     if(deleted_){
@@ -51,6 +50,15 @@ void Manager::SetWorkingColorSpace(CSType cs){
   working_ = cs;
 }
 
+void Manager::SetReferenceWhite(const Vector3f& rRw){
+
+  white_ = rRw;
+}
+
+void Manager::SetAdaptationMethod(const Matrix3f& rAd){
+
+  adaptation_ = rAd;
+}
 
 Manager::~Manager(){
 

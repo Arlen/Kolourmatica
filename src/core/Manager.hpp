@@ -22,25 +22,30 @@
 #ifndef MANAGER_HPP
 #define MANAGER_HPP
 
+#include "../../../eigen/Eigen/Core"
+
+using namespace Eigen;
+
 
 class Manager{
 
 public:
   typedef enum{
-    CSXYZ, CSxyY, CSLab, CSLCHab, CSLuv, CSLCHuv, CSAdobeRGB, CSAppleRGB,
-    CSBestRGB, CSBetaRGB, CSBruceRGB, CSCIERGB, CSColorMatchRGB, CSDonRGB4,
-    CSECIRGB, CSEktaSpacePS5, CSNTSCRGB, CSPALSECAMRGB, CSProPhotoRGB,
-    CSSMPTECRGB, CSsRGB, CSWideGamutRGB
+    CSXYZ = 0, CSxyY, CSLab, CSLCHab, CSLuv, CSLCHuv, CSAdobeRGB,
+    CSAppleRGB, CSBestRGB, CSBetaRGB, CSBruceRGB, CSCIERGB,
+    CSColorMatchRGB, CSDonRGB4, CSECIRGB, CSEktaSpacePS5, CSNTSCRGB,
+    CSPALSECAMRGB, CSProPhotoRGB, CSSMPTECRGB, CSsRGB, CSWideGamutRGB
   } CSType;
 
-  typedef enum{
-    RefWhiteA, RefWhiteB, RefWhiteC, RefWhiteD50, RefWhiteD55, RefWhiteD65,
-    RefWhiteD75, RefWhiteE, RefWhiteF2, RefWhitef7, RefWhiteF11
-  } RefWhiteType;
-
-  static const Manager& Instance();
-  void SetSystemColorSpace(CSType cs);
+  static Manager& Instance();
   void SetWorkingColorSpace(CSType cs);
+  CSType GetWorkingColorSpace() const{ return working_; }
+  void SetSystemColorSpace(CSType cs);
+  CSType GetSystemColorSpace() const{ return system_; }
+  void SetReferenceWhite(const Vector3f& rRw);
+  Vector3f GetReferenceWhite() const{ return white_; }
+  void SetAdaptationMethod(const Matrix3f& rAd);
+  Matrix3f GetAdaptationMethod() const{ return adaptation_; }
 
   ~Manager();
 
@@ -54,6 +59,8 @@ private:
 
   CSType working_;
   CSType system_;
+  Vector3f white_;
+  Matrix3f adaptation_;
 };
 
 

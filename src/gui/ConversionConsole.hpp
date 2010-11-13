@@ -55,6 +55,8 @@ private:
   void ClearInputs();
   void ConnectConversionButtons();
   void ConvertAll();
+  void ConnectWorkingColorSpaceButton();
+  void ConnectSystemColorSpaceButton();
   void ConnectRefWhiteButton();
   void ConnectAdaptationButton();
   void SetDoubleValidator(QLineEdit* const pLineEdit);
@@ -62,8 +64,8 @@ private:
   QStringList colorSpaces_;
   QStringList referenceWhites_;
 
-  QLabel* pColorSpace_;
-  QComboBox* pColorSpaces_;
+  QLabel* pWorkingColorSpace_;
+  QComboBox* pWorkingColorSpaces_;
   QLabel* pSystemColorSpace_;
   QComboBox* pSystemColorSpaces_;
   QLabel* pReferenceWhite_;
@@ -73,6 +75,8 @@ private:
 
   InputLines inputLines_;
   Manager::CSType convertingFrom_;
+  Manager::CSType workingColorSpace_;
+  Manager::CSType systemColorSpace_;
   Eigen::Vector3f refWhite_;
   Eigen::Matrix3f adaptationMethod_;
 
@@ -101,6 +105,8 @@ private slots:
   void ConvertFrom_SMPTEC_To_all();
   void ConvertFrom_sRGB_To_all();
   void ConvertFrom_WideGamut_To_all();
+  void SetWorkingColorSpace(int);
+  void SetSystemColorSpace(int);
   void SetRefWhite(int);
   void SetAdaptationMethod(int);
 };

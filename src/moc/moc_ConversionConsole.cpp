@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'ConversionConsole.hpp'
 **
-** Created: Sat Nov 13 02:29:04 2010
+** Created: Sat Nov 13 05:26:03 2010
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.3)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,7 +23,7 @@ static const uint qt_meta_data_ConversionConsole[] = {
        4,       // revision
        0,       // classname
        0,    0, // classinfo
-      24,   14, // methods
+      26,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
@@ -54,7 +54,9 @@ static const uint qt_meta_data_ConversionConsole[] = {
      562,   18,   18,   18, 0x08,
      588,   18,   18,   18, 0x08,
      619,   18,   18,   18, 0x08,
-     636,   18,   18,   18, 0x08,
+     645,   18,   18,   18, 0x08,
+     670,   18,   18,   18, 0x08,
+     687,   18,   18,   18, 0x08,
 
        0        // eod
 };
@@ -82,7 +84,9 @@ static const char qt_meta_stringdata_ConversionConsole[] = {
     "ConvertFrom_SMPTEC_To_all()\0"
     "ConvertFrom_sRGB_To_all()\0"
     "ConvertFrom_WideGamut_To_all()\0"
-    "SetRefWhite(int)\0SetAdaptationMethod(int)\0"
+    "SetWorkingColorSpace(int)\0"
+    "SetSystemColorSpace(int)\0SetRefWhite(int)\0"
+    "SetAdaptationMethod(int)\0"
 };
 
 const QMetaObject ConversionConsole::staticMetaObject = {
@@ -136,11 +140,13 @@ int ConversionConsole::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 19: ConvertFrom_SMPTEC_To_all(); break;
         case 20: ConvertFrom_sRGB_To_all(); break;
         case 21: ConvertFrom_WideGamut_To_all(); break;
-        case 22: SetRefWhite((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 23: SetAdaptationMethod((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 22: SetWorkingColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 23: SetSystemColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 24: SetRefWhite((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 25: SetAdaptationMethod((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
-        _id -= 24;
+        _id -= 26;
     }
     return _id;
 }
