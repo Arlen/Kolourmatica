@@ -21,6 +21,7 @@
 
 #include "MainWindow.hpp"
 #include "ConversionConsole.hpp"
+#include "Viewer.hpp"
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QSplitter>
@@ -36,6 +37,8 @@ MainWindow::MainWindow() : QWidget(){
 void MainWindow::InitWidgets(){
 
   pConversion_ = new ConversionConsole;
+  pViewer_ = new Viewer;
+  pConversion_->SetViewer(pViewer_);
 
   pScrollArea_ = new QScrollArea;
   pScrollArea_->setFrameShape(QFrame::Panel);
@@ -45,7 +48,7 @@ void MainWindow::InitWidgets(){
 
   pSplitter_ = new QSplitter(Qt::Vertical);
   pSplitter_->setHandleWidth(12);
-  pSplitter_->addWidget(new QWidget);
+  pSplitter_->addWidget(pViewer_);
   pSplitter_->addWidget(pScrollArea_);
 
   pMainLayout_ = new QVBoxLayout(this);

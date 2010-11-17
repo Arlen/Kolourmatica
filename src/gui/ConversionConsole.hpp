@@ -22,17 +22,17 @@
 #ifndef CONVERSIONCONSOLE_HPP
 #define CONVERSIONCONSOLE_HPP
 
-#include "../core/Manager.hpp"
-
 #include "../../../eigen/Eigen/Core"
 
 #include <QtGui/QWidget>
-#include <QtCore/QStringList>
 
 #include <boost/array.hpp>
 #include <boost/tuple/tuple.hpp>
 
+class Viewer;
+
 class QGridLayout;
+class QStringList;
 class QPushButton;
 class QLineEdit;
 class QComboBox;
@@ -45,6 +45,7 @@ Q_OBJECT
 
 public:
   ConversionConsole();
+  void SetViewer(Viewer* pViewer);
 
 private:
   typedef boost::tuple<QPushButton*, QLineEdit*, QLineEdit*, QLineEdit*>
@@ -74,13 +75,14 @@ private:
   QComboBox* pChromaticAdaptations_;
 
   InputLines inputLines_;
-  Manager::CSType convertingFrom_;
-  Manager::CSType workingColorSpace_;
-  Manager::CSType systemColorSpace_;
+  int convertingFrom_;
+  int workingColorSpace_;
+  int systemColorSpace_;
   Eigen::Vector3f refWhite_;
   Eigen::Matrix3f adaptationMethod_;
 
   QGridLayout* pMainLayout_;
+  Viewer* pViewer_;
 
 private slots:
   void ConvertFrom_XYZ_To_all();

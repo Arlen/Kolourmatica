@@ -20,20 +20,20 @@
 
 
 #include "ConversionConsole.hpp"
-#include "../core/Specification.hpp"
+#include "Viewer.hpp"
 #include "../core/Convert.hpp"
 
 #include <QtGui/QDoubleValidator>
+#include <QtCore/QStringList>
 #include <QtGui/QGridLayout>
 #include <QtGui/QPushButton>
 #include <QtGui/QLineEdit>
 #include <QtGui/QComboBox>
 #include <QtGui/QLabel>
 
-#include <iostream>
-using namespace std;
-
 #include <boost/foreach.hpp>
+
+#include <iostream>
 
 
 ConversionConsole::ConversionConsole() : QWidget(){
@@ -54,6 +54,17 @@ ConversionConsole::ConversionConsole() : QWidget(){
   ConnectSystemColorSpaceButton();
   ConnectRefWhiteButton();
   ConnectAdaptationButton();
+}
+
+void ConversionConsole::SetViewer(Viewer* pViewer){
+
+  if(pViewer){
+    pViewer_ = pViewer;
+    pViewer_->SetWorkingColorSpace(workingColorSpace_);
+    pViewer_->SetSystemColorSpace(systemColorSpace_);
+    pViewer_->SetReferenceWhite(refWhite_);
+    pViewer_->SetAdaptationMethod(adaptationMethod_);
+  }
 }
 
 void ConversionConsole::InitWidgets(){
@@ -158,6 +169,8 @@ void ConversionConsole::InitWidgets(){
   pSystemColorSpaces_->setCurrentIndex(20);
   pReferenceWhites_->setCurrentIndex(5);
   pChromaticAdaptations_->setCurrentIndex(2);
+
+  pViewer_ = NULL;
 }
 
 void ConversionConsole::ClearInputs(){
@@ -172,49 +185,98 @@ void ConversionConsole::ClearInputs(){
 void ConversionConsole::ConnectConversionButtons(){
 
   QObject::connect(inputLines_[0].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_XYZ_To_all()));
+  		   this, SLOT(ConvertFrom_XYZ_To_all()));
   QObject::connect(inputLines_[1].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_xyY_To_all()));
+  		   this, SLOT(ConvertFrom_xyY_To_all()));
   QObject::connect(inputLines_[2].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Lab_To_all()));
+  		   this, SLOT(ConvertFrom_Lab_To_all()));
   QObject::connect(inputLines_[3].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_LCHab_To_all()));
+  		   this, SLOT(ConvertFrom_LCHab_To_all()));
   QObject::connect(inputLines_[4].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Luv_To_all()));
+  		   this, SLOT(ConvertFrom_Luv_To_all()));
   QObject::connect(inputLines_[5].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_LCHuv_To_all()));
+  		   this, SLOT(ConvertFrom_LCHuv_To_all()));
   QObject::connect(inputLines_[6].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Adobe_To_all()));
+  		   this, SLOT(ConvertFrom_Adobe_To_all()));
   QObject::connect(inputLines_[7].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Apple_To_all()));
+  		   this, SLOT(ConvertFrom_Apple_To_all()));
   QObject::connect(inputLines_[8].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Best_To_all()));
+  		   this, SLOT(ConvertFrom_Best_To_all()));
   QObject::connect(inputLines_[9].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Beta_To_all()));
+  		   this, SLOT(ConvertFrom_Beta_To_all()));
   QObject::connect(inputLines_[10].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Bruce_To_all()));
+  		   this, SLOT(ConvertFrom_Bruce_To_all()));
   QObject::connect(inputLines_[11].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_CIE_To_all()));
+  		   this, SLOT(ConvertFrom_CIE_To_all()));
   QObject::connect(inputLines_[12].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_ColorMatch_To_all()));
+  		   this, SLOT(ConvertFrom_ColorMatch_To_all()));
   QObject::connect(inputLines_[13].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_Don4_To_all()));
+  		   this, SLOT(ConvertFrom_Don4_To_all()));
   QObject::connect(inputLines_[14].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_ECI_To_all()));
+  		   this, SLOT(ConvertFrom_ECI_To_all()));
   QObject::connect(inputLines_[15].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_EktaSpacePS5_To_all()));
+  		   this, SLOT(ConvertFrom_EktaSpacePS5_To_all()));
   QObject::connect(inputLines_[16].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_NTSC_To_all()));
+  		   this, SLOT(ConvertFrom_NTSC_To_all()));
   QObject::connect(inputLines_[17].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_PALSECAM_To_all()));
+  		   this, SLOT(ConvertFrom_PALSECAM_To_all()));
   QObject::connect(inputLines_[18].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_ProPhoto_To_all()));
+  		   this, SLOT(ConvertFrom_ProPhoto_To_all()));
   QObject::connect(inputLines_[19].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_SMPTEC_To_all()));
+  		   this, SLOT(ConvertFrom_SMPTEC_To_all()));
   QObject::connect(inputLines_[20].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_sRGB_To_all()));
+  		   this, SLOT(ConvertFrom_sRGB_To_all()));
   QObject::connect(inputLines_[21].get<0>(), SIGNAL(clicked()),
-		   this, SLOT(ConvertFrom_WideGamut_To_all()));
+  		   this, SLOT(ConvertFrom_WideGamut_To_all()));
+}
+
+void ConversionConsole::ConvertAll(){
+
+  Eigen::Vector3f tmp;
+  Eigen::Matrix3f ada = adaptationMethod_;
+  Eigen::Vector3f r = refWhite_;
+  boost::array<Vector3f, 22> out;
+
+  Input input;
+  Conversions con;
+  Eigen::Vector3f (*c)(const Input&);
+
+  tmp <<
+    inputLines_[convertingFrom_].get<1>()->text().toFloat(),
+    inputLines_[convertingFrom_].get<2>()->text().toFloat(),
+    inputLines_[convertingFrom_].get<3>()->text().toFloat();
+
+  for(int i = 0; i < 22; ++i){
+
+    if(i == convertingFrom_){
+      out[i] = tmp;
+      continue;
+    }
+    input.from_ = tmp;
+    input.white_ = r;
+    if(convertingFrom_ > CSLCHuv){
+      input.sourceM_ = con.GetTable()[convertingFrom_][i].
+	get<1>()->GetM_Adapted(r, ada);
+      input.sourceGamma_ = con.GetTable()[convertingFrom_][i].
+	get<1>()->GetGamma();
+    }
+    if(i > CSLCHuv){
+      input.targetM_1_ = con.GetTable()[convertingFrom_][i].
+	get<2>()->GetM_1_Adapted(r, ada);
+      input.targetGamma_ = con.GetTable()[convertingFrom_][i].
+	get<2>()->GetGamma();
+    }
+    c = con.GetTable()[convertingFrom_][i].get<0>();
+    out[i] = c(input);
+  }
+
+  int i = 0;
+  BOOST_FOREACH(InputLine& rL, inputLines_){
+    rL.get<1>()->setText(QString::number(out[i](0, 0), 'f', 10));
+    rL.get<2>()->setText(QString::number(out[i](1, 0), 'f', 10));
+    rL.get<3>()->setText(QString::number(out[i](2, 0), 'f', 10));
+    i++;
+  }
 }
 
 void ConversionConsole::ConnectWorkingColorSpaceButton(){
@@ -256,129 +318,107 @@ void ConversionConsole::SetDoubleValidator(QLineEdit* const pLineEdit){
   pLineEdit->setValidator(pDoubleValidator);
 }
 
+/* private slots */
 void ConversionConsole::ConvertFrom_XYZ_To_all(){
-  convertingFrom_ = Manager::CSXYZ; ConvertAll();
+  convertingFrom_ = CSXYZ; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_xyY_To_all(){
-  convertingFrom_ = Manager::CSxyY; ConvertAll();
+  convertingFrom_ = CSxyY; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Lab_To_all(){
-  convertingFrom_ = Manager::CSLab; ConvertAll();
+  convertingFrom_ = CSLab; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_LCHab_To_all(){
-  convertingFrom_ = Manager::CSLCHab; ConvertAll();
+  convertingFrom_ = CSLCHab; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Luv_To_all(){
-  convertingFrom_ = Manager::CSLuv; ConvertAll();
+  convertingFrom_ = CSLuv; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_LCHuv_To_all(){
-  convertingFrom_ = Manager::CSLCHuv; ConvertAll();
+  convertingFrom_ = CSLCHuv; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Adobe_To_all(){
-  convertingFrom_ = Manager::CSAdobeRGB; ConvertAll();
+  convertingFrom_ = CSAdobeRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Apple_To_all(){
-  convertingFrom_ = Manager::CSAppleRGB; ConvertAll();
+  convertingFrom_ = CSAppleRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Best_To_all(){
-  convertingFrom_ = Manager::CSBestRGB; ConvertAll();
+  convertingFrom_ = CSBestRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Beta_To_all(){
-  convertingFrom_ = Manager::CSBetaRGB; ConvertAll();
+  convertingFrom_ = CSBetaRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Bruce_To_all(){
-  convertingFrom_ = Manager::CSBruceRGB; ConvertAll();
+  convertingFrom_ = CSBruceRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_CIE_To_all(){
-  convertingFrom_ = Manager::CSCIERGB; ConvertAll();
+  convertingFrom_ = CSCIERGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_ColorMatch_To_all(){
-  convertingFrom_ = Manager::CSColorMatchRGB; ConvertAll();
+  convertingFrom_ = CSColorMatchRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_Don4_To_all(){
-  convertingFrom_ = Manager::CSDonRGB4; ConvertAll();
+  convertingFrom_ = CSDonRGB4; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_ECI_To_all(){
-  convertingFrom_ = Manager::CSECIRGB; ConvertAll();
+  convertingFrom_ = CSECIRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_EktaSpacePS5_To_all(){
-  convertingFrom_ = Manager::CSEktaSpacePS5; ConvertAll();
+  convertingFrom_ = CSEktaSpacePS5; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_NTSC_To_all(){
-  convertingFrom_ = Manager::CSNTSCRGB; ConvertAll();
+  convertingFrom_ = CSNTSCRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_PALSECAM_To_all(){
-  convertingFrom_ = Manager::CSPALSECAMRGB; ConvertAll();
+  convertingFrom_ = CSPALSECAMRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_ProPhoto_To_all(){
-  convertingFrom_ = Manager::CSProPhotoRGB; ConvertAll();
+  convertingFrom_ = CSProPhotoRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_SMPTEC_To_all(){
-  convertingFrom_ = Manager::CSSMPTECRGB; ConvertAll();
+  convertingFrom_ = 19;
+  convertingFrom_ = CSSMPTECRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_sRGB_To_all(){
-  convertingFrom_ = Manager::CSsRGB; ConvertAll();
+  convertingFrom_ = CSsRGB; ConvertAll();
 }
 void ConversionConsole::ConvertFrom_WideGamut_To_all(){
-  convertingFrom_ = Manager::CSWideGamutRGB; ConvertAll();
+  convertingFrom_ = CSWideGamutRGB; ConvertAll();
 }
 
 void ConversionConsole::SetWorkingColorSpace(int wcs){
 
-  switch(wcs){
-  case 0:  workingColorSpace_ = Manager::CSXYZ;           break;
-  case 1:  workingColorSpace_ = Manager::CSxyY;           break;
-  case 2:  workingColorSpace_ = Manager::CSLab;           break;
-  case 3:  workingColorSpace_ = Manager::CSLCHab;         break;
-  case 4:  workingColorSpace_ = Manager::CSLuv;           break;
-  case 5:  workingColorSpace_ = Manager::CSLCHuv;         break;
-  case 6:  workingColorSpace_ = Manager::CSAdobeRGB;      break;
-  case 7:  workingColorSpace_ = Manager::CSAppleRGB;      break;
-  case 8:  workingColorSpace_ = Manager::CSBestRGB;       break;
-  case 9:  workingColorSpace_ = Manager::CSBetaRGB;       break;
-  case 10: workingColorSpace_ = Manager::CSBruceRGB;      break;
-  case 11: workingColorSpace_ = Manager::CSCIERGB;        break;
-  case 12: workingColorSpace_ = Manager::CSColorMatchRGB; break;
-  case 13: workingColorSpace_ = Manager::CSDonRGB4;       break;
-  case 14: workingColorSpace_ = Manager::CSECIRGB;        break;
-  case 15: workingColorSpace_ = Manager::CSEktaSpacePS5;  break;
-  case 16: workingColorSpace_ = Manager::CSNTSCRGB;       break;
-  case 17: workingColorSpace_ = Manager::CSPALSECAMRGB;   break;
-  case 18: workingColorSpace_ = Manager::CSProPhotoRGB;   break;
-  case 19: workingColorSpace_ = Manager::CSSMPTECRGB;     break;
-  case 20: workingColorSpace_ = Manager::CSsRGB;          break;
-  case 21: workingColorSpace_ = Manager::CSWideGamutRGB;  break;
+  int tmp = workingColorSpace_;
+  workingColorSpace_ = wcs;
+
+  if(workingColorSpace_ == systemColorSpace_){
+    workingColorSpace_ = tmp;
+    pWorkingColorSpaces_->setCurrentIndex(workingColorSpace_);
+    return ;
   }
-  Manager::Instance().SetWorkingColorSpace(workingColorSpace_);
+
+  // Manager::Instance().SetWorkingColorSpace(workingColorSpace_);
+  if(pViewer_){
+    pViewer_->SetWorkingColorSpace(workingColorSpace_);
+  }
 }
 
 void ConversionConsole::SetSystemColorSpace(int scs){
 
-  switch(scs){
-  case 0:  systemColorSpace_ = Manager::CSXYZ;           break;
-  case 1:  systemColorSpace_ = Manager::CSxyY;           break;
-  case 2:  systemColorSpace_ = Manager::CSLab;           break;
-  case 3:  systemColorSpace_ = Manager::CSLCHab;         break;
-  case 4:  systemColorSpace_ = Manager::CSLuv;           break;
-  case 5:  systemColorSpace_ = Manager::CSLCHuv;         break;
-  case 6:  systemColorSpace_ = Manager::CSAdobeRGB;      break;
-  case 7:  systemColorSpace_ = Manager::CSAppleRGB;      break;
-  case 8:  systemColorSpace_ = Manager::CSBestRGB;       break;
-  case 9:  systemColorSpace_ = Manager::CSBetaRGB;       break;
-  case 10: systemColorSpace_ = Manager::CSBruceRGB;      break;
-  case 11: systemColorSpace_ = Manager::CSCIERGB;        break;
-  case 12: systemColorSpace_ = Manager::CSColorMatchRGB; break;
-  case 13: systemColorSpace_ = Manager::CSDonRGB4;       break;
-  case 14: systemColorSpace_ = Manager::CSECIRGB;        break;
-  case 15: systemColorSpace_ = Manager::CSEktaSpacePS5;  break;
-  case 16: systemColorSpace_ = Manager::CSNTSCRGB;       break;
-  case 17: systemColorSpace_ = Manager::CSPALSECAMRGB;   break;
-  case 18: systemColorSpace_ = Manager::CSProPhotoRGB;   break;
-  case 19: systemColorSpace_ = Manager::CSSMPTECRGB;     break;
-  case 20: systemColorSpace_ = Manager::CSsRGB;          break;
-  case 21: systemColorSpace_ = Manager::CSWideGamutRGB;  break;
+  int tmp = systemColorSpace_;
+  systemColorSpace_ = scs;
+
+  if(systemColorSpace_ == workingColorSpace_){
+    systemColorSpace_ = tmp;
+    pSystemColorSpaces_->setCurrentIndex(systemColorSpace_);
+    return;
   }
-  Manager::Instance().SetSystemColorSpace(systemColorSpace_);
+
+  // Manager::Instance().SetSystemColorSpace(systemColorSpace_);
+  if(pViewer_){
+    pViewer_->SetSystemColorSpace(systemColorSpace_);
+  }
 }
 
 void ConversionConsole::SetRefWhite(int r){
@@ -396,7 +436,10 @@ void ConversionConsole::SetRefWhite(int r){
   case 9: refWhite_ = Convert::IlluminantF7_;   break;
   case 10: refWhite_ = Convert::IlluminantF11_; break;
   }
-  Manager::Instance().SetReferenceWhite(refWhite_);
+  //Manager::Instance().SetReferenceWhite(refWhite_);
+  if(pViewer_){
+    pViewer_->SetReferenceWhite(refWhite_);
+  }
 }
 
 void ConversionConsole::SetAdaptationMethod(int a){
@@ -406,1810 +449,8 @@ void ConversionConsole::SetAdaptationMethod(int a){
   case 1: adaptationMethod_ = Convert::VonKries_;   break;
   case 2: adaptationMethod_ = Convert::Bradford_;   break;
   }
-  Manager::Instance().SetAdaptationMethod(adaptationMethod_);
-}
-
-void ConversionConsole::ConvertAll(){
-
-  Eigen::Vector3f tmp;
-  Eigen::Matrix3f ada = adaptationMethod_;
-  Eigen::Vector3f r = refWhite_;
-  boost::array<Vector3f, 22> out;
-
-  Adobe adobe;
-  Apple apple;
-  Best best;
-  Beta beta;
-  Bruce bruce;
-  CIE cie;
-  ColorMatch colormatch;
-  Don4 don4;
-  ECI eci;
-  EktaSpacePS5 ektaspaceps5;
-  NTSC ntsc;
-  PAL_SECAM pal_secam;
-  ProPhoto prophoto;
-  SMPTE_C smpte_c;
-  SRGB srgb;
-  WideGamut widegamut;
-
-  Input input;
-
-  switch(convertingFrom_){
-
-  case Manager::CSXYZ:
-    tmp <<
-      inputLines_[0].get<1>()->text().toFloat(),
-      inputLines_[0].get<2>()->text().toFloat(),
-      inputLines_[0].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-
-    out[0] = tmp;
-    out[1] = Convert::From_XYZ_To_xyY(input);
-    out[2] = Convert::From_XYZ_To_Lab(input);
-    out[3] = Convert::From_XYZ_To_LCHab(input);
-    out[4] = Convert::From_XYZ_To_Luv(input);
-    out[5] = Convert::From_XYZ_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_XYZ_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_XYZ_To_sRGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_XYZ_To_RGB(input);
-    break;
- 
-  case Manager::CSxyY:
-    tmp <<
-      inputLines_[1].get<1>()->text().toFloat(),
-      inputLines_[1].get<2>()->text().toFloat(),
-      inputLines_[1].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-
-    out[0] = Convert::From_xyY_To_XYZ(input);
-    out[1] = tmp;
-    out[2] = Convert::From_xyY_To_Lab(input);
-    out[3] = Convert::From_xyY_To_LCHab(input);
-    out[4] = Convert::From_xyY_To_Luv(input);
-    out[5] = Convert::From_xyY_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_xyY_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_xyY_To_sRGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_xyY_To_RGB(input);
-    break;
-
-  case Manager::CSLab:
-    tmp <<
-      inputLines_[2].get<1>()->text().toFloat(),
-      inputLines_[2].get<2>()->text().toFloat(),
-      inputLines_[2].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-
-    out[0] = Convert::From_Lab_To_XYZ(input);
-    out[1] = Convert::From_Lab_To_xyY(input);
-    out[2] = tmp;
-    out[3] = Convert::From_Lab_To_LCHab(input);
-    out[4] = Convert::From_Lab_To_Luv(input);
-    out[5] = Convert::From_Lab_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_Lab_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_Lab_To_sRGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_Lab_To_RGB(input);
-    break;
-
-  case Manager::CSLCHab:
-    tmp <<
-      inputLines_[3].get<1>()->text().toFloat(),
-      inputLines_[3].get<2>()->text().toFloat(),
-      inputLines_[3].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-
-    out[0] = Convert::From_LCHab_To_XYZ(input);
-    out[1] = Convert::From_LCHab_To_xyY(input);
-    out[2] = Convert::From_LCHab_To_Lab(input);
-    out[3] = tmp;
-    out[4] = Convert::From_LCHab_To_Luv(input);
-    out[5] = Convert::From_LCHab_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_LCHab_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_LCHab_To_sRGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_LCHab_To_RGB(input);
-    break;
-
-  case Manager::CSLuv:
-    tmp <<
-      inputLines_[4].get<1>()->text().toFloat(),
-      inputLines_[4].get<2>()->text().toFloat(),
-      inputLines_[4].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-
-    out[0] = Convert::From_Luv_To_XYZ(input);
-    out[1] = Convert::From_Luv_To_xyY(input);
-    out[2] = Convert::From_Luv_To_Lab(input);
-    out[3] = Convert::From_Luv_To_LCHab(input);
-    out[4] = tmp;
-    out[5] = Convert::From_Luv_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_Luv_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_Luv_To_sRGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_Luv_To_RGB(input);
-    break;
-
-  case Manager::CSLCHuv:
-    tmp <<
-      inputLines_[5].get<1>()->text().toFloat(),
-      inputLines_[5].get<2>()->text().toFloat(),
-      inputLines_[5].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-
-    out[0] = Convert::From_LCHuv_To_XYZ(input);
-    out[1] = Convert::From_LCHuv_To_xyY(input);
-    out[2] = Convert::From_LCHuv_To_Lab(input);
-    out[3] = Convert::From_LCHuv_To_LCHab(input);
-    out[4] = Convert::From_LCHuv_To_Luv(input);;
-    out[5] = tmp;
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_LCHuv_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_LCHuv_To_sRGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_LCHuv_To_RGB(input);
-    break;
-
-  case Manager::CSAdobeRGB:
-    tmp <<
-      inputLines_[6].get<1>()->text().toFloat(),
-      inputLines_[6].get<2>()->text().toFloat(),
-      inputLines_[6].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = adobe.GetM_Adapted(r, ada);
-    input.sourceGamma_ = adobe.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-    out[6] = tmp;
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-  
-  case Manager::CSAppleRGB:
-    tmp <<
-      inputLines_[7].get<1>()->text().toFloat(),
-      inputLines_[7].get<2>()->text().toFloat(),
-      inputLines_[7].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = apple.GetM_Adapted(r, ada);
-    input.sourceGamma_ = apple.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-    out[7] = tmp;
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSBestRGB:
-    tmp <<
-      inputLines_[8].get<1>()->text().toFloat(),
-      inputLines_[8].get<2>()->text().toFloat(),
-      inputLines_[8].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = best.GetM_Adapted(r, ada);
-    input.sourceGamma_ = best.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-    out[8] = tmp;
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSBetaRGB:
-    tmp <<
-      inputLines_[9].get<1>()->text().toFloat(),
-      inputLines_[9].get<2>()->text().toFloat(),
-      inputLines_[9].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = beta.GetM_Adapted(r, ada);
-    input.sourceGamma_ = beta.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-    out[9] = tmp;
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSBruceRGB:
-    tmp <<
-      inputLines_[10].get<1>()->text().toFloat(),
-      inputLines_[10].get<2>()->text().toFloat(),
-      inputLines_[10].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = bruce.GetM_Adapted(r, ada);
-    input.sourceGamma_ = bruce.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-    out[10] = tmp;
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSCIERGB:
-    tmp <<
-      inputLines_[11].get<1>()->text().toFloat(),
-      inputLines_[11].get<2>()->text().toFloat(),
-      inputLines_[11].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = cie.GetM_Adapted(r, ada);
-    input.sourceGamma_ = cie.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-    out[11] = tmp;
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSColorMatchRGB:
-    tmp <<
-      inputLines_[12].get<1>()->text().toFloat(),
-      inputLines_[12].get<2>()->text().toFloat(),
-      inputLines_[12].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = colormatch.GetM_Adapted(r, ada);
-    input.sourceGamma_ = colormatch.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-    out[12] = tmp;
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSDonRGB4:
-    tmp <<
-      inputLines_[13].get<1>()->text().toFloat(),
-      inputLines_[13].get<2>()->text().toFloat(),
-      inputLines_[13].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = don4.GetM_Adapted(r, ada);
-    input.sourceGamma_ = don4.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-    out[13] = tmp;
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSECIRGB:
-    tmp <<
-      inputLines_[14].get<1>()->text().toFloat(),
-      inputLines_[14].get<2>()->text().toFloat(),
-      inputLines_[14].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = eci.GetM_Adapted(r, ada);
-    input.sourceGamma_ = eci.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-    out[14] = tmp;
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSEktaSpacePS5:
-    tmp <<
-      inputLines_[15].get<1>()->text().toFloat(),
-      inputLines_[15].get<2>()->text().toFloat(),
-      inputLines_[15].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = ektaspaceps5.GetM_Adapted(r, ada);
-    input.sourceGamma_ = ektaspaceps5.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-    out[15] = tmp;
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSNTSCRGB:
-    tmp <<
-      inputLines_[16].get<1>()->text().toFloat(),
-      inputLines_[16].get<2>()->text().toFloat(),
-      inputLines_[16].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = ntsc.GetM_Adapted(r, ada);
-    input.sourceGamma_ = ntsc.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-    out[16] = tmp;
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSPALSECAMRGB:
-    tmp <<
-      inputLines_[17].get<1>()->text().toFloat(),
-      inputLines_[17].get<2>()->text().toFloat(),
-      inputLines_[17].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = pal_secam.GetM_Adapted(r, ada);
-    input.sourceGamma_ = pal_secam.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-    out[17] = tmp;
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSProPhotoRGB:
-    tmp <<
-      inputLines_[18].get<1>()->text().toFloat(),
-      inputLines_[18].get<2>()->text().toFloat(),
-      inputLines_[18].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = prophoto.GetM_Adapted(r, ada);
-    input.sourceGamma_ = prophoto.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-    out[18] = tmp;
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSSMPTECRGB:
-    tmp <<
-      inputLines_[19].get<1>()->text().toFloat(),
-      inputLines_[19].get<2>()->text().toFloat(),
-      inputLines_[19].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = smpte_c.GetM_Adapted(r, ada);
-    input.sourceGamma_ = smpte_c.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-    out[19] = tmp;
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSsRGB:
-    tmp <<
-      inputLines_[20].get<1>()->text().toFloat(),
-      inputLines_[20].get<2>()->text().toFloat(),
-      inputLines_[20].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = srgb.GetM_Adapted(r, ada);
-    input.sourceGamma_ = srgb.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-    out[20] = tmp;
-
-    input.targetM_1_ = widegamut.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = widegamut.GetGamma();
-    out[21] = Convert::From_RGB_To_RGB(input);
-    break;
-
-  case Manager::CSWideGamutRGB:
-    tmp <<
-      inputLines_[21].get<1>()->text().toFloat(),
-      inputLines_[21].get<2>()->text().toFloat(),
-      inputLines_[21].get<3>()->text().toFloat();
-
-    input.from_ = tmp;
-    input.white_ = r;
-    input.sourceM_ = widegamut.GetM_Adapted(r, ada);
-    input.sourceGamma_ = widegamut.GetGamma();
-
-    out[0] = Convert::From_RGB_To_XYZ(input);
-    out[1] = Convert::From_RGB_To_xyY(input);
-    out[2] = Convert::From_RGB_To_Lab(input);
-    out[3] = Convert::From_RGB_To_LCHab(input);
-    out[4] = Convert::From_RGB_To_Luv(input);
-    out[5] = Convert::From_RGB_To_LCHuv(input);
-
-    input.targetM_1_ = adobe.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = adobe.GetGamma();
-    out[6] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = apple.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = apple.GetGamma();
-    out[7] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = best.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = best.GetGamma();
-    out[8] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = beta.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = beta.GetGamma();
-    out[9] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = bruce.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = bruce.GetGamma();
-    out[10] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = cie.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = cie.GetGamma();
-    out[11] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = colormatch.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = colormatch.GetGamma();
-    out[12] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = don4.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = don4.GetGamma();
-    out[13] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = eci.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = eci.GetGamma();
-    out[14] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ektaspaceps5.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ektaspaceps5.GetGamma();
-    out[15] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = ntsc.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = ntsc.GetGamma();
-    out[16] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = pal_secam.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = pal_secam.GetGamma();
-    out[17] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = prophoto.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = prophoto.GetGamma();
-    out[18] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = smpte_c.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = smpte_c.GetGamma();
-    out[19] = Convert::From_RGB_To_RGB(input);
-
-    input.targetM_1_ = srgb.GetM_1_Adapted(r, ada);
-    input.targetGamma_ = srgb.GetGamma();
-    out[20] = Convert::From_RGB_To_RGB(input);
-    out[21] = tmp;
-    break;
-
-  }
-
-  int i = 0;
-  BOOST_FOREACH(InputLine& rL, inputLines_){
-    rL.get<1>()->setText(QString::number(out[i](0, 0), 'f', 10));
-    rL.get<2>()->setText(QString::number(out[i](1, 0), 'f', 10));
-    rL.get<3>()->setText(QString::number(out[i](2, 0), 'f', 10));
-    i++;
+  //Manager::Instance().SetAdaptationMethod(adaptationMethod_);
+  if(pViewer_){
+    pViewer_->SetAdaptationMethod(adaptationMethod_);
   }
 }

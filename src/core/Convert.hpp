@@ -25,46 +25,196 @@
 #include "../../../eigen/Eigen/Core"
 #include "../../../eigen/Eigen/Dense"
 
+#include <boost/array.hpp>
+#include <boost/tuple/tuple.hpp>
+
 #include <cmath>
 
 using namespace Eigen;
 
+
+typedef Vector3f XYZ;
+typedef Vector3f xyY;
+typedef Vector3f Lab;
+typedef Vector3f LCHab;
+typedef Vector3f Luv;
+typedef Vector3f LCHuv;
+typedef Vector3f RGB;
+typedef Vector3f sRGB;
+
+enum{
+    CSXYZ = 0, CSxyY, CSLab, CSLCHab, CSLuv, CSLCHuv, CSAdobeRGB,
+    CSAppleRGB, CSBestRGB, CSBetaRGB, CSBruceRGB, CSCIERGB,
+    CSColorMatchRGB, CSDonRGB4, CSECIRGB, CSEktaSpacePS5, CSNTSCRGB,
+    CSPALSECAMRGB, CSProPhotoRGB, CSSMPTECRGB, CSsRGB, CSWideGamutRGB
+};
+
+
 struct Input{
 
-  Input& operator=(const Input& rI){
-    from_ = rI.from_;
-    white_ = rI.white_;
-    //targetM_ = rI.targetM_;
-    targetM_1_ = rI.targetM_1_;
-    targetGamma_ = rI.targetGamma_;
-    sourceM_ = rI.sourceM_;
-    //sourceM_1_ = rI.sourceM_1_;
-    sourceGamma_ = rI.sourceGamma_;
-    return *this;
-  }
+  Input& operator=(const Input&);
 
-  Eigen::Vector3f from_;
-  Eigen::Vector3f white_;
-  //Eigen::Matrix3f targetM_;
-  Eigen::Matrix3f targetM_1_;
+  Vector3f from_;
+  Vector3f white_;
+  //Matrix3f targetM_;
+  Matrix3f targetM_1_;
   float targetGamma_;
-  Eigen::Matrix3f sourceM_;
-  //Eigen::Matrix3f sourceM_1_;
+  Matrix3f sourceM_;
+  //Matrix3f sourceM_1_;
   float sourceGamma_;
 };
+
+
+class BaseRGB{
+
+public:
+
+  BaseRGB(xyY redPrimary,
+	  xyY greenPrimary,
+	  xyY bluePrimary, 
+	  XYZ refWhite, 
+	  float gamma);
+
+  Matrix3f GetM() const;
+  Matrix3f GetM_1() const;
+  Matrix3f GetM_Adapted(const XYZ& rDestination,
+			const Matrix3f& rMethod) const;
+  Matrix3f GetM_1_Adapted(const XYZ& rDestination,
+			  const Matrix3f& rMethod) const;
+  float GetGamma() const;
+  Matrix3f ConversionMatrixFromRGBtoXYZ(const xyY& rCor,
+					const xyY& rCog,
+					const xyY& rCob,
+					const XYZ& rRefWhite);
+
+private:
+  const xyY redPrimary_;
+  const xyY greenPrimary_;
+  const xyY bluePrimary_;
+  const XYZ refWhite_;
+  const float gamma_;
+  Matrix3f M_;   // RGB to XYZ
+  Matrix3f M_1_; // XYZ to RGB
+};
+
+
+class Adobe : public BaseRGB{
+
+public:
+  Adobe();
+};
+
+
+class Apple : public BaseRGB{
+
+public:
+  Apple();
+};
+
+
+class Best : public BaseRGB{
+
+public:
+  Best();
+};
+
+
+class Beta : public BaseRGB{
+
+public:
+  Beta();
+};
+
+
+class Bruce : public BaseRGB{
+
+public:
+  Bruce();
+};
+
+
+class CIE : public BaseRGB{
+
+public:
+  CIE();
+};
+
+
+class ColorMatch : public BaseRGB{
+
+public:
+  ColorMatch();
+};
+
+
+class Don4 : public BaseRGB{
+
+public:
+  Don4();
+};
+
+
+class ECI : public BaseRGB{
+
+public:
+  ECI();
+};
+
+
+class EktaSpacePS5 : public BaseRGB{
+
+public:
+  EktaSpacePS5();
+};
+
+
+class NTSC : public BaseRGB{
+
+public:
+  NTSC();
+};
+
+
+class PAL_SECAM : public BaseRGB{
+
+public:
+  PAL_SECAM();
+};
+
+
+class ProPhoto : public BaseRGB{
+
+public:
+  ProPhoto();
+};
+
+
+class SMPTE_C : public BaseRGB{
+
+public:
+  SMPTE_C();
+};
+
+
+/* the spec for sRGB says the gamma is =~ 2.2,
+   but other sources state 2.4 ? */
+class SRGB : public BaseRGB{
+
+public:
+  SRGB();
+};
+
+
+class WideGamut : public BaseRGB{
+
+public:
+  WideGamut();
+};
+
 
 class Convert{
 
 public: 
-  typedef Eigen::Vector3f XYZ;
-  typedef Eigen::Vector3f xyY;
-  typedef Eigen::Vector3f Lab;
-  typedef Eigen::Vector3f LCHab;
-  typedef Eigen::Vector3f Luv;
-  typedef Eigen::Vector3f LCHuv;
-  typedef Eigen::Vector3f RGB;
-  typedef Eigen::Vector3f sRGB;
-
   static const XYZ IlluminantA_;
   static const XYZ IlluminantB_;
   static const XYZ IlluminantC_;
@@ -80,7 +230,6 @@ public:
   static const Matrix3f XYZScaling_;
   static const Matrix3f VonKries_;
   static const Matrix3f Bradford_;
-
 
   static XYZ From_xyY_To_XYZ(const Input&);
   static XYZ From_Lab_To_XYZ(const Input&);
@@ -159,6 +308,37 @@ private:
   static const float PIE;
   static const float RAD;
   static const float ANG;
+};
+
+
+struct Conversions{
+
+  typedef Vector3f (*Function)(const Input&);
+  typedef boost::tuple<Function, BaseRGB*, BaseRGB*> FromTo;
+  typedef boost::array<FromTo, 22> Row;
+  typedef boost::array<Row, 22> Table;
+
+  Conversions();
+  const Table& GetTable() const;
+
+  Table t_;
+
+  Adobe adobe_;
+  Apple apple_;
+  Best best_;
+  Beta beta_;
+  Bruce bruce_;
+  CIE cie_;
+  ColorMatch cm_;
+  Don4 don4_;
+  ECI eci_;
+  EktaSpacePS5 ekps5_;
+  NTSC ntsc_;
+  PAL_SECAM pals_;
+  ProPhoto pro_;
+  SMPTE_C smpt_;
+  SRGB srgb_;
+  WideGamut wide_;
 };
 
 #endif

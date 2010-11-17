@@ -64,4 +64,13 @@ private:
 };
 
 
+// class Settings{
+
+// public:
+//   const Settings& operator=(const Settings& rS);
+//   CSType GetWorkingColorSpace() const;
+//   CSType GetSystemColorSpace() const;
+//   Vector3f GetReferenceWhite() const;
+
+
 #endif
