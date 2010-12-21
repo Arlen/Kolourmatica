@@ -25,6 +25,7 @@
 
 #include <QtGui/QDoubleValidator>
 #include <QtCore/QStringList>
+#include <QtGui/QVBoxLayout>
 #include <QtGui/QGridLayout>
 #include <QtGui/QPushButton>
 #include <QtGui/QLineEdit>
@@ -69,9 +70,13 @@ void ConversionConsole::SetViewer(Viewer* pViewer){
 
 void ConversionConsole::InitWidgets(){
 
-  pMainLayout_ = new QGridLayout(this);
-  pMainLayout_->setContentsMargins(0, 2, 0, 2);
-  pMainLayout_->setSpacing(1);
+  pLayout0_ = nwe QVBoxLayout(this);
+  pLayout0_->setContentsMargins(1, 1, 1, 1);
+  pLayout0_->setSpacing(1);
+
+  pLayout1A_ = new QGridLayout(pLayout0_);
+  pLayout1A_->setContentsMargins(0, 2, 0, 2);
+  pLayout1A_->setSpacing(1);
 
   pWorkingColorSpace_ = new QLabel("Working Color Space");
   pSystemColorSpace_ = new QLabel("System Color Space");
@@ -97,41 +102,41 @@ void ConversionConsole::InitWidgets(){
   pChromaticAdaptations_->addItem("Von Kries");
   pChromaticAdaptations_->addItem("Bradford");
 
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 0, 0);
-  pMainLayout_->addWidget(pWorkingColorSpace_, 0, 1);
-  pMainLayout_->addWidget(pWorkingColorSpaces_, 0, 2);
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 0, 6);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 0, 0);
+  pLayout1A_->addWidget(pWorkingColorSpace_, 0, 1);
+  pLayout1A_->addWidget(pWorkingColorSpaces_, 0, 2);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 0, 6);
 
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 1, 0);
-  pMainLayout_->addWidget(pSystemColorSpace_, 1, 1);
-  pMainLayout_->addWidget(pSystemColorSpaces_, 1, 2);
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 1, 6);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 1, 0);
+  pLayout1A_->addWidget(pSystemColorSpace_, 1, 1);
+  pLayout1A_->addWidget(pSystemColorSpaces_, 1, 2);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 1, 6);
 
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 2, 0);
-  pMainLayout_->addWidget(pReferenceWhite_, 2, 1);
-  pMainLayout_->addWidget(pReferenceWhites_, 2, 2);
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 2, 6);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 2, 0);
+  pLayout1A_->addWidget(pReferenceWhite_, 2, 1);
+  pLayout1A_->addWidget(pReferenceWhites_, 2, 2);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 2, 6);
 
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 3, 0);
-  pMainLayout_->addWidget(pChromaticAdaptation_, 3, 1);
-  pMainLayout_->addWidget(pChromaticAdaptations_, 3, 2);
-  pMainLayout_->addItem(new QSpacerItem(128, 1,
-					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), 3, 6);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 3, 0);
+  pLayout1A_->addWidget(pChromaticAdaptation_, 3, 1);
+  pLayout1A_->addWidget(pChromaticAdaptations_, 3, 2);
+  pLayout1A_->addItem(new QSpacerItem(128, 1,
+				      QSizePolicy::MinimumExpanding,
+				      QSizePolicy::Minimum), 3, 6);
 
   int i = 0;
   BOOST_FOREACH(QString& rS, colorSpaces_){
@@ -152,16 +157,16 @@ void ConversionConsole::InitWidgets(){
     rL.get<3>()->setFixedSize(128, 24);
     SetDoubleValidator(rL.get<3>());
 
-    pMainLayout_->addItem(new QSpacerItem(128, 1,
-    					  QSizePolicy::MinimumExpanding,
-    					  QSizePolicy::Minimum), col, 0);
-    pMainLayout_->addWidget(rL.get<0>(), col, 1);
-    pMainLayout_->addWidget(rL.get<1>(), col, 2);
-    pMainLayout_->addWidget(rL.get<2>(), col, 3);
-    pMainLayout_->addWidget(rL.get<3>(), col, 4);
-    pMainLayout_->addItem(new QSpacerItem(128, 1,
-    					  QSizePolicy::MinimumExpanding,
-    					  QSizePolicy::Minimum), col, 5);
+    pLayout1A_->addItem(new QSpacerItem(128, 1,
+					QSizePolicy::MinimumExpanding,
+					QSizePolicy::Minimum), col, 0);
+    pLayout1A_->addWidget(rL.get<0>(), col, 1);
+    pLayout1A_->addWidget(rL.get<1>(), col, 2);
+    pLayout1A_->addWidget(rL.get<2>(), col, 3);
+    pLayout1A_->addWidget(rL.get<3>(), col, 4);
+    pLayout1A_->addItem(new QSpacerItem(128, 1,
+					QSizePolicy::MinimumExpanding,
+					QSizePolicy::Minimum), col, 5);
     ++col;
   }
   ClearInputs();

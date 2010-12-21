@@ -31,6 +31,7 @@
 
 class Viewer;
 
+class QVBoxLayout;
 class QGridLayout;
 class QStringList;
 class QPushButton;
@@ -81,7 +82,8 @@ private:
   Eigen::Vector3f refWhite_;
   Eigen::Matrix3f adaptationMethod_;
 
-  QGridLayout* pMainLayout_;
+  QVBoxLayout* pLayout0_;
+  QGridLayout* pLayout1A_;
   Viewer* pViewer_;
 
 private slots:
