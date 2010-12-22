@@ -30,7 +30,6 @@ class Viewer;
 class QVBoxLayout;
 class QSplitter;
 class QTabWidget;
-class QScrollArea;
 
 
 class MainWindow : public QWidget{
@@ -43,7 +42,6 @@ private:
 
   QVBoxLayout* pMainLayout_;
   QSplitter* pSplitter_;
-  QScrollArea* pScrollArea_;
   ConversionConsole* pConversion_;
   Viewer* pViewer_;
 

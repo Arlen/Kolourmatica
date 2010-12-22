@@ -26,7 +26,6 @@
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QSplitter>
 #include <QtGui/QTabWidget>
-#include <QtGui/QScrollArea>
 
 
 MainWindow::MainWindow() : QWidget(){
@@ -40,16 +39,10 @@ void MainWindow::InitWidgets(){
   pViewer_ = new Viewer;
   pConversion_->SetViewer(pViewer_);
 
-  pScrollArea_ = new QScrollArea;
-  pScrollArea_->setFrameShape(QFrame::Panel);
-  pScrollArea_->setWidget(pConversion_);
-  pScrollArea_->setWidgetResizable(true);
-  pScrollArea_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
   pSplitter_ = new QSplitter(Qt::Vertical);
   pSplitter_->setHandleWidth(12);
   pSplitter_->addWidget(pViewer_);
-  pSplitter_->addWidget(pScrollArea_);
+  pSplitter_->addWidget(pConversion_);
 
   pMainLayout_ = new QVBoxLayout(this);
   pMainLayout_->setContentsMargins(0, 0, 0, 0);

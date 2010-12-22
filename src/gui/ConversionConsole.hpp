@@ -32,7 +32,9 @@
 class Viewer;
 
 class QVBoxLayout;
+class QHBoxLayout;
 class QGridLayout;
+class QScrollArea;
 class QStringList;
 class QPushButton;
 class QLineEdit;
@@ -83,7 +85,9 @@ private:
   Eigen::Matrix3f adaptationMethod_;
 
   QVBoxLayout* pLayout0_;
-  QGridLayout* pLayout1A_;
+  QHBoxLayout* pLayout1A_;
+  QGridLayout* pLayout1B_;
+  QScrollArea* pScrollArea_;
   Viewer* pViewer_;
 
 private slots:

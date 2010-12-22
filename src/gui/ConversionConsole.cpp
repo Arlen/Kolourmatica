@@ -26,7 +26,9 @@
 #include <QtGui/QDoubleValidator>
 #include <QtCore/QStringList>
 #include <QtGui/QVBoxLayout>
+#include <QtGui/QHBoxLayout>
 #include <QtGui/QGridLayout>
+#include <QtGui/QScrollArea>
 #include <QtGui/QPushButton>
 #include <QtGui/QLineEdit>
 #include <QtGui/QComboBox>
@@ -49,6 +51,7 @@ ConversionConsole::ConversionConsole() : QWidget(){
 
   referenceWhites_ << "A" << "B" << "C" << "D50" << "D55" << "D65"
 		   << "D75" << "E" << "F2" << "F7" << "F11";
+  pViewer_ = 0;
   InitWidgets();
   ConnectConversionButtons();
   ConnectWorkingColorSpaceButton();
@@ -70,73 +73,66 @@ void ConversionConsole::SetViewer(Viewer* pViewer){
 
 void ConversionConsole::InitWidgets(){
 
-  pLayout0_ = nwe QVBoxLayout(this);
-  pLayout0_->setContentsMargins(1, 1, 1, 1);
-  pLayout0_->setSpacing(1);
+  QWidget* pWidget = new QWidget;
 
-  pLayout1A_ = new QGridLayout(pLayout0_);
-  pLayout1A_->setContentsMargins(0, 2, 0, 2);
+  pLayout0_ = new QVBoxLayout(this);
+  pLayout0_->setContentsMargins(0, 0, 0, 0);
+  pLayout0_->setSpacing(0);
+
+  pLayout1A_ = new QHBoxLayout;
+  pLayout1A_->setContentsMargins(0, 0, 0, 0);
   pLayout1A_->setSpacing(1);
 
-  pWorkingColorSpace_ = new QLabel("Working Color Space");
-  pSystemColorSpace_ = new QLabel("System Color Space");
-  pReferenceWhite_ = new QLabel("Reference White");
-  pChromaticAdaptation_ = new QLabel("Chromatic Adaptation");
-  pWorkingColorSpaces_ = new QComboBox;
-  pWorkingColorSpaces_->setMaximumWidth(128);
-  pSystemColorSpaces_ = new QComboBox;
-  pSystemColorSpaces_->setMaximumWidth(128);
-  pReferenceWhites_ = new QComboBox;
-  pReferenceWhites_->setMaximumWidth(128);
+  pLayout1B_ = new QGridLayout(pWidget);
+  pLayout1B_->setContentsMargins(0, 2, 0, 2);
+  pLayout1B_->setSpacing(1);
+
+  pScrollArea_ = new QScrollArea;
+  pScrollArea_->setFrameShape(QFrame::Panel);
+  pScrollArea_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  pScrollArea_->setAlignment(Qt::AlignHCenter);
+  pScrollArea_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+
+  pLayout0_->addLayout(pLayout1A_);
+  pLayout0_->addWidget(pScrollArea_);
+
+  pWorkingColorSpace_   = new QLabel("  Working Color Space ");
+  pSystemColorSpace_    = new QLabel("  System Color Space ");
+  pReferenceWhite_      = new QLabel("  Reference White ");
+  pChromaticAdaptation_ = new QLabel("  Chromatic Adaptation ");
+
+  pWorkingColorSpaces_   = new QComboBox;
+  pSystemColorSpaces_    = new QComboBox;
+  pReferenceWhites_      = new QComboBox;
   pChromaticAdaptations_ = new QComboBox;
-  pChromaticAdaptations_->setMaximumWidth(128);
 
   BOOST_FOREACH(QString& rS, colorSpaces_){
     pWorkingColorSpaces_->addItem(rS);
     pSystemColorSpaces_->addItem(rS);
   }
+
   BOOST_FOREACH(QString& rS, referenceWhites_){
     pReferenceWhites_->addItem(rS);
   }
+
   pChromaticAdaptations_->addItem("XYZ Scaling");
   pChromaticAdaptations_->addItem("Von Kries");
   pChromaticAdaptations_->addItem("Bradford");
 
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 0, 0);
-  pLayout1A_->addWidget(pWorkingColorSpace_, 0, 1);
-  pLayout1A_->addWidget(pWorkingColorSpaces_, 0, 2);
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 0, 6);
+  pLayout1A_->addWidget(pWorkingColorSpace_);
+  pLayout1A_->addWidget(pWorkingColorSpaces_);
 
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 1, 0);
-  pLayout1A_->addWidget(pSystemColorSpace_, 1, 1);
-  pLayout1A_->addWidget(pSystemColorSpaces_, 1, 2);
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 1, 6);
+  pLayout1A_->addWidget(pSystemColorSpace_);
+  pLayout1A_->addWidget(pSystemColorSpaces_);
 
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 2, 0);
-  pLayout1A_->addWidget(pReferenceWhite_, 2, 1);
-  pLayout1A_->addWidget(pReferenceWhites_, 2, 2);
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 2, 6);
+  pLayout1A_->addWidget(pReferenceWhite_);
+  pLayout1A_->addWidget(pReferenceWhites_);
 
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 3, 0);
-  pLayout1A_->addWidget(pChromaticAdaptation_, 3, 1);
-  pLayout1A_->addWidget(pChromaticAdaptations_, 3, 2);
-  pLayout1A_->addItem(new QSpacerItem(128, 1,
-				      QSizePolicy::MinimumExpanding,
-				      QSizePolicy::Minimum), 3, 6);
+  pLayout1A_->addWidget(pChromaticAdaptation_);
+  pLayout1A_->addWidget(pChromaticAdaptations_);
+  pLayout1A_->addItem(new QSpacerItem(1, 1,
+  				      QSizePolicy::MinimumExpanding,
+  				      QSizePolicy::Ignored));
 
   int i = 0;
   BOOST_FOREACH(QString& rS, colorSpaces_){
@@ -144,7 +140,7 @@ void ConversionConsole::InitWidgets(){
     ++i;
   }
 
-  int col = 4;
+  int col = 0;
   BOOST_FOREACH(InputLine& rL, inputLines_){
     rL.get<0>()->setFixedSize(144, 24);
     rL.get<1>() = new QLineEdit;
@@ -157,25 +153,27 @@ void ConversionConsole::InitWidgets(){
     rL.get<3>()->setFixedSize(128, 24);
     SetDoubleValidator(rL.get<3>());
 
-    pLayout1A_->addItem(new QSpacerItem(128, 1,
+    pLayout1B_->addItem(new QSpacerItem(128, 1,
 					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), col, 0);
-    pLayout1A_->addWidget(rL.get<0>(), col, 1);
-    pLayout1A_->addWidget(rL.get<1>(), col, 2);
-    pLayout1A_->addWidget(rL.get<2>(), col, 3);
-    pLayout1A_->addWidget(rL.get<3>(), col, 4);
-    pLayout1A_->addItem(new QSpacerItem(128, 1,
+					QSizePolicy::Ignored), col, 0);
+    pLayout1B_->addWidget(rL.get<0>(), col, 1);
+    pLayout1B_->addWidget(rL.get<1>(), col, 2);
+    pLayout1B_->addWidget(rL.get<2>(), col, 3);
+    pLayout1B_->addWidget(rL.get<3>(), col, 4);
+    pLayout1B_->addItem(new QSpacerItem(128, 1,
 					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Minimum), col, 5);
+					QSizePolicy::Ignored), col, 5);
     ++col;
   }
+
   ClearInputs();
   pWorkingColorSpaces_->setCurrentIndex(1);
   pSystemColorSpaces_->setCurrentIndex(20);
   pReferenceWhites_->setCurrentIndex(5);
   pChromaticAdaptations_->setCurrentIndex(2);
 
-  pViewer_ = NULL;
+  pScrollArea_->setWidget(pWidget);
+  pLayout0_->setStretch(1, 1);
 }
 
 void ConversionConsole::ClearInputs(){
