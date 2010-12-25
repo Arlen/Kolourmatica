@@ -20,8 +20,7 @@
 
 
 #include "ConversionConsole.hpp"
-#include "Viewer.hpp"
-#include "../core/Convert.hpp"
+//#include "Viewer.hpp"
 
 #include <QtGui/QDoubleValidator>
 #include <QtCore/QStringList>
@@ -36,8 +35,6 @@
 
 #include <boost/foreach.hpp>
 
-#include <iostream>
-
 
 ConversionConsole::ConversionConsole() : QWidget(){
 
@@ -51,27 +48,28 @@ ConversionConsole::ConversionConsole() : QWidget(){
 
   referenceWhites_ << "A" << "B" << "C" << "D50" << "D55" << "D65"
 		   << "D75" << "E" << "F2" << "F7" << "F11";
-  pViewer_ = 0;
-  InitWidgets();
-  ConnectConversionButtons();
-  ConnectWorkingColorSpaceButton();
-  ConnectSystemColorSpaceButton();
-  ConnectRefWhiteButton();
-  ConnectAdaptationButton();
+  //pViewer_ = 0;
+  initWidgets();
+  connectConversionButtons();
+  connectWorkingColorSpaceButton();
+  connectSystemColorSpaceButton();
+  connectRefWhiteButton();
+  connectAdaptationButton();
 }
 
-void ConversionConsole::SetViewer(Viewer* pViewer){
+/* private */
+void ConversionConsole::setViewer(Viewer* pViewer){
 
-  if(pViewer){
-    pViewer_ = pViewer;
-    pViewer_->SetWorkingColorSpace(workingColorSpace_);
-    pViewer_->SetSystemColorSpace(systemColorSpace_);
-    pViewer_->SetReferenceWhite(refWhite_);
-    pViewer_->SetAdaptationMethod(adaptationMethod_);
-  }
+  // if(pViewer){
+  //   pViewer_ = pViewer;
+  //   pViewer_->SetWorkingColorSpace(workingColorSpace_);
+  //   pViewer_->SetSystemColorSpace(systemColorSpace_);
+  //   pViewer_->SetReferenceWhite(refWhite_);
+  //   pViewer_->SetAdaptationMethod(adaptationMethod_);
+  // }
 }
 
-void ConversionConsole::InitWidgets(){
+void ConversionConsole::initWidgets(){
 
   QWidget* pWidget = new QWidget;
 
@@ -145,13 +143,13 @@ void ConversionConsole::InitWidgets(){
     rL.get<0>()->setFixedSize(144, 24);
     rL.get<1>() = new QLineEdit;
     rL.get<1>()->setFixedSize(128, 24);
-    SetDoubleValidator(rL.get<1>());
+    setDoubleValidator(rL.get<1>());
     rL.get<2>() = new QLineEdit;
     rL.get<2>()->setFixedSize(128, 24);
-    SetDoubleValidator(rL.get<2>());
+    setDoubleValidator(rL.get<2>());
     rL.get<3>() = new QLineEdit;
     rL.get<3>()->setFixedSize(128, 24);
-    SetDoubleValidator(rL.get<3>());
+    setDoubleValidator(rL.get<3>());
 
     pLayout1B_->addItem(new QSpacerItem(128, 1,
 					QSizePolicy::MinimumExpanding,
@@ -166,7 +164,7 @@ void ConversionConsole::InitWidgets(){
     ++col;
   }
 
-  ClearInputs();
+  clearInputs();
   pWorkingColorSpaces_->setCurrentIndex(1);
   pSystemColorSpaces_->setCurrentIndex(20);
   pReferenceWhites_->setCurrentIndex(5);
@@ -176,7 +174,7 @@ void ConversionConsole::InitWidgets(){
   pLayout0_->setStretch(1, 1);
 }
 
-void ConversionConsole::ClearInputs(){
+void ConversionConsole::clearInputs(){
 
   BOOST_FOREACH(InputLine& rL, inputLines_){
     rL.get<1>()->setText(QString::number(0.0, 'f', 10));
@@ -185,7 +183,7 @@ void ConversionConsole::ClearInputs(){
   }
 }
 
-void ConversionConsole::ConnectConversionButtons(){
+void ConversionConsole::connectConversionButtons(){
 
   QObject::connect(inputLines_[0].get<0>(), SIGNAL(clicked()),
   		   this, SLOT(ConvertFrom_XYZ_To_all()));
@@ -233,87 +231,56 @@ void ConversionConsole::ConnectConversionButtons(){
   		   this, SLOT(ConvertFrom_WideGamut_To_all()));
 }
 
-void ConversionConsole::ConvertAll(){
+Vector3d ConversionConsole::readSource(int index){
 
-  Eigen::Vector3f tmp;
-  Eigen::Matrix3f ada = adaptationMethod_;
-  Eigen::Vector3f r = refWhite_;
-  boost::array<Vector3f, 22> out;
+  return Vector3d(inputLines_[index].get<1>()->text().toFloat(),
+		  inputLines_[index].get<2>()->text().toFloat(),
+		  inputLines_[index].get<3>()->text().toFloat());
+}
 
-  Input input;
-  Conversions con;
-  Eigen::Vector3f (*c)(const Input&);
-
-  tmp <<
-    inputLines_[convertingFrom_].get<1>()->text().toFloat(),
-    inputLines_[convertingFrom_].get<2>()->text().toFloat(),
-    inputLines_[convertingFrom_].get<3>()->text().toFloat();
-
-  for(int i = 0; i < 22; ++i){
-
-    if(i == convertingFrom_){
-      out[i] = tmp;
-      continue;
-    }
-    input.from_ = tmp;
-    input.white_ = r;
-    if(convertingFrom_ > CSLCHuv){
-      input.sourceM_ = con.GetTable()[convertingFrom_][i].
-	get<1>()->GetM_Adapted(r, ada);
-      input.sourceGamma_ = con.GetTable()[convertingFrom_][i].
-	get<1>()->GetGamma();
-    }
-    if(i > CSLCHuv){
-      input.targetM_1_ = con.GetTable()[convertingFrom_][i].
-	get<2>()->GetM_1_Adapted(r, ada);
-      input.targetGamma_ = con.GetTable()[convertingFrom_][i].
-	get<2>()->GetGamma();
-    }
-    c = con.GetTable()[convertingFrom_][i].get<0>();
-    out[i] = c(input);
-  }
+void ConversionConsole::writeResults(std::vector<Eigen::Vector3d>& results){
 
   int i = 0;
   BOOST_FOREACH(InputLine& rL, inputLines_){
-    rL.get<1>()->setText(QString::number(out[i](0, 0), 'f', 10));
-    rL.get<2>()->setText(QString::number(out[i](1, 0), 'f', 10));
-    rL.get<3>()->setText(QString::number(out[i](2, 0), 'f', 10));
+    rL.get<1>()->setText(QString::number(results[i](0), 'f', 12));
+    rL.get<2>()->setText(QString::number(results[i](1), 'f', 12));
+    rL.get<3>()->setText(QString::number(results[i](2), 'f', 12));
     i++;
   }
 }
 
-void ConversionConsole::ConnectWorkingColorSpaceButton(){
+void ConversionConsole::connectWorkingColorSpaceButton(){
 
   QObject::connect(pWorkingColorSpaces_,
 		   SIGNAL(currentIndexChanged(int)),
-		   this, SLOT(SetWorkingColorSpace(int)));
-  SetWorkingColorSpace(pWorkingColorSpaces_->currentIndex());
+		   this, SLOT(setWorkingColorSpace(int)));
+  setWorkingColorSpace(pWorkingColorSpaces_->currentIndex());
 }
 
-void ConversionConsole::ConnectSystemColorSpaceButton(){
+void ConversionConsole::connectSystemColorSpaceButton(){
 
   QObject::connect(pSystemColorSpaces_,
 		   SIGNAL(currentIndexChanged(int)),
-		   this, SLOT(SetSystemColorSpace(int)));
-  SetSystemColorSpace(pSystemColorSpaces_->currentIndex());
+		   this, SLOT(setSystemColorSpace(int)));
+  setSystemColorSpace(pSystemColorSpaces_->currentIndex());
 }
 
-void ConversionConsole::ConnectRefWhiteButton(){
+void ConversionConsole::connectRefWhiteButton(){
 
   QObject::connect(pReferenceWhites_, SIGNAL(currentIndexChanged(int)),
-		   this, SLOT(SetRefWhite(int)));
-  SetRefWhite(pReferenceWhites_->currentIndex());
+		   this, SLOT(setRefWhite(int)));
+  setRefWhite(pReferenceWhites_->currentIndex());
 }
 
-void ConversionConsole::ConnectAdaptationButton(){
+void ConversionConsole::connectAdaptationButton(){
 
   QObject::connect(pChromaticAdaptations_,
 		   SIGNAL(currentIndexChanged(int)),
-		   this, SLOT(SetAdaptationMethod(int)));
-  SetAdaptationMethod(pChromaticAdaptations_->currentIndex());
+		   this, SLOT(setAdaptationMethod(int)));
+  setAdaptationMethod(pChromaticAdaptations_->currentIndex());
 }
 
-void ConversionConsole::SetDoubleValidator(QLineEdit* const pLineEdit){
+void ConversionConsole::setDoubleValidator(QLineEdit* const pLineEdit){
 
   QDoubleValidator *pDoubleValidator = new QDoubleValidator(pLineEdit);
   pDoubleValidator->setNotation(QDoubleValidator::StandardNotation);
@@ -321,76 +288,203 @@ void ConversionConsole::SetDoubleValidator(QLineEdit* const pLineEdit){
   pLineEdit->setValidator(pDoubleValidator);
 }
 
+
 /* private slots */
-void ConversionConsole::ConvertFrom_XYZ_To_all(){
-  convertingFrom_ = CSXYZ; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_xyY_To_all(){
-  convertingFrom_ = CSxyY; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Lab_To_all(){
-  convertingFrom_ = CSLab; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_LCHab_To_all(){
-  convertingFrom_ = CSLCHab; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Luv_To_all(){
-  convertingFrom_ = CSLuv; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_LCHuv_To_all(){
-  convertingFrom_ = CSLCHuv; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Adobe_To_all(){
-  convertingFrom_ = CSAdobeRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Apple_To_all(){
-  convertingFrom_ = CSAppleRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Best_To_all(){
-  convertingFrom_ = CSBestRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Beta_To_all(){
-  convertingFrom_ = CSBetaRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Bruce_To_all(){
-  convertingFrom_ = CSBruceRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_CIE_To_all(){
-  convertingFrom_ = CSCIERGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_ColorMatch_To_all(){
-  convertingFrom_ = CSColorMatchRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_Don4_To_all(){
-  convertingFrom_ = CSDonRGB4; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_ECI_To_all(){
-  convertingFrom_ = CSECIRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_EktaSpacePS5_To_all(){
-  convertingFrom_ = CSEktaSpacePS5; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_NTSC_To_all(){
-  convertingFrom_ = CSNTSCRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_PALSECAM_To_all(){
-  convertingFrom_ = CSPALSECAMRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_ProPhoto_To_all(){
-  convertingFrom_ = CSProPhotoRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_SMPTEC_To_all(){
-  convertingFrom_ = 19;
-  convertingFrom_ = CSSMPTECRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_sRGB_To_all(){
-  convertingFrom_ = CSsRGB; ConvertAll();
-}
-void ConversionConsole::ConvertFrom_WideGamut_To_all(){
-  convertingFrom_ = CSWideGamutRGB; ConvertAll();
+
+template <class ColourSpace>
+class ConvertFrom{
+  
+public:
+
+  ConvertFrom(const ColourSpace& from, vector<Vector3d>& result) :
+  from_(from), result_(&result){ }
+
+  template <class T>
+  void operator()(const T& to) const{
+    result_->push_back( to.operator()(from_).position() );
+  }
+  
+  ColourSpace from_;
+  vector<Vector3d>* const result_;
+};
+
+void ConversionConsole::convertFrom_XYZ_To_all(){
+
+  XYZ xyz(readSource(CSXYZ));
+  vector<Vector3d> result;
+  /* without reference type the copy-constructor gets called. */
+  for_each(allColorSpaces_, ConvertFrom<XYZ&>(xyz, result));
+  writeResults(result);
 }
 
-void ConversionConsole::SetWorkingColorSpace(int wcs){
+void ConversionConsole::convertFrom_xyY_To_all(){
+  
+  xyY xyy(readSource(CSxyY));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<xyY&>(xyy, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_Lab_To_all(){
+
+  Lab lab(readSource(CSLab));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<Lab&>(lab, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_LCHab_To_all(){
+
+  LCHab lchab(readSource(CSLCHab));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<LCHab&>(lchab, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_Luv_To_all(){
+
+  Luv luv(readSource(CSLuv));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<Luv&>(luv, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_LCHuv_To_all(){
+
+  LCHuv lchuv(readSource(CSLCHuv));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<LCHuv&>(lchuv, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_Adobe_To_all(){
+
+  AdobeRGB adobe(readSource(CSAdobeRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<AdobeRGB&>(adobe, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_Apple_To_all(){
+
+  AppleRGB apple(readSource(CSAppleRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<AppleRGB&>(apple, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_Best_To_all(){
+
+  BestRGB best(readSource(CSBestRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<BestRGB&>(best, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_Beta_To_all(){
+
+  BetaRGB beta(readSource(CSBetaRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<BetaRGB&>(beta, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_Bruce_To_all(){
+
+  BruceRGB bruce(readSource(CSBruceRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<BruceRGB&>(bruce, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_CIE_To_all(){
+
+  CIERGB cie(readSource(CSCIERGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<CIERGB&>(cie, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_ColorMatch_To_all(){
+
+  ColorMatchRGB colormatch(readSource(CSColorMatchRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<ColorMatchRGB&>(colormatch, result));
+  writeResults(result);
+}
+void ConversionConsole::convertFrom_Don4_To_all(){
+
+  DonRGB4 don4(readSource(CSDonRGB4));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<DonRGB4&>(don4, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_ECI_To_all(){
+
+  ECIRGB eci(readSource(CSECIRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<ECIRGB&>(eci, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_EktaSpacePS5_To_all(){
+
+  EktaSpacePS5 ektaspace(readSource(CSECIRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<EktaSpacePS5&>(ektaspace, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_NTSC_To_all(){
+
+  NTSCRGB ntsc(readSource(CSNTSCRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<NTSCRGB&>(ntsc, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_PALSECAM_To_all(){
+
+  PAL_SECAMRGB pal_secam(readSource(CSPALSECAMRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<PAL_SECAMRGB&>(pal_secam, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_ProPhoto_To_all(){
+
+  ProPhotoRGB prophoto(readSource(CSProPhotoRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<ProPhotoRGB&>(prophoto, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_SMPTEC_To_all(){
+
+  SMPTE_CRGB smpte_c(readSource(CSSMPTECRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<SMPTE_CRGB&>(smpte_c, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_sRGB_To_all(){
+
+  sRGB srgb(readSource(CSsRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<sRGB&>(srgb, result));
+  writeResults(result);
+}
+
+void ConversionConsole::convertFrom_WideGamut_To_all(){
+
+  WideGamutRGB widegamut(readSource(CSWideGamutRGB));
+  vector<Vector3d> result;
+  for_each(allColorSpaces_, ConvertFrom<WideGamutRGB&>(widegamut, result));
+  writeResults(result);
+}
+
+void ConversionConsole::setWorkingColorSpace(int wcs){
 
   int tmp = workingColorSpace_;
   workingColorSpace_ = wcs;
@@ -402,12 +496,12 @@ void ConversionConsole::SetWorkingColorSpace(int wcs){
   }
 
   // Manager::Instance().SetWorkingColorSpace(workingColorSpace_);
-  if(pViewer_){
-    pViewer_->SetWorkingColorSpace(workingColorSpace_);
-  }
+  // if(pViewer_){
+  //   pViewer_->SetWorkingColorSpace(workingColorSpace_);
+  // }
 }
 
-void ConversionConsole::SetSystemColorSpace(int scs){
+void ConversionConsole::setSystemColorSpace(int scs){
 
   int tmp = systemColorSpace_;
   systemColorSpace_ = scs;
@@ -419,41 +513,42 @@ void ConversionConsole::SetSystemColorSpace(int scs){
   }
 
   // Manager::Instance().SetSystemColorSpace(systemColorSpace_);
-  if(pViewer_){
-    pViewer_->SetSystemColorSpace(systemColorSpace_);
-  }
+  // if(pViewer_){
+  //   pViewer_->SetSystemColorSpace(systemColorSpace_);
+  // }
 }
 
-void ConversionConsole::SetRefWhite(int r){
+void ConversionConsole::setRefWhite(int r){
 
   switch(r){
-  case 0: refWhite_ = Convert::IlluminantA_;    break;
-  case 1: refWhite_ = Convert::IlluminantB_;    break;
-  case 2: refWhite_ = Convert::IlluminantC_;    break;
-  case 3: refWhite_ = Convert::IlluminantD50_;  break;
-  case 4: refWhite_ = Convert::IlluminantD55_;  break;
-  case 5: refWhite_ = Convert::IlluminantD65_;  break;
-  case 6: refWhite_ = Convert::IlluminantD75_;  break;
-  case 7: refWhite_ = Convert::IlluminantE_;    break;
-  case 8: refWhite_ = Convert::IlluminantF2_;   break;
-  case 9: refWhite_ = Convert::IlluminantF7_;   break;
-  case 10: refWhite_ = Convert::IlluminantF11_; break;
+  // case 0:  refWhite_.setReferenceWhite(IlluminantA<double>());    break;
+  // case 1:  refWhite_.setReferenceWhite(IlluminantB<double>());    break;
+  // case 2:  refWhite_.setReferenceWhite(IlluminantC<double>());    break;
+  // case 3:  refWhite_.setReferenceWhite(IlluminantD50<double>());  break;
+  // case 4:  refWhite_.setReferenceWhite(IlluminantD55<double>());  break;
+  // case 5:  refWhite_.setReferenceWhite(IlluminantD65<double>());  break;
+  // case 6:  refWhite_.setReferenceWhite(IlluminantD75<double>());  break;
+  // case 7:  refWhite_.setReferenceWhite(IlluminantE<double>());    break;
+  // case 8:  refWhite_.setReferenceWhite(IlluminantF2<double>());   break;
+  // case 9:  refWhite_.setReferenceWhite(IlluminantF7<double>());   break;
+  // case 10: refWhite_.setReferenceWhite(IlluminantF11<double>());  break;
   }
   //Manager::Instance().SetReferenceWhite(refWhite_);
-  if(pViewer_){
-    pViewer_->SetReferenceWhite(refWhite_);
-  }
+  // if(pViewer_){
+  //   pViewer_->SetReferenceWhite(refWhite_);
+  // }
 }
 
-void ConversionConsole::SetAdaptationMethod(int a){
+void ConversionConsole::setAdaptationMethod(int a){
 
   switch(a){
-  case 0: adaptationMethod_ = Convert::XYZScaling_; break;
-  case 1: adaptationMethod_ = Convert::VonKries_;   break;
-  case 2: adaptationMethod_ = Convert::Bradford_;   break;
+  // case 0: adaptationMethod_ = AdaptationMethod<double>::XYZScaling_; break;
+  // case 1: adaptationMethod_ = AdaptationMethod<double>::VonKries_;   break;
+  // case 2: adaptationMethod_ = AdaptationMethod<double>::Bradford_;   break;
   }
   //Manager::Instance().SetAdaptationMethod(adaptationMethod_);
-  if(pViewer_){
-    pViewer_->SetAdaptationMethod(adaptationMethod_);
-  }
+  // if(pViewer_){
+  //   pViewer_->SetAdaptationMethod(adaptationMethod_);
+  // }
 }
+

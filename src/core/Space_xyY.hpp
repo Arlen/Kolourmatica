@@ -22,19 +22,16 @@
 #ifndef SPACEXYY_HPP
 #define SPACEXYY_HPP
 
-#include "Space_XYZ.hpp"
-#include "Space_Lab.hpp"
-#include "Space_LCHab.hpp"
-#include "Space_Luv.hpp"
-#include "Space_LCHuv.hpp"
-#include "Space_LinearRGB.hpp"
-#include "Space_sRGB.hpp"
+#include "ForwardDeclarations.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -74,6 +71,11 @@ public:
     const Vector3& tri = colourSpace.position();
     Real sum = tri(0) + tri(1) + tri(2);
     return xyY(tri(0) / sum, tri(1) / sum, tri(1));
+  }
+
+  xyY operator()(const xyY& colourSpace) const{
+
+    return xyY(colourSpace);
   }
 
   xyY operator()(const Lab& colourSpace) const{

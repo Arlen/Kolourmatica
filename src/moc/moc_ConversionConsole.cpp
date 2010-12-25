@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'ConversionConsole.hpp'
 **
-** Created: Tue Dec 21 17:33:07 2010
+** Created: Sat Dec 25 01:46:39 2010
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.3)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -62,31 +62,31 @@ static const uint qt_meta_data_ConversionConsole[] = {
 };
 
 static const char qt_meta_stringdata_ConversionConsole[] = {
-    "ConversionConsole\0\0ConvertFrom_XYZ_To_all()\0"
-    "ConvertFrom_xyY_To_all()\0"
-    "ConvertFrom_Lab_To_all()\0"
-    "ConvertFrom_LCHab_To_all()\0"
-    "ConvertFrom_Luv_To_all()\0"
-    "ConvertFrom_LCHuv_To_all()\0"
-    "ConvertFrom_Adobe_To_all()\0"
-    "ConvertFrom_Apple_To_all()\0"
-    "ConvertFrom_Best_To_all()\0"
-    "ConvertFrom_Beta_To_all()\0"
-    "ConvertFrom_Bruce_To_all()\0"
-    "ConvertFrom_CIE_To_all()\0"
-    "ConvertFrom_ColorMatch_To_all()\0"
-    "ConvertFrom_Don4_To_all()\0"
-    "ConvertFrom_ECI_To_all()\0"
-    "ConvertFrom_EktaSpacePS5_To_all()\0"
-    "ConvertFrom_NTSC_To_all()\0"
-    "ConvertFrom_PALSECAM_To_all()\0"
-    "ConvertFrom_ProPhoto_To_all()\0"
-    "ConvertFrom_SMPTEC_To_all()\0"
-    "ConvertFrom_sRGB_To_all()\0"
-    "ConvertFrom_WideGamut_To_all()\0"
-    "SetWorkingColorSpace(int)\0"
-    "SetSystemColorSpace(int)\0SetRefWhite(int)\0"
-    "SetAdaptationMethod(int)\0"
+    "ConversionConsole\0\0convertFrom_XYZ_To_all()\0"
+    "convertFrom_xyY_To_all()\0"
+    "convertFrom_Lab_To_all()\0"
+    "convertFrom_LCHab_To_all()\0"
+    "convertFrom_Luv_To_all()\0"
+    "convertFrom_LCHuv_To_all()\0"
+    "convertFrom_Adobe_To_all()\0"
+    "convertFrom_Apple_To_all()\0"
+    "convertFrom_Best_To_all()\0"
+    "convertFrom_Beta_To_all()\0"
+    "convertFrom_Bruce_To_all()\0"
+    "convertFrom_CIE_To_all()\0"
+    "convertFrom_ColorMatch_To_all()\0"
+    "convertFrom_Don4_To_all()\0"
+    "convertFrom_ECI_To_all()\0"
+    "convertFrom_EktaSpacePS5_To_all()\0"
+    "convertFrom_NTSC_To_all()\0"
+    "convertFrom_PALSECAM_To_all()\0"
+    "convertFrom_ProPhoto_To_all()\0"
+    "convertFrom_SMPTEC_To_all()\0"
+    "convertFrom_sRGB_To_all()\0"
+    "convertFrom_WideGamut_To_all()\0"
+    "setWorkingColorSpace(int)\0"
+    "setSystemColorSpace(int)\0setRefWhite(int)\0"
+    "setAdaptationMethod(int)\0"
 };
 
 const QMetaObject ConversionConsole::staticMetaObject = {
@@ -118,32 +118,32 @@ int ConversionConsole::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: ConvertFrom_XYZ_To_all(); break;
-        case 1: ConvertFrom_xyY_To_all(); break;
-        case 2: ConvertFrom_Lab_To_all(); break;
-        case 3: ConvertFrom_LCHab_To_all(); break;
-        case 4: ConvertFrom_Luv_To_all(); break;
-        case 5: ConvertFrom_LCHuv_To_all(); break;
-        case 6: ConvertFrom_Adobe_To_all(); break;
-        case 7: ConvertFrom_Apple_To_all(); break;
-        case 8: ConvertFrom_Best_To_all(); break;
-        case 9: ConvertFrom_Beta_To_all(); break;
-        case 10: ConvertFrom_Bruce_To_all(); break;
-        case 11: ConvertFrom_CIE_To_all(); break;
-        case 12: ConvertFrom_ColorMatch_To_all(); break;
-        case 13: ConvertFrom_Don4_To_all(); break;
-        case 14: ConvertFrom_ECI_To_all(); break;
-        case 15: ConvertFrom_EktaSpacePS5_To_all(); break;
-        case 16: ConvertFrom_NTSC_To_all(); break;
-        case 17: ConvertFrom_PALSECAM_To_all(); break;
-        case 18: ConvertFrom_ProPhoto_To_all(); break;
-        case 19: ConvertFrom_SMPTEC_To_all(); break;
-        case 20: ConvertFrom_sRGB_To_all(); break;
-        case 21: ConvertFrom_WideGamut_To_all(); break;
-        case 22: SetWorkingColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 23: SetSystemColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 24: SetRefWhite((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 25: SetAdaptationMethod((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 0: convertFrom_XYZ_To_all(); break;
+        case 1: convertFrom_xyY_To_all(); break;
+        case 2: convertFrom_Lab_To_all(); break;
+        case 3: convertFrom_LCHab_To_all(); break;
+        case 4: convertFrom_Luv_To_all(); break;
+        case 5: convertFrom_LCHuv_To_all(); break;
+        case 6: convertFrom_Adobe_To_all(); break;
+        case 7: convertFrom_Apple_To_all(); break;
+        case 8: convertFrom_Best_To_all(); break;
+        case 9: convertFrom_Beta_To_all(); break;
+        case 10: convertFrom_Bruce_To_all(); break;
+        case 11: convertFrom_CIE_To_all(); break;
+        case 12: convertFrom_ColorMatch_To_all(); break;
+        case 13: convertFrom_Don4_To_all(); break;
+        case 14: convertFrom_ECI_To_all(); break;
+        case 15: convertFrom_EktaSpacePS5_To_all(); break;
+        case 16: convertFrom_NTSC_To_all(); break;
+        case 17: convertFrom_PALSECAM_To_all(); break;
+        case 18: convertFrom_ProPhoto_To_all(); break;
+        case 19: convertFrom_SMPTEC_To_all(); break;
+        case 20: convertFrom_sRGB_To_all(); break;
+        case 21: convertFrom_WideGamut_To_all(); break;
+        case 22: setWorkingColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 23: setSystemColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 24: setRefWhite((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 25: setAdaptationMethod((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;
         }
         _id -= 26;

@@ -19,22 +19,24 @@
 |************************************************************************/
 
 
-#ifndef SPACE_DON4_HPP
-#define SPACE_DON4_HPP
+#ifndef SPACE_DONRGB4_HPP
+#define SPACE_DONRGB4_HPP
 
-#include "ReferenceWhite.hpp"
-#include "Space_xyY.hpp"
+#include "ForwardDeclarations.hpp"
 #include "Space_LinearRGB.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
-class Space_Don4 : public Space_LinearRGB<Real>{
+class Space_DonRGB4 : public Space_LinearRGB<Real>{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
@@ -44,13 +46,21 @@ class Space_Don4 : public Space_LinearRGB<Real>{
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
-  Space_Don4(Real r, Real g, Real b) :
+  Space_DonRGB4(Real r = 1, Real g = 1, Real b = 1) :
     Space_LinearRGB<Real>(RefWhite(D50()),
 			  Real(2.2),
 			  xyY(0.696, 0.300, 1.0),
 			  xyY(0.215, 0.765, 1.0),
 			  xyY(0.130, 0.035, 1.0),
 			  Vector3(r, g, b)){ }
+
+  Space_DonRGB4(const Vector3& tri) :
+    Space_LinearRGB<Real>(RefWhite(D50()),
+			  Real(2.2),
+			  xyY(0.696, 0.300, 1.0),
+			  xyY(0.215, 0.765, 1.0),
+			  xyY(0.130, 0.035, 1.0),
+			  tri){ }
 };
 
 #endif

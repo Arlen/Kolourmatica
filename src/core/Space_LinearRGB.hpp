@@ -59,6 +59,57 @@ class Space_LinearRGB : public BaseRGB<Real>{
   using BaseRGB<Real>::m_1_;
   using BaseRGB<Real>::m_1_adapted_;
 
+public:
+  const Vector3& position() const{ return tri_; }
+
+  LinearRGB operator()(const XYZ& colourSpace) const{
+
+    LinearRGB tmp(*this);
+    Vector3 rgb;
+    Real p = 1.0 / gamma_;
+    rgb = m_1_ * colourSpace.position();
+    rgb(0) = pow(rgb(0), p);
+    rgb(1) = pow(rgb(1), p);
+    rgb(2) = pow(rgb(2), p);
+    tmp.tri_ = rgb;
+    return tmp;
+  }
+
+  LinearRGB operator()(const xyY& colourSpace) const{
+
+    return operator()(XYZ(colourSpace));
+  }
+
+  LinearRGB operator()(const Lab& colourSpace) const{
+
+    return operator()(XYZ(colourSpace));
+  }
+
+  LinearRGB operator()(const LCHab& colourSpace) const{
+
+    return operator()(XYZ(colourSpace));
+  }
+
+  LinearRGB operator()(const Luv& colourSpace) const{
+
+    return operator()(XYZ(colourSpace));
+  }
+
+  LinearRGB operator()(const LCHuv& colourSpace) const{
+
+    return operator()(XYZ(colourSpace));
+  }
+
+  LinearRGB operator()(const LinearRGB& colourSpace) const{
+
+    return operator()(XYZ(colourSpace));
+  }
+
+  LinearRGB operator()(const sRGB& colourSpace) const{
+
+    return operator()(XYZ(colourSpace));
+  }
+
 protected:
   Space_LinearRGB(const RefWhite& rw,
 		  const Real& gamma,
@@ -141,57 +192,6 @@ protected:
     BaseRGB<Real>(rw, gamma, redPrimary, greenPrimary, bluePrimary),
     tri_(operator()(colourSpace).tri_){ }
 
-  const Vector3& position() const{ return tri_; }
-
-  LinearRGB operator()(const XYZ& colourSpace) const{
-
-    LinearRGB tmp(*this);
-    Vector3 rgb;
-    Real p = 1.0 / gamma_;
-    rgb = m_1_ * colourSpace.position();
-    rgb(0) = pow(rgb(0), p);
-    rgb(1) = pow(rgb(1), p);
-    rgb(2) = pow(rgb(2), p);
-    tmp.tri_ = rgb;
-    return tmp;
-  }
-
-  LinearRGB operator()(const xyY& colourSpace) const{
-
-    return operator()(XYZ(colourSpace));
-  }
-
-  LinearRGB operator()(const Lab& colourSpace) const{
-
-    return operator()(XYZ(colourSpace));
-  }
-
-  LinearRGB operator()(const LCHab& colourSpace) const{
-
-    return operator()(XYZ(colourSpace));
-  }
-
-  LinearRGB operator()(const Luv& colourSpace) const{
-
-    return operator()(XYZ(colourSpace));
-  }
-
-  LinearRGB operator()(const LCHuv& colourSpace) const{
-
-    return operator()(XYZ(colourSpace));
-  }
-
-  LinearRGB operator()(const LinearRGB& colourSpace) const{
-
-    return operator()(XYZ(colourSpace));
-  }
-
-  LinearRGB operator()(const sRGB& colourSpace) const{
-
-    return operator()(XYZ(colourSpace));
-  }
-
-private:
   Space_LinearRGB(const LinearRGB& other) : BaseRGB<Real>(){
 
     refWhite_ = other.refWhite_;
@@ -203,6 +203,7 @@ private:
     tri_ = other.tri_;
   }
 
+private:
   Vector3 tri_;
 };
 

@@ -22,19 +22,16 @@
 #ifndef SPACELAB_HPP
 #define SPACELAB_HPP
 
-#include "Space_XYZ.hpp"
-#include "Space_xyY.hpp"
-#include "Space_LCHab.hpp"
-#include "Space_Luv.hpp"
-#include "Space_LCHuv.hpp"
-#include "Space_LinearRGB.hpp"
-#include "Space_sRGB.hpp"
+#include "ForwardDeclarations.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -100,6 +97,11 @@ public:
   Lab operator()(const xyY& colourSpace) const{
 
     return operator()(XYZ(colourSpace));
+  }
+
+  Lab operator()(const Lab& colourSpace) const{
+
+    return Lab(colourSpace);
   }
 
   Lab operator()(const LCHab& colourSpace) const{

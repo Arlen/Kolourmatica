@@ -22,14 +22,16 @@
 #ifndef BASERGB_HPP
 #define BASERGB_HPP
 
-#include "ReferenceWhite.hpp"
-#include "Space_xyY.hpp"
+#include "ForwardDeclarations.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -38,6 +40,7 @@ class BaseRGB{
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef ReferenceWhite<Real> RefWhite;
+  typedef Space_XYZ<Real> XYZ;
   typedef Space_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Vector3;
   typedef Matrix<Real, 3, 3> Matrix3;
@@ -85,8 +88,8 @@ private:
     Matrix3 xyzs;
     Matrix3 M;
     Vector3 S;
-    Space_XYZ<Real> xyz;
-    Space_xyY<Real> xyy;
+    XYZ xyz;
+    xyY xyy;
     xyy = primaryRed;   xyzs.col(0) = xyz(xyy).position();
     xyy = primaryGreen; xyzs.col(1) = xyz(xyy).position();
     xyy = primaryBlue;  xyzs.col(2) = xyz(xyy).position();

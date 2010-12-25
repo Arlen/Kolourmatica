@@ -19,38 +19,48 @@
 |************************************************************************/
 
 
-#ifndef SPACE_WIDEGAMUT_HPP
-#define SPACE_WIDEGAMUT_HPP
+#ifndef SPACE_PAL_SECAMRGB_HPP
+#define SPACE_PAL_SECAMRGB_HPP
 
-#include "ReferenceWhite.hpp"
-#include "Space_xyY.hpp"
+#include "ForwardDeclarations.hpp"
 #include "Space_LinearRGB.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
-class Space_WideGamut : public Space_LinearRGB<Real>{
+class Space_PAL_SECAMRGB : public Space_LinearRGB<Real>{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef ReferenceWhite<Real> RefWhite;
-  typedef IlluminantD50<Real> D50;
+  typedef IlluminantD65<Real> D65;
   typedef Space_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
-  Space_WideGamut(Real r, Real g, Real b) :
-    Space_LinearRGB<Real>(RefWhite(D50()),
+  Space_PAL_SECAMRGB(Real r = 1, Real g = 1, Real b = 1) :
+    Space_LinearRGB<Real>(RefWhite(D65()),
 			  Real(2.2),
-			  xyY(0.735, 0.265, 1.0),
-			  xyY(0.115, 0.826, 1.0),
-			  xyY(0.157, 0.018, 1.0),
+			  xyY(0.64, 0.33, 1.0),
+			  xyY(0.29, 0.60, 1.0),
+			  xyY(0.15, 0.06, 1.0),
 			  Vector3(r, g, b)){ }
+
+  Space_PAL_SECAMRGB(const Vector3& tri) :
+    Space_LinearRGB<Real>(RefWhite(D65()),
+			  Real(2.2),
+			  xyY(0.64, 0.33, 1.0),
+			  xyY(0.29, 0.60, 1.0),
+			  xyY(0.15, 0.06, 1.0),
+			  tri){ }
 };
 
 #endif

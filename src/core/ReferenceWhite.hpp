@@ -22,10 +22,17 @@
 #ifndef REFERENCEWHITE_HPP
 #define REFERENCEWHITE_HPP
 
-#include "Space_XYZ.hpp"
+#include "ForwardDeclarations.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
+
+#include <boost/mpl/assert.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -294,7 +301,7 @@ private:
 
 /* Global Reference White */
 template <class Real>
-struct GlobalReferenceWhite : boost::noncopyable{
+struct GlobalReferenceWhite : noncopyable{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 

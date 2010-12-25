@@ -19,11 +19,8 @@
 |************************************************************************/
 
 
-#ifndef SPACE_BETARGB_HPP
-#define SPACE_BETARGB_HPP
-
-#include "ForwardDeclarations.hpp"
-#include "Space_LinearRGB.hpp"
+#ifndef ADAPTATIONMETHOD_HPP
+#define ADAPTATIONMETHOD_HPP
 
 #include "../../../eigen/Eigen/Core"
 #include "../../../eigen/Eigen/Dense"
@@ -36,31 +33,40 @@ using namespace boost;
 
 
 template <class Real>
-class Space_BetaRGB : public Space_LinearRGB<Real>{
+struct AdaptationMethod{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
-  typedef ReferenceWhite<Real> RefWhite;
-  typedef IlluminantD50<Real> D50;
-  typedef Space_xyY<Real> xyY;
-  typedef Matrix<Real, 3, 1> Vector3;
-
-public:
-  Space_BetaRGB(Real r = 1, Real g = 1, Real b = 1) :
-    Space_LinearRGB<Real>(RefWhite(D50()),
-			  Real(2.2),
-			  xyY(0.6888, 0.3112, 1.0),
-			  xyY(0.1986, 0.7551, 1.0),
-			  xyY(0.1265, 0.0352, 1.0),
-			  Vector3(r, g, b)){ }
-
-  Space_BetaRGB(const Vector3& tri) :
-    Space_LinearRGB<Real>(RefWhite(D50()),
-			  Real(2.2),
-			  xyY(0.6888, 0.3112, 1.0),
-			  xyY(0.1986, 0.7551, 1.0),
-			  xyY(0.1265, 0.0352, 1.0),
-			  tri){ }
+ 
+  static const Matrix<Real, 3, 3> XYZScaling_;
+  static const Matrix<Real, 3, 3> VonKries_;
+  static const Matrix<Real, 3, 3> Bradford_;
+  static const Real xyzscaling[];
+  static const Real vonkries[];
+  static const Real bradford[];
 };
+
+template <class Real>
+const Matrix<Real, 3, 3> AdaptationMethod<Real>::XYZScaling_ =
+  Matrix<Real, 3, 3>(xyzscaling);
+
+template <class Real>
+const Matrix<Real, 3, 3> AdaptationMethod<Real>::VonKries_ =
+  Matrix<Real, 3, 3>(vonkries);
+
+template <class Real>
+const Matrix<Real, 3, 3> AdaptationMethod<Real>::Bradford_ =
+  Matrix<Real, 3, 3>(bradford);
+
+template <class Real>
+const Real AdaptationMethod<Real>::xyzscaling[] =
+  {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+
+template <class Real>
+const Real AdaptationMethod<Real>::vonkries[] =
+  {0.40024, -0.2263, 0.0, 0.7076, 1.16532, 0.0, -0.08081, 0.0457, 0.91822};
+
+template <class Real>
+const Real AdaptationMethod<Real>::bradford[] =
+  {0.8951, -0.7502, 0.0389, 0.2664, 1.7135, -0.0685, -0.1614, 0.0367, 1.0296};
 
 #endif

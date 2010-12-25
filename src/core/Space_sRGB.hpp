@@ -22,15 +22,17 @@
 #ifndef SPACE_SRGB_HPP
 #define SPACE_SRGB_HPP
 
-#include "ReferenceWhite.hpp"
-#include "Space_xyY.hpp"
-#include "Space_LinearRGB.hpp"
+#include "ForwardDeclarations.hpp"
+#include "BaseRGB.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -58,9 +60,8 @@ class Space_sRGB : public BaseRGB<Real>{
   using BaseRGB<Real>::m_1_;
   using BaseRGB<Real>::m_1_adapted_;
 
-
 public:
-  Space_sRGB(Real r, Real g, Real b) :
+  Space_sRGB(Real r = 1, Real g = 1, Real b = 1) :
     BaseRGB<Real>(RefWhite(D65()),
 		  Real(2.4),
 		  xyY(0.64, 0.33, 1.0),
@@ -69,11 +70,29 @@ public:
     tri_ = Vector3(r, g, b);
   }
 
+  Space_sRGB(const Vector3& tri) :
+    BaseRGB<Real>(RefWhite(D65()),
+		  Real(2.4),
+		  xyY(0.64, 0.33, 1.0),
+		  xyY(0.30, 0.60, 1.0),
+		  xyY(0.15, 0.06, 1.0)){
+    tri_ = tri;
+  }
+
+  Space_sRGB(const sRGB& other) : BaseRGB<Real>(){
+
+    refWhite_ = other.refWhite_;
+    gamma_ = other.gamma_;
+    m_ = other.m_;
+    m_adapted_ = other.m_adapted_;
+    m_1_ = other.m_1_;
+    m_1_adapted_ = other.m_1_adapted_;
+    tri_ = other.tri_;
+  }
+
   const Vector3& position() const{ return tri_; }
 
   sRGB operator()(const XYZ& colourSpace) const{
-
-    cout << colourSpace.position() << endl << endl;
 
     sRGB tmp(*this);
     Vector3 rgb;
@@ -135,17 +154,6 @@ public:
   }
 
 private:
-  Space_sRGB(const sRGB& other) : BaseRGB<Real>(){
-
-    refWhite_ = other.refWhite_;
-    gamma_ = other.gamma_;
-    m_ = other.m_;
-    m_adapted_ = other.m_adapted_;
-    m_1_ = other.m_1_;
-    m_1_adapted_ = other.m_1_adapted_;
-    tri_ = other.tri_;
-  }
-
   Vector3 tri_;
 };
 

@@ -22,15 +22,17 @@
 #ifndef SPACE_ADOBERGB_HPP
 #define SPACE_ADOBERGB_HPP
 
-#include "ReferenceWhite.hpp"
-#include "Space_xyY.hpp"
+#include "ForwardDeclarations.hpp"
 #include "Space_LinearRGB.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -44,13 +46,21 @@ class Space_AdobeRGB : public Space_LinearRGB<Real>{
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
-  Space_AdobeRGB(Real r, Real g, Real b) :
+  Space_AdobeRGB(Real r = 1, Real g = 1, Real b = 1) :
     Space_LinearRGB<Real>(RefWhite(D65()),
 			  Real(Real(2) + (Real(51) / Real(256))),
 			  xyY(0.64, 0.33, 1.0),
 			  xyY(0.21, 0.71, 1.0),
 			  xyY(0.15, 0.06, 1.0),
 			  Vector3(r, g, b)){ }
+
+  Space_AdobeRGB(const Vector3& tri) :
+    Space_LinearRGB<Real>(RefWhite(D65()),
+			  Real(Real(2) + (Real(51) / Real(256))),
+			  xyY(0.64, 0.33, 1.0),
+			  xyY(0.21, 0.71, 1.0),
+			  xyY(0.15, 0.06, 1.0),
+			  tri){ }
 };
 
 #endif

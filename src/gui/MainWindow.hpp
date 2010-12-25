@@ -25,7 +25,7 @@
 #include <QtGui/QWidget>
 
 class ConversionConsole;
-class Viewer;
+//class Viewer;
 
 class QVBoxLayout;
 class QSplitter;
@@ -43,7 +43,7 @@ private:
   QVBoxLayout* pMainLayout_;
   QSplitter* pSplitter_;
   ConversionConsole* pConversion_;
-  Viewer* pViewer_;
+  //Viewer* pViewer_;
 
 };
 

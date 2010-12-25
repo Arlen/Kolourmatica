@@ -22,19 +22,16 @@
 #ifndef SPACEXYZ_HPP
 #define SPACEXYZ_HPP
 
-#include "Space_xyY.hpp"
-#include "Space_Lab.hpp"
-#include "Space_LCHab.hpp"
-#include "Space_Luv.hpp"
-#include "Space_LCHuv.hpp"
-#include "Space_LinearRGB.hpp"
-#include "Space_sRGB.hpp"
+#include "ForwardDeclarations.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -68,6 +65,11 @@ public:
   Space_XYZ(const sRGB& colourSpace) : tri_(operator()(colourSpace).tri_){ }
 
   const Vector3& position() const{ return tri_; }
+
+  XYZ operator()(const XYZ& colourSpace) const{
+
+    return XYZ(colourSpace);
+  }
 
   XYZ operator()(const xyY& colourSpace) const{
 
@@ -149,23 +151,23 @@ public:
   XYZ operator()(const sRGB& colourSpace) const{
 
     Vector3 tri;
-    if( colourSpace.position(0) > 0.04045f )
-      tri(0) = pow( ((colourSpace.position(0) + 0.055f) / 1.055f),
+    if( colourSpace.position()(0) > 0.04045f )
+      tri(0) = pow( ((colourSpace.position()(0) + 0.055f) / 1.055f),
 		    colourSpace.gamma() );
     else
-      tri(0) = colourSpace.position(0) / 12.92f;
+      tri(0) = colourSpace.position()(0) / 12.92f;
 
-    if( colourSpace.position(1) > 0.04045f )
-      tri(1) = pow( ((colourSpace.position(1) + 0.055f) / 1.055f),
+    if( colourSpace.position()(1) > 0.04045f )
+      tri(1) = pow( ((colourSpace.position()(1) + 0.055f) / 1.055f),
 		    colourSpace.gamma() );
     else
-      tri(1) = colourSpace.position(1) / 12.92f;
+      tri(1) = colourSpace.position()(1) / 12.92f;
 
-    if( colourSpace.position(2) > 0.04045f )
-      tri(2) = pow( ((colourSpace.position(2) + 0.055f) / 1.055f),
+    if( colourSpace.position()(2) > 0.04045f )
+      tri(2) = pow( ((colourSpace.position()(2) + 0.055f) / 1.055f),
 		    colourSpace.gamma() );
     else
-      tri(2) = colourSpace.position(2) / 12.92f;
+      tri(2) = colourSpace.position()(2) / 12.92f;
 
     return XYZ(colourSpace.m() * tri);
   }

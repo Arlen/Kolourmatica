@@ -19,8 +19,8 @@
 |************************************************************************/
 
 
-#ifndef SPACE_BETARGB_HPP
-#define SPACE_BETARGB_HPP
+#ifndef SPACE_COLORMATCHRGB_HPP
+#define SPACE_COLORMATCHRGB_HPP
 
 #include "ForwardDeclarations.hpp"
 #include "Space_LinearRGB.hpp"
@@ -36,7 +36,7 @@ using namespace boost;
 
 
 template <class Real>
-class Space_BetaRGB : public Space_LinearRGB<Real>{
+class Space_ColorMatchRGB : public Space_LinearRGB<Real>{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
@@ -46,20 +46,20 @@ class Space_BetaRGB : public Space_LinearRGB<Real>{
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
-  Space_BetaRGB(Real r = 1, Real g = 1, Real b = 1) :
+  Space_ColorMatchRGB(Real r = 1, Real g = 1, Real b = 1) :
     Space_LinearRGB<Real>(RefWhite(D50()),
-			  Real(2.2),
-			  xyY(0.6888, 0.3112, 1.0),
-			  xyY(0.1986, 0.7551, 1.0),
-			  xyY(0.1265, 0.0352, 1.0),
+			  Real(1.8),
+			  xyY(0.630, 0.340, 1.0),
+			  xyY(0.295, 0.605, 1.0),
+			  xyY(0.150, 0.075, 1.0),
 			  Vector3(r, g, b)){ }
 
-  Space_BetaRGB(const Vector3& tri) :
+  Space_ColorMatchRGB(const Vector3& tri) :
     Space_LinearRGB<Real>(RefWhite(D50()),
-			  Real(2.2),
-			  xyY(0.6888, 0.3112, 1.0),
-			  xyY(0.1986, 0.7551, 1.0),
-			  xyY(0.1265, 0.0352, 1.0),
+			  Real(1.8),
+			  xyY(0.630, 0.340, 1.0),
+			  xyY(0.295, 0.605, 1.0),
+			  xyY(0.150, 0.075, 1.0),
 			  tri){ }
 };
 

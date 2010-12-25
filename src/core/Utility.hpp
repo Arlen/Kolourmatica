@@ -19,38 +19,37 @@
 |************************************************************************/
 
 
-#ifndef SPACE_COLORMATCH_HPP
-#define SPACE_COLORMATCH_HPP
+#ifndef UTILITY_HPP
+#define UTILITY_HPP
 
-#include "ReferenceWhite.hpp"
-#include "Space_xyY.hpp"
-#include "Space_LinearRGB.hpp"
-
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
-
-#include <boost/mpl/bool.hpp>
-#include <boost/mpl/assert.hpp>
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
 
 template <class Real>
-class Space_ColorMatch : public Space_LinearRGB<Real>{
+struct Helper{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
+  typedef Eigen::Matrix<Real, 3, 1> Vector3;
 
-  typedef ReferenceWhite<Real> RefWhite;
-  typedef IlluminantD50<Real> D50;
-  typedef Space_xyY<Real> xyY;
-  typedef Matrix<Real, 3, 1> Vector3;
+  /* refWhite is in XYZ space. */
+  static void ComputeUoVo(Real& uo, Real& vo, const Vector3& refWhite){
 
-public:
-  Space_ColorMatch(Real r, Real g, Real b) :
-    Space_LinearRGB<Real>(RefWhite(D50()),
-			  Real(1.8),
-			  xyY(0.630, 0.340, 1.0),
-			  xyY(0.295, 0.605, 1.0),
-			  xyY(0.150, 0.075, 1.0),
-			  Vector3(r, g, b)){ }
+    Real d = (refWhite(0) + Real(15.0) * refWhite(1) + Real(3.0) * refWhite(2));
+    uo = (Real(4.0) * refWhite(0)) / d;
+    vo = (Real(9.0) * refWhite(1)) / d;
+  }
+};
+
+
+template <class Real>
+struct Constants{
+
+  static const Real CIE_epsilon_ = Real(216) / Real(24389);
+  static const Real CIE_kappa_ = Real(24389) / Real(27);
+  static const Real CIE_ke_ = CIE_kappa_ * CIE_epsilon_;
+  static const Real pi_ = Real(M_PI);
+  static const Real radian_ = pi_ / Real(180);
+  static const Real angle_ = Real(180) / pi_;
 };
 
 #endif

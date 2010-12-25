@@ -22,19 +22,16 @@
 #ifndef SPACELCHUV_HPP
 #define SPACELCHUV_HPP
 
-#include "Space_XYZ.hpp"
-#include "Space_xyY.hpp"
-#include "Space_Lab.hpp"
-#include "Space_LCHab.hpp"
-#include "Space_Luv.hpp"
-#include "Space_LinearRGB.hpp"
-#include "Space_sRGB.hpp"
+#include "ForwardDeclarations.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -42,7 +39,6 @@ class Space_LCHuv{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
-  typedef GlobalReferenceWhite<Real> GRW;
   typedef Space_XYZ<Real> XYZ;
   typedef Space_xyY<Real> xyY;
   typedef Space_Lab<Real> Lab;
@@ -101,6 +97,11 @@ public:
     if(H >= 360.0){ H -= 360.0; }
     h = H;
     return LCHuv(l, c, h);
+  }
+
+  LCHuv operator()(const LCHuv& colourSpace) const{
+
+    return LCHuv(colourSpace);
   }
 
   LCHuv operator()(const LinearRGB& colourSpace) const{

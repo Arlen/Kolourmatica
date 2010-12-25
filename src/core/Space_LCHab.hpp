@@ -22,19 +22,16 @@
 #ifndef SPACELCHAB_HPP
 #define SPACELCHAB_HPP
 
-#include "Space_XYZ.hpp"
-#include "Space_xyY.hpp"
-#include "Space_Lab.hpp"
-#include "Space_Luv.hpp"
-#include "Space_LCHuv.hpp"
-#include "Space_LinearRGB.hpp"
-#include "Space_sRGB.hpp"
+#include "ForwardDeclarations.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
@@ -92,6 +89,11 @@ public:
     if(H >= 360.0){ H -= 360.0; }
     h = H;
     return LCHab(l, c, h);
+  }
+
+  LCHab operator()(const LCHab& colourSpace) const{
+
+    return LCHab(colourSpace);
   }
 
   LCHab operator()(const Luv& colourSpace) const{

@@ -19,22 +19,24 @@
 |************************************************************************/
 
 
-#ifndef SPACE_ECI_HPP
-#define SPACE_ECI_HPP
+#ifndef SPACE_PROPHOTORGB_HPP
+#define SPACE_PROPHOTORGB_HPP
 
-#include "ReferenceWhite.hpp"
-#include "Space_xyY.hpp"
+#include "ForwardDeclarations.hpp"
 #include "Space_LinearRGB.hpp"
 
-#include "../eigen/Eigen/Core"
-#include "../eigen/Eigen/Dense"
+#include "../../../eigen/Eigen/Core"
+#include "../../../eigen/Eigen/Dense"
 
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/type_traits/is_floating_point.hpp>
+
+using namespace Eigen;
+using namespace boost;
 
 
 template <class Real>
-class Space_ECI : public Space_LinearRGB<Real>{
+class Space_ProPhotoRGB : public Space_LinearRGB<Real>{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
@@ -44,13 +46,21 @@ class Space_ECI : public Space_LinearRGB<Real>{
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
-  Space_ECI(Real r, Real g, Real b) :
+  Space_ProPhotoRGB(Real r = 1, Real g = 1, Real b = 1) :
     Space_LinearRGB<Real>(RefWhite(D50()),
 			  Real(1.8),
-			  xyY(0.67, 0.33, 1.0),
-			  xyY(0.21, 0.71, 1.0),
-			  xyY(0.14, 0.08, 1.0),
+			  xyY(0.7347, 0.2653, 1.0),
+			  xyY(0.1596, 0.8404, 1.0),
+			  xyY(0.0366, 0.0001, 1.0),
 			  Vector3(r, g, b)){ }
+
+  Space_ProPhotoRGB(const Vector3& tri) :
+    Space_LinearRGB<Real>(RefWhite(D50()),
+			  Real(1.8),
+			  xyY(0.7347, 0.2653, 1.0),
+			  xyY(0.1596, 0.8404, 1.0),
+			  xyY(0.0366, 0.0001, 1.0),
+			  tri){ }
 };
 
 #endif
