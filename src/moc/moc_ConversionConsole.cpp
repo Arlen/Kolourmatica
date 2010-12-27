@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'ConversionConsole.hpp'
 **
-** Created: Sat Dec 25 01:46:39 2010
+** Created: Mon Dec 27 16:32:22 2010
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.6.3)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -54,9 +54,9 @@ static const uint qt_meta_data_ConversionConsole[] = {
      562,   18,   18,   18, 0x08,
      588,   18,   18,   18, 0x08,
      619,   18,   18,   18, 0x08,
-     645,   18,   18,   18, 0x08,
-     670,   18,   18,   18, 0x08,
-     687,   18,   18,   18, 0x08,
+     646,   18,   18,   18, 0x08,
+     672,   18,   18,   18, 0x08,
+     689,   18,   18,   18, 0x08,
 
        0        // eod
 };
@@ -84,8 +84,8 @@ static const char qt_meta_stringdata_ConversionConsole[] = {
     "convertFrom_SMPTEC_To_all()\0"
     "convertFrom_sRGB_To_all()\0"
     "convertFrom_WideGamut_To_all()\0"
-    "setWorkingColorSpace(int)\0"
-    "setSystemColorSpace(int)\0setRefWhite(int)\0"
+    "setWorkingColourSpace(int)\0"
+    "setSystemColourSpace(int)\0setRefWhite(int)\0"
     "setAdaptationMethod(int)\0"
 };
 
@@ -140,8 +140,8 @@ int ConversionConsole::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 19: convertFrom_SMPTEC_To_all(); break;
         case 20: convertFrom_sRGB_To_all(); break;
         case 21: convertFrom_WideGamut_To_all(); break;
-        case 22: setWorkingColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
-        case 23: setSystemColorSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 22: setWorkingColourSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 23: setSystemColourSpace((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 24: setRefWhite((*reinterpret_cast< int(*)>(_a[1]))); break;
         case 25: setAdaptationMethod((*reinterpret_cast< int(*)>(_a[1]))); break;
         default: ;

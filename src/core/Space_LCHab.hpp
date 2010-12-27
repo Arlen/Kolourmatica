@@ -67,6 +67,11 @@ public:
 
   const Vector3& position() const{ return tri_; }
 
+  LCHab operator()(const Vector3& tri) const{
+
+    return LCHab(tri);
+  }
+
   LCHab operator()(const XYZ& colourSpace) const{
 
     return operator()(Lab(colourSpace));
@@ -84,7 +89,7 @@ public:
 
     l = tri(0);
     c = sqrt(tri(1) * tri(1) + tri(2) * tri(2));
-    float H = atan2(tri(2), tri(1)) * Constants<Real>::angle_;
+    Real H = atan2(tri(2), tri(1)) * Constants<Real>::angle_;
     if(H < 0.0){ H += 360.0; }
     if(H >= 360.0){ H -= 360.0; }
     h = H;

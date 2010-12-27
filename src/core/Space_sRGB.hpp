@@ -79,25 +79,32 @@ public:
     tri_ = tri;
   }
 
-  Space_sRGB(const sRGB& other) : BaseRGB<Real>(){
+  Space_sRGB(const sRGB& other) :
+    BaseRGB<Real>(other.refWhite_,
+		  other.gamma_,
+		  other.m_,
+		  other.m_adapted_,
+		  other.m_1_,
+		  other.m_1_adapted_){
 
-    refWhite_ = other.refWhite_;
-    gamma_ = other.gamma_;
-    m_ = other.m_;
-    m_adapted_ = other.m_adapted_;
-    m_1_ = other.m_1_;
-    m_1_adapted_ = other.m_1_adapted_;
     tri_ = other.tri_;
   }
 
   const Vector3& position() const{ return tri_; }
+
+  sRGB operator()(const Vector3& tri) const{
+
+    sRGB tmp(*this);
+    tmp.tri_ = tri;
+    return tmp;
+  }
 
   sRGB operator()(const XYZ& colourSpace) const{
 
     sRGB tmp(*this);
     Vector3 rgb;
     Real p = 1.0 / gamma_;
-    rgb = m_1_ * colourSpace.position();
+    rgb = m_1_adapted_ * colourSpace.position();
 
     if( rgb(0) > 0.0031308f )
       rgb(0) = 1.055f * pow(rgb(0), p) - 0.055f;

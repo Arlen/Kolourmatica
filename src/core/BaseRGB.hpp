@@ -33,6 +33,7 @@
 using namespace Eigen;
 using namespace boost;
 
+#include <iostream>
 
 template <class Real>
 class BaseRGB{
@@ -53,27 +54,44 @@ public:
 
   void adapt(const RefWhite& destination, const Matrix3& method){
 
-    m_adapted_ = ChromaticAdaptationMatrix(refWhite_, destination, method) * m_;
-    m_1_adapted_ = (ChromaticAdaptationMatrix(refWhite_, destination, method) *
-		    m_).inverse();
+    m_adapted_ = ChromaticAdaptationMatrix(refWhite_,
+					   destination,
+					   method) * m_;
+
+    m_1_adapted_ = (ChromaticAdaptationMatrix(refWhite_,
+					      destination,
+					      method) * m_).inverse();
   }
 
   const Real& gamma() const{ return gamma_; }
 
 protected:
-  BaseRGB(){ }
+  BaseRGB(const RefWhite& refWhite,
+	  Real gamma,
+	  const Matrix3& m,
+	  const Matrix3& m_adapted,
+	  const Matrix3& m_1,
+	  const Matrix3& m_1_adapted) :
+    refWhite_(refWhite),
+    gamma_(gamma),
+    m_(m),
+    m_adapted_(m_adapted),
+    m_1_(m_1),
+    m_1_adapted_(m_1_adapted){ }
+
   BaseRGB(const RefWhite& refWhite,
 	  Real gamma,
 	  const xyY& redPrimary,
 	  const xyY& greenPrimary,
-	  const xyY& bluePrimary) : refWhite_(refWhite), gamma_(gamma){
-
-    m_ = ConversionMatrix_From_RGB_To_XYZ(redPrimary.position(),
-					  greenPrimary.position(),
-					  bluePrimary.position(),
-					  refWhite_);
-
-    m_1_ = m_.inverse();
+	  const xyY& bluePrimary) :
+    refWhite_(refWhite),
+    gamma_(gamma),
+    m_(ConversionMatrix_From_RGB_To_XYZ(redPrimary.position(),
+					greenPrimary.position(),
+					bluePrimary.position(),
+					refWhite_)),
+    m_1_(m_.inverse()){
+    adapt(refWhite_, AdaptationMethod<Real>::Bradford_);
   }
 
 private:
@@ -119,9 +137,9 @@ private:
 protected:
   RefWhite refWhite_;
   Real gamma_;
-  Matrix3 m_;
+  const Matrix3 m_;
   Matrix3 m_adapted_;
-  Matrix3 m_1_;
+  const Matrix3 m_1_;
   Matrix3 m_1_adapted_;
 };
 

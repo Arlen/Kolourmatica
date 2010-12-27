@@ -43,6 +43,7 @@ class Space_ProPhotoRGB : public Space_LinearRGB<Real>{
   typedef ReferenceWhite<Real> RefWhite;
   typedef IlluminantD50<Real> D50;
   typedef Space_xyY<Real> xyY;
+  typedef Space_LinearRGB<Real> LinearRGB;
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
@@ -61,6 +62,9 @@ public:
 			  xyY(0.1596, 0.8404, 1.0),
 			  xyY(0.0366, 0.0001, 1.0),
 			  tri){ }
+
+  Space_ProPhotoRGB(const LinearRGB& other) :
+    Space_LinearRGB<Real>(other){ }
 };
 
 #endif

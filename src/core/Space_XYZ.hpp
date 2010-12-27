@@ -66,6 +66,11 @@ public:
 
   const Vector3& position() const{ return tri_; }
 
+  XYZ operator()(const Vector3& tri) const{
+
+    return XYZ(tri);
+  }
+
   XYZ operator()(const XYZ& colourSpace) const{
 
     return XYZ(colourSpace);
@@ -88,23 +93,25 @@ public:
     fz = fy - (tri(2) / 200.0);
     fxCube = fx * fx * fx;
     fzCube = fz * fz * fz;
-    if(fxCube > Constants<Real>::CIE_epsilon_){ xr = fxCube; }
-    else{
-      xr = ((116.0 * fx) - 16.0) / Constants<Real>::CIE_kappa_;
-    }
-    if(tri(0, 0) > Constants<Real>::CIE_ke_){
-      yr = pow( (tri(0) + 16.0) / 116.0, 3.0 );
-    }else{
 
+    if(fxCube > Constants<Real>::CIE_epsilon_)
+      xr = fxCube;
+    else
+      xr = ((116.0 * fx) - 16.0) / Constants<Real>::CIE_kappa_;
+
+    if(tri(0, 0) > Constants<Real>::CIE_ke_)
+      yr = pow( (tri(0) + 16.0) / 116.0, 3.0 );
+    else
       yr = tri(0) / Constants<Real>::CIE_kappa_;
-    }
-    if(fzCube > Constants<Real>::CIE_epsilon_){ zr = fzCube; }
-    else{
+
+    if(fzCube > Constants<Real>::CIE_epsilon_)
+      zr = fzCube;
+    else
       zr = ((116.0 * fz) - 16.0) / Constants<Real>::CIE_kappa_;
-    }
+
     return XYZ(xr * GRW::value_.position()(0),
-    	       yr * GRW::value_.position()(1),
-    	       zr * GRW::value_.position()(2));
+	       yr * GRW::value_.position()(1),
+	       zr * GRW::value_.position()(2));
   }
 
   XYZ operator()(const LCHab& colourSpace) const{
@@ -127,8 +134,7 @@ public:
    
     b = -5.0 * y;
     d = (((39.0 * tri(0)) /
-	  (tri(2) + 13.0 * tri(0) * vo)) - 5.0) *
-      y;
+	  (tri(2) + 13.0 * tri(0) * vo)) - 5.0) * y;
     x = (d - b) / (a - c);
     z = x * a + b;
     return XYZ(x, y, z);
@@ -145,7 +151,7 @@ public:
     tri(0) = pow(colourSpace.position()(0), colourSpace.gamma());
     tri(1) = pow(colourSpace.position()(1), colourSpace.gamma());
     tri(2) = pow(colourSpace.position()(2), colourSpace.gamma());
-    return XYZ(colourSpace.m() * tri);
+    return XYZ(colourSpace.m_adapted() * tri);
   }
 
   XYZ operator()(const sRGB& colourSpace) const{
@@ -169,7 +175,7 @@ public:
     else
       tri(2) = colourSpace.position()(2) / 12.92f;
 
-    return XYZ(colourSpace.m() * tri);
+    return XYZ(colourSpace.m_adapted() * tri);
   }
 
 private:

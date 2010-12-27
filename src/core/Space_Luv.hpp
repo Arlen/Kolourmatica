@@ -66,6 +66,11 @@ public:
 
   const Vector3& position() const{ return tri_; }
 
+  Luv operator()(const Vector3& tri) const{
+
+    return Luv(tri);
+  }
+
   Luv operator()(const XYZ& colourSpace) const{
 
     const Vector3& tri = colourSpace.position();

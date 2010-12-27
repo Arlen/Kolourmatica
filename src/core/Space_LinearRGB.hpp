@@ -62,12 +62,19 @@ class Space_LinearRGB : public BaseRGB<Real>{
 public:
   const Vector3& position() const{ return tri_; }
 
+  LinearRGB operator()(const Vector3& tri) const{
+
+    LinearRGB tmp(*this);
+    tmp.tri_ = tri;
+    return tmp;
+  }
+
   LinearRGB operator()(const XYZ& colourSpace) const{
 
     LinearRGB tmp(*this);
     Vector3 rgb;
     Real p = 1.0 / gamma_;
-    rgb = m_1_ * colourSpace.position();
+    rgb = m_1_adapted_ * colourSpace.position();
     rgb(0) = pow(rgb(0), p);
     rgb(1) = pow(rgb(1), p);
     rgb(2) = pow(rgb(2), p);
@@ -192,14 +199,14 @@ protected:
     BaseRGB<Real>(rw, gamma, redPrimary, greenPrimary, bluePrimary),
     tri_(operator()(colourSpace).tri_){ }
 
-  Space_LinearRGB(const LinearRGB& other) : BaseRGB<Real>(){
+  Space_LinearRGB(const LinearRGB& other) :
+    BaseRGB<Real>(other.refWhite_,
+		  other.gamma_,
+		  other.m_,
+		  other.m_adapted_,
+		  other.m_1_,
+		  other.m_1_adapted_){
 
-    refWhite_ = other.refWhite_;
-    gamma_ = other.gamma_;
-    m_ = other.m_;
-    m_adapted_ = other.m_adapted_;
-    m_1_ = other.m_1_;
-    m_1_adapted_ = other.m_1_adapted_;
     tri_ = other.tri_;
   }
 

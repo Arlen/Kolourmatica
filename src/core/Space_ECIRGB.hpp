@@ -43,6 +43,7 @@ class Space_ECIRGB : public Space_LinearRGB<Real>{
   typedef ReferenceWhite<Real> RefWhite;
   typedef IlluminantD50<Real> D50;
   typedef Space_xyY<Real> xyY;
+  typedef Space_LinearRGB<Real> LinearRGB;
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
@@ -61,6 +62,9 @@ public:
 			  xyY(0.21, 0.71, 1.0),
 			  xyY(0.14, 0.08, 1.0),
 			  tri){ }
+
+  Space_ECIRGB(const LinearRGB& other) :
+    Space_LinearRGB<Real>(other){ }
 };
 
 #endif

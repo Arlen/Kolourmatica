@@ -55,16 +55,10 @@
 #include <boost/array.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/fusion/container/list/cons.hpp>
-#include <boost/fusion/include/cons.hpp>
-#include <boost/fusion/include/for_each.hpp>
-
-#include <vector>
 
 using boost::tuple;
 using boost::array;
-using boost::fusion::for_each;
 using boost::fusion::cons;
-using std::vector;
 
 
 class Viewer;
@@ -79,26 +73,29 @@ class QLineEdit;
 class QComboBox;
 class QLabel;
 
-enum{
-  CSXYZ = 0, CSxyY, CSLab, CSLCHab, CSLuv, CSLCHuv, CSAdobeRGB,
-  CSAppleRGB, CSBestRGB, CSBetaRGB, CSBruceRGB, CSCIERGB,
-  CSColorMatchRGB, CSDonRGB4, CSECIRGB, CSEktaSpacePS5, CSNTSCRGB,
-  CSPALSECAMRGB, CSProPhotoRGB, CSSMPTECRGB, CSsRGB, CSWideGamutRGB
-};
 
 class ConversionConsole : public QWidget{
 
   Q_OBJECT
 
-  public:
+public:
+  
+  enum{
+    CSXYZ = 0, CSxyY, CSLab, CSLCHab, CSLuv, CSLCHuv, CSAdobeRGB, CSAppleRGB,
+    CSBestRGB, CSBetaRGB, CSBruceRGB, CSCIERGB, CSColorMatchRGB, CSDonRGB4,
+    CSECIRGB, CSEktaSpacePS5, CSNTSCRGB, CSPALSECAMRGB, CSProPhotoRGB,
+    CSSMPTECRGB, CSsRGB, CSWideGamutRGB
+  };
+  
   ConversionConsole();
   void setViewer(Viewer* pViewer);
 
 private:
-  typedef boost::tuple<QPushButton*, QLineEdit*, QLineEdit*, QLineEdit*> InputLine;
-  typedef boost::array<InputLine, 22> InputLines;
+  typedef tuple<QPushButton*, QLineEdit*, QLineEdit*, QLineEdit*> InputLine;
+  typedef array<InputLine, 22> InputLines;
   typedef double Real;
 
+  typedef GlobalReferenceWhite<Real> GRW;
   typedef Space_XYZ<Real> XYZ;
   typedef Space_xyY<Real> xyY;
   typedef Space_Lab<Real> Lab;
@@ -127,29 +124,26 @@ private:
   	  cons<BruceRGB, cons<CIERGB, cons<ColorMatchRGB, cons<DonRGB4,
   	  cons<ECIRGB, cons<EktaSpacePS5, cons<NTSCRGB, cons<PAL_SECAMRGB,
   	  cons<ProPhotoRGB, cons<SMPTE_CRGB, cons<sRGB, cons<WideGamutRGB
-  	  > > > > > > > > > > > > > > > > > > > > > > ColorSpaces;
-
-
+  	  > > > > > > > > > > > > > > > > > > > > > > ColourSpaces;
 
   void initWidgets();
   void clearInputs();
   void connectConversionButtons();
   Vector3d readSource(int index);
   void writeResults(std::vector<Eigen::Vector3d>& results);
-  
-  void connectWorkingColorSpaceButton();
-  void connectSystemColorSpaceButton();
+  void connectWorkingColourSpaceButton();
+  void connectSystemColourSpaceButton();
   void connectRefWhiteButton();
   void connectAdaptationButton();
   void setDoubleValidator(QLineEdit* const pLineEdit);
 
-  QStringList colorSpaces_;
+  QStringList colourSpaces_;
   QStringList referenceWhites_;
 
-  QLabel* pWorkingColorSpace_;
-  QComboBox* pWorkingColorSpaces_;
-  QLabel* pSystemColorSpace_;
-  QComboBox* pSystemColorSpaces_;
+  QLabel* pWorkingColourSpace_;
+  QComboBox* pWorkingColourSpaces_;
+  QLabel* pSystemColourSpace_;
+  QComboBox* pSystemColourSpaces_;
   QLabel* pReferenceWhite_;
   QComboBox* pReferenceWhites_;
   QLabel* pChromaticAdaptation_;
@@ -157,9 +151,9 @@ private:
 
   InputLines inputLines_;
   int convertingFrom_;
-  int workingColorSpace_;
-  int systemColorSpace_;
-  //ReferenceWhite<double> refWhite_;
+  int workingColourSpace_;
+  int systemColourSpace_;
+  ReferenceWhite<double> refWhite_;
   Matrix<double, 3, 3> adaptationMethod_;
 
   QVBoxLayout* pLayout0_;
@@ -167,11 +161,9 @@ private:
   QGridLayout* pLayout1B_;
   QScrollArea* pScrollArea_;
   //Viewer* pViewer_;
-  
  
   Vector3d input_;
-  //Vector3d output_;
-  ColorSpaces allColorSpaces_;
+  ColourSpaces allColourSpaces_;
   
 private slots:
   void convertFrom_XYZ_To_all();
@@ -196,8 +188,8 @@ private slots:
   void convertFrom_SMPTEC_To_all();
   void convertFrom_sRGB_To_all();
   void convertFrom_WideGamut_To_all();
-  void setWorkingColorSpace(int);
-  void setSystemColorSpace(int);
+  void setWorkingColourSpace(int);
+  void setSystemColourSpace(int);
   void setRefWhite(int);
   void setAdaptationMethod(int);
 };

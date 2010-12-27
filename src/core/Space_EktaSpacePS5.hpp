@@ -43,6 +43,7 @@ class Space_EktaSpacePS5 : public Space_LinearRGB<Real>{
   typedef ReferenceWhite<Real> RefWhite;
   typedef IlluminantD50<Real> D50;
   typedef Space_xyY<Real> xyY;
+  typedef Space_LinearRGB<Real> LinearRGB;
   typedef Matrix<Real, 3, 1> Vector3;
 
 public:
@@ -61,6 +62,9 @@ public:
 			  xyY(0.260, 0.700, 1.0),
 			  xyY(0.110, 0.005, 1.0),
 			  tri){ }
+
+  Space_EktaSpacePS5(const LinearRGB& other) :
+    Space_LinearRGB<Real>(other){ }
 };
 
 #endif

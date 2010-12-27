@@ -280,7 +280,7 @@ public:
     return *this;
   }
 
-  void setReferenceWhite(const BaseIllum& illum){
+  void setIlluminant(const BaseIllum& illum){
 
     BaseIllum* old = illum.clone();
     std::swap(pRefWhite_, old);
@@ -292,7 +292,7 @@ public:
       delete pRefWhite_;
   }
 
-  const Vector3& position() const{ return pRefWhite_->position(); }
+  Vector3 position() const{ return pRefWhite_->position(); }
 
 private:
   BaseIllum* pRefWhite_;
