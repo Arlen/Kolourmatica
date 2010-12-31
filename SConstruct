@@ -11,7 +11,7 @@ print "\t\t---===== Build programe: running =====---\n"
 
 #############  M O C  ##############
 os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
-
+os.system('moc -o ./src/moc/moc_View.cpp  ./src/gui/view/View.hpp')
 
 ###########  F L A G S  ############
 env = Environment()
@@ -32,7 +32,7 @@ else:
 
 ###########  F I L E S  ############
 core_source = Glob('./src/core/*.cpp')
-gui_source  = Glob('./src/gui/*.cpp')
+gui_source  = Glob('./src/gui/*.cpp') + Glob('./src/gui/view/*.cpp')
 moc_source  = Glob('./src/moc/*.cpp')
 
 

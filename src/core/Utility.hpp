@@ -52,4 +52,29 @@ struct Constants{
   static const Real angle_ = Real(180) / pi_;
 };
 
+enum{
+  CSXYZ = 0,
+  CSxyY,
+  CSLab,
+  CSLCHab,
+  CSLuv,
+  CSLCHuv,
+  CSAdobeRGB,
+  CSAppleRGB,
+  CSBestRGB,
+  CSBetaRGB,
+  CSBruceRGB,
+  CSCIERGB,
+  CSColorMatchRGB,
+  CSDonRGB4,
+  CSECIRGB,
+  CSEktaSpacePS5,
+  CSNTSCRGB,
+  CSPALSECAMRGB,
+  CSProPhotoRGB,
+  CSSMPTECRGB,
+  CSsRGB,
+  CSWideGamutRGB
+};
+  
 #endif

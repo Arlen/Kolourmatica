@@ -61,7 +61,7 @@ using boost::array;
 using boost::fusion::cons;
 
 
-class Viewer;
+class View;
 
 class QVBoxLayout;
 class QHBoxLayout;
@@ -79,16 +79,8 @@ class ConversionConsole : public QWidget{
   Q_OBJECT
 
 public:
-  
-  enum{
-    CSXYZ = 0, CSxyY, CSLab, CSLCHab, CSLuv, CSLCHuv, CSAdobeRGB, CSAppleRGB,
-    CSBestRGB, CSBetaRGB, CSBruceRGB, CSCIERGB, CSColorMatchRGB, CSDonRGB4,
-    CSECIRGB, CSEktaSpacePS5, CSNTSCRGB, CSPALSECAMRGB, CSProPhotoRGB,
-    CSSMPTECRGB, CSsRGB, CSWideGamutRGB
-  };
-  
   ConversionConsole();
-  void setViewer(Viewer* pViewer);
+  void setViewer(View* const pView);
 
 private:
   typedef tuple<QPushButton*, QLineEdit*, QLineEdit*, QLineEdit*> InputLine;
@@ -131,8 +123,6 @@ private:
   void connectConversionButtons();
   Vector3d readSource(int index);
   void writeResults(std::vector<Eigen::Vector3d>& results);
-  void connectWorkingColourSpaceButton();
-  void connectSystemColourSpaceButton();
   void connectRefWhiteButton();
   void connectAdaptationButton();
   void setDoubleValidator(QLineEdit* const pLineEdit);
@@ -149,20 +139,22 @@ private:
   QLabel* pChromaticAdaptation_;
   QComboBox* pChromaticAdaptations_;
 
-  InputLines inputLines_;
+  QVBoxLayout* pLayoutA_;
+  QHBoxLayout* pLayoutB1_;
+  QGridLayout* pLayoutC1_;
+  QScrollArea* pScrollArea_;
+  View* pView_;
+
+  ReferenceWhite<Real> refWhite_;
+
   int convertingFrom_;
   int workingColourSpace_;
   int systemColourSpace_;
-  ReferenceWhite<double> refWhite_;
-  Matrix<double, 3, 3> adaptationMethod_;
 
-  QVBoxLayout* pLayout0_;
-  QHBoxLayout* pLayout1A_;
-  QGridLayout* pLayout1B_;
-  QScrollArea* pScrollArea_;
-  //Viewer* pViewer_;
- 
+  Matrix<Real, 3, 3> adaptationMethod_;
   Vector3d input_;
+
+  InputLines inputLines_;
   ColourSpaces allColourSpaces_;
   
 private slots:
@@ -188,8 +180,6 @@ private slots:
   void convertFrom_SMPTEC_To_all();
   void convertFrom_sRGB_To_all();
   void convertFrom_WideGamut_To_all();
-  void setWorkingColourSpace(int);
-  void setSystemColourSpace(int);
   void setRefWhite(int);
   void setAdaptationMethod(int);
 };

@@ -19,31 +19,44 @@
 |************************************************************************/
 
 
-#ifndef MAINWINDOW_HPP
-#define MAINWINDOW_HPP
-
-#include <QtGui/QWidget>
-
-class ConversionConsole;
-class View;
-
-class QVBoxLayout;
-class QSplitter;
-class QTabWidget;
+#ifndef RENDER_HPP
+#define RENDER_HPP
 
 
-class MainWindow : public QWidget{
+#include <QtGui/QGraphicsWidget>
+
+
+class Render : public QGraphicsWidget{
+
 
 public:
-  MainWindow();
+  Render();
+
+  void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+
+protected:
+  void resizeEvent(QGraphicsSceneResizeEvent* event);
+  void mousePressEvent(QGraphicsSceneMouseEvent* event);
+  void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
+
+  void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
+  void hoverMoveEvent (QGraphicsSceneHoverEvent* event);
+
 
 private:
-  void initWidgets();
+  void paintResizeHandle(qreal len, qreal gap, qreal width, QPainter* painter);
 
-  QVBoxLayout* pMainLayout_;
-  QSplitter* pSplitter_;
-  ConversionConsole* pConversion_;
-  View* pView_;
+  qreal resizeHandleWidth_;
+  qreal resizeHandleLength_;
+  qreal resizeHandleGap_;
+  unsigned int resizeFlags_;
+  bool showResizeHandle_;
+
+  enum {Left = 0x1, Top = 0x2, Right = 0x4, Bottom = 0x8};
 };
+
+
 
 #endif

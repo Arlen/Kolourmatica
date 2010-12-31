@@ -19,31 +19,59 @@
 |************************************************************************/
 
 
-#ifndef MAINWINDOW_HPP
-#define MAINWINDOW_HPP
+#ifndef VIEW_HPP
+#define VIEW_HPP
 
 #include <QtGui/QWidget>
 
-class ConversionConsole;
-class View;
 
+class Render;
+
+class QHBoxLayout;
 class QVBoxLayout;
-class QSplitter;
-class QTabWidget;
+class QComboBox;
+class QLabel;
+class QGraphicsScene;
+class QGraphicsView;
 
 
-class MainWindow : public QWidget{
+class View : public QWidget{
+
+Q_OBJECT
 
 public:
-  MainWindow();
+  View();
+  void initialize(int wcs, int scs, int rw, int am);
+
+public slots:
+  void setWorkingColourSpace(int wcs);
+  void setSystemColourSpace(int scs);
+  void setReferenceWhite(int rw);
+  void setAdaptationMethod(int am);
 
 private:
   void initWidgets();
+  void connectOptionsWidgets();
 
-  QVBoxLayout* pMainLayout_;
-  QSplitter* pSplitter_;
-  ConversionConsole* pConversion_;
-  View* pView_;
+  QVBoxLayout* pLayoutA_;
+  QHBoxLayout* pLayoutB1_;
+
+  QLabel* pPrecision_;
+  QComboBox* pPrecisionOptions_;
+  QLabel* pAccuracy_;
+  QComboBox* pAccuracyOptions_;
+  QLabel* pCamera_;
+  QComboBox* pCameraOptions_;
+
+  QGraphicsScene* pScene_;
+  QGraphicsView* pView_;
+
+  Render* pRenderer_;
+
+private slots:
+  void setPrecision(int precision);
+  void setAccuracy(const QString& accuracy);
+  void setCamera(int camera);
 };
 
 #endif

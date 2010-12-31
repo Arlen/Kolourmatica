@@ -20,7 +20,7 @@
 
 
 #include "ConversionConsole.hpp"
-//#include "Viewer.hpp"
+#include "view/View.hpp"
 
 #include <QtGui/QDoubleValidator>
 #include <QtCore/QStringList>
@@ -60,43 +60,50 @@ ConversionConsole::ConversionConsole() : QWidget(){
 
   referenceWhites_ << "A" << "B" << "C" << "D50" << "D55" << "D65"
 		   << "D75" << "E" << "F2" << "F7" << "F11";
-  //pViewer_ = 0;
+  pView_ = 0;
   initWidgets();
   connectConversionButtons();
-  connectWorkingColourSpaceButton();
-  connectSystemColourSpaceButton();
   connectRefWhiteButton();
   connectAdaptationButton();
 }
 
+void ConversionConsole::setViewer(View* const v){
 
-/* private */
-void ConversionConsole::setViewer(Viewer* pViewer){
+  if(v){
+    pView_ = v;
+    QObject::connect(pWorkingColourSpaces_, SIGNAL(currentIndexChanged(int)),
+		     pView_, SLOT(setWorkingColourSpace(int)));
+    QObject::connect(pSystemColourSpaces_, SIGNAL(currentIndexChanged(int)),
+		     pView_, SLOT(setSystemColourSpace(int)));
+    QObject::connect(pReferenceWhites_, SIGNAL(currentIndexChanged(int)),
+		     pView_, SLOT(setReferenceWhite(int)));
+    QObject::connect(pChromaticAdaptations_, SIGNAL(currentIndexChanged(int)),
+		     pView_, SLOT(setAdaptationMethod(int)));
 
-  // if(pViewer){
-  //   pViewer_ = pViewer;
-  //   pViewer_->SetWorkingColourSpace(workingColourSpace_);
-  //   pViewer_->SetSystemColourSpace(systemColourSpace_);
-  //   pViewer_->SetReferenceWhite(refWhite_);
-  //   pViewer_->SetAdaptationMethod(adaptationMethod_);
-  // }
+    pView_->initialize(pWorkingColourSpaces_->currentIndex(),
+		       pSystemColourSpaces_->currentIndex(),
+		       pReferenceWhites_->currentIndex(),
+		       pChromaticAdaptations_->currentIndex());
+  }
 }
 
+
+/* private */
 void ConversionConsole::initWidgets(){
 
   QWidget* pWidget = new QWidget;
 
-  pLayout0_ = new QVBoxLayout(this);
-  pLayout0_->setContentsMargins(0, 0, 0, 0);
-  pLayout0_->setSpacing(0);
+  pLayoutA_ = new QVBoxLayout(this);
+  pLayoutA_->setContentsMargins(0, 0, 0, 0);
+  pLayoutA_->setSpacing(0);
 
-  pLayout1A_ = new QHBoxLayout;
-  pLayout1A_->setContentsMargins(0, 0, 0, 0);
-  pLayout1A_->setSpacing(1);
+  pLayoutB1_ = new QHBoxLayout;
+  pLayoutB1_->setContentsMargins(0, 0, 0, 0);
+  pLayoutB1_->setSpacing(1);
 
-  pLayout1B_ = new QGridLayout(pWidget);
-  pLayout1B_->setContentsMargins(0, 2, 0, 2);
-  pLayout1B_->setSpacing(1);
+  pLayoutC1_ = new QGridLayout(pWidget);
+  pLayoutC1_->setContentsMargins(0, 2, 0, 2);
+  pLayoutC1_->setSpacing(1);
 
   pScrollArea_ = new QScrollArea;
   pScrollArea_->setFrameShape(QFrame::Panel);
@@ -104,16 +111,16 @@ void ConversionConsole::initWidgets(){
   pScrollArea_->setAlignment(Qt::AlignHCenter);
   pScrollArea_->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
-  pLayout0_->addLayout(pLayout1A_);
-  pLayout0_->addWidget(pScrollArea_);
+  pLayoutA_->addLayout(pLayoutB1_);
+  pLayoutA_->addWidget(pScrollArea_);
 
-  pWorkingColourSpace_   = new QLabel("  Working Colour Space ");
-  pSystemColourSpace_    = new QLabel("  System Colour Space ");
+  pWorkingColourSpace_  = new QLabel("  Working Colour Space ");
+  pSystemColourSpace_   = new QLabel("  System Colour Space ");
   pReferenceWhite_      = new QLabel("  Reference White ");
   pChromaticAdaptation_ = new QLabel("  Chromatic Adaptation ");
 
-  pWorkingColourSpaces_   = new QComboBox;
-  pSystemColourSpaces_    = new QComboBox;
+  pWorkingColourSpaces_  = new QComboBox;
+  pSystemColourSpaces_   = new QComboBox;
   pReferenceWhites_      = new QComboBox;
   pChromaticAdaptations_ = new QComboBox;
 
@@ -130,18 +137,18 @@ void ConversionConsole::initWidgets(){
   pChromaticAdaptations_->addItem("Von Kries");
   pChromaticAdaptations_->addItem("Bradford");
 
-  pLayout1A_->addWidget(pWorkingColourSpace_);
-  pLayout1A_->addWidget(pWorkingColourSpaces_);
+  pLayoutB1_->addWidget(pWorkingColourSpace_);
+  pLayoutB1_->addWidget(pWorkingColourSpaces_);
 
-  pLayout1A_->addWidget(pSystemColourSpace_);
-  pLayout1A_->addWidget(pSystemColourSpaces_);
+  pLayoutB1_->addWidget(pSystemColourSpace_);
+  pLayoutB1_->addWidget(pSystemColourSpaces_);
 
-  pLayout1A_->addWidget(pReferenceWhite_);
-  pLayout1A_->addWidget(pReferenceWhites_);
+  pLayoutB1_->addWidget(pReferenceWhite_);
+  pLayoutB1_->addWidget(pReferenceWhites_);
 
-  pLayout1A_->addWidget(pChromaticAdaptation_);
-  pLayout1A_->addWidget(pChromaticAdaptations_);
-  pLayout1A_->addItem(new QSpacerItem(1, 1,
+  pLayoutB1_->addWidget(pChromaticAdaptation_);
+  pLayoutB1_->addWidget(pChromaticAdaptations_);
+  pLayoutB1_->addItem(new QSpacerItem(1, 1,
   				      QSizePolicy::MinimumExpanding,
   				      QSizePolicy::Ignored));
 
@@ -151,7 +158,7 @@ void ConversionConsole::initWidgets(){
     ++i;
   }
 
-  int col = 0;
+  int row = 0;
   BOOST_FOREACH(InputLine& rL, inputLines_){
     rL.get<0>()->setFixedSize(144, 24);
     rL.get<1>() = new QLineEdit;
@@ -164,17 +171,17 @@ void ConversionConsole::initWidgets(){
     rL.get<3>()->setFixedSize(128, 24);
     setDoubleValidator(rL.get<3>());
 
-    pLayout1B_->addItem(new QSpacerItem(128, 1,
+    pLayoutC1_->addItem(new QSpacerItem(128, 1,
 					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Ignored), col, 0);
-    pLayout1B_->addWidget(rL.get<0>(), col, 1);
-    pLayout1B_->addWidget(rL.get<1>(), col, 2);
-    pLayout1B_->addWidget(rL.get<2>(), col, 3);
-    pLayout1B_->addWidget(rL.get<3>(), col, 4);
-    pLayout1B_->addItem(new QSpacerItem(128, 1,
+					QSizePolicy::Ignored), row, 0);
+    pLayoutC1_->addWidget(rL.get<0>(), row, 1);
+    pLayoutC1_->addWidget(rL.get<1>(), row, 2);
+    pLayoutC1_->addWidget(rL.get<2>(), row, 3);
+    pLayoutC1_->addWidget(rL.get<3>(), row, 4);
+    pLayoutC1_->addItem(new QSpacerItem(128, 1,
 					QSizePolicy::MinimumExpanding,
-					QSizePolicy::Ignored), col, 5);
-    ++col;
+					QSizePolicy::Ignored), row, 5);
+    ++row;
   }
 
   clearInputs();
@@ -184,7 +191,7 @@ void ConversionConsole::initWidgets(){
   pChromaticAdaptations_->setCurrentIndex(2);
 
   pScrollArea_->setWidget(pWidget);
-  pLayout0_->setStretch(1, 1);
+  pLayoutA_->setStretch(1, 1);
 }
 
 void ConversionConsole::clearInputs(){
@@ -260,22 +267,6 @@ void ConversionConsole::writeResults(std::vector<Eigen::Vector3d>& results){
     rL.get<3>()->setText(QString::number(results[i](2), 'f', 12));
     i++;
   }
-}
-
-void ConversionConsole::connectWorkingColourSpaceButton(){
-
-  QObject::connect(pWorkingColourSpaces_,
-		   SIGNAL(currentIndexChanged(int)),
-		   this, SLOT(setWorkingColourSpace(int)));
-  setWorkingColourSpace(pWorkingColourSpaces_->currentIndex());
-}
-
-void ConversionConsole::connectSystemColourSpaceButton(){
-
-  QObject::connect(pSystemColourSpaces_,
-		   SIGNAL(currentIndexChanged(int)),
-		   this, SLOT(setSystemColourSpace(int)));
-  setSystemColourSpace(pSystemColourSpaces_->currentIndex());
 }
 
 void ConversionConsole::connectRefWhiteButton(){
@@ -516,40 +507,6 @@ void ConversionConsole::convertFrom_WideGamut_To_all(){
   writeResults(result);
 }
 
-void ConversionConsole::setWorkingColourSpace(int wcs){
-
-  int tmp = workingColourSpace_;
-  workingColourSpace_ = wcs;
-
-  if(workingColourSpace_ == systemColourSpace_){
-    workingColourSpace_ = tmp;
-    pWorkingColourSpaces_->setCurrentIndex(workingColourSpace_);
-    return ;
-  }
-
-  // Manager::Instance().SetWorkingColourSpace(workingColourSpace_);
-  // if(pViewer_){
-  //   pViewer_->SetWorkingColourSpace(workingColourSpace_);
-  // }
-}
-
-void ConversionConsole::setSystemColourSpace(int scs){
-
-  int tmp = systemColourSpace_;
-  systemColourSpace_ = scs;
-
-  if(systemColourSpace_ == workingColourSpace_){
-    systemColourSpace_ = tmp;
-    pSystemColourSpaces_->setCurrentIndex(systemColourSpace_);
-    return;
-  }
-
-  // Manager::Instance().SetSystemColourSpace(systemColourSpace_);
-  // if(pViewer_){
-  //   pViewer_->SetSystemColourSpace(systemColourSpace_);
-  // }
-}
-
 
 struct UpdateRefWhite{
 
@@ -607,11 +564,6 @@ void ConversionConsole::setRefWhite(int r){
 	 advance_c<22>(begin(allColourSpaces_)));
 
   for_each(it, UpdateRefWhite(refWhite_, adaptationMethod_));
-
-  //Manager::Instance().SetReferenceWhite(refWhite_);
-  // if(pViewer_){
-  //   pViewer_->SetReferenceWhite(refWhite_);
-  // }
 }
 
 void ConversionConsole::setAdaptationMethod(int a){
@@ -633,9 +585,4 @@ void ConversionConsole::setAdaptationMethod(int a){
 	 advance_c<22>(begin(allColourSpaces_)));
 
   for_each(it, UpdateRefWhite(refWhite_, adaptationMethod_));
-
-  //Manager::Instance().SetAdaptationMethod(adaptationMethod_);
-  // if(pViewer_){
-  //   pViewer_->SetAdaptationMethod(adaptationMethod_);
-  // }
 }

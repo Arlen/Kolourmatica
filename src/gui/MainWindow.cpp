@@ -21,7 +21,7 @@
 
 #include "MainWindow.hpp"
 #include "ConversionConsole.hpp"
-//#include "Viewer.hpp"
+#include "view/View.hpp"
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QSplitter>
@@ -30,18 +30,18 @@
 
 MainWindow::MainWindow() : QWidget(){
 
-  InitWidgets();
+  initWidgets();
 }
 
-void MainWindow::InitWidgets(){
+void MainWindow::initWidgets(){
 
   pConversion_ = new ConversionConsole;
-  //pViewer_ = new Viewer;
-  //pConversion_->SetViewer(pViewer_);
+  pView_ = new View;
+  pConversion_->setViewer(pView_);
 
   pSplitter_ = new QSplitter(Qt::Vertical);
   pSplitter_->setHandleWidth(12);
-  //pSplitter_->addWidget(pViewer_);
+  pSplitter_->addWidget(pView_);
   pSplitter_->addWidget(pConversion_);
 
   pMainLayout_ = new QVBoxLayout(this);
