@@ -114,10 +114,10 @@ void ConversionConsole::initWidgets(){
   pLayoutA_->addLayout(pLayoutB1_);
   pLayoutA_->addWidget(pScrollArea_);
 
-  pWorkingColourSpace_  = new QLabel("  Working Colour Space ");
-  pSystemColourSpace_   = new QLabel("  System Colour Space ");
-  pReferenceWhite_      = new QLabel("  Reference White ");
-  pChromaticAdaptation_ = new QLabel("  Chromatic Adaptation ");
+  pWorkingColourSpace_  = new QLabel(" Working Colour Space ");
+  pSystemColourSpace_   = new QLabel(" System Colour Space ");
+  pReferenceWhite_      = new QLabel(" Reference White ");
+  pChromaticAdaptation_ = new QLabel(" Chromatic Adaptation ");
 
   pWorkingColourSpaces_  = new QComboBox;
   pSystemColourSpaces_   = new QComboBox;
@@ -139,12 +139,21 @@ void ConversionConsole::initWidgets(){
 
   pLayoutB1_->addWidget(pWorkingColourSpace_);
   pLayoutB1_->addWidget(pWorkingColourSpaces_);
+  pLayoutB1_->addItem(new QSpacerItem(8, 1,
+				      QSizePolicy::Fixed,
+				      QSizePolicy::Fixed));
 
   pLayoutB1_->addWidget(pSystemColourSpace_);
   pLayoutB1_->addWidget(pSystemColourSpaces_);
+  pLayoutB1_->addItem(new QSpacerItem(8, 1,
+				      QSizePolicy::Fixed,
+				      QSizePolicy::Fixed));
 
   pLayoutB1_->addWidget(pReferenceWhite_);
   pLayoutB1_->addWidget(pReferenceWhites_);
+  pLayoutB1_->addItem(new QSpacerItem(8, 1,
+				      QSizePolicy::Fixed,
+				      QSizePolicy::Fixed));
 
   pLayoutB1_->addWidget(pChromaticAdaptation_);
   pLayoutB1_->addWidget(pChromaticAdaptations_);

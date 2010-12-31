@@ -103,16 +103,22 @@ void Render::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
     setFlag(QGraphicsItem::ItemIsMovable, false);
     QRectF rec = rect();
     QPointF p = event->pos();
-    QPointF uniform1 = QPointF(qMax(p.x(), p.y()), qMax(p.x(), p.y()));
+    QPointF d = event->pos() - event->lastPos();
+    qreal max = qMax(abs(d.x()), abs(d.y()));
+    max *= (d.x() < 0 || d.y() < 0) ? -1.0 : 1.0;
 
-    if(resizeFlags_ == (Top    | Left )) rec.setTopLeft(uniform1);
+    QPointF nonUniform = event->pos();
+    QPointF uniform = QPointF(max, max);
+
+    if(resizeFlags_ == (Top    | Left )) rec.setTopLeft(rec.topLeft() + uniform);
     if(resizeFlags_ == (Top           )) rec.setTop(p.y());
-    if(resizeFlags_ == (Top    | Right)) rec.setTopRight(p);
+    if(resizeFlags_ == (Top    | Right)) rec.setTopRight(nonUniform);
     if(resizeFlags_ == (         Left )) rec.setLeft(p.x());
     if(resizeFlags_ == (         Right)) rec.setRight(p.x());
-    if(resizeFlags_ == (Bottom | Left )) rec.setBottomLeft(p);
+    if(resizeFlags_ == (Bottom | Left )) rec.setBottomLeft(nonUniform);
     if(resizeFlags_ == (Bottom        )) rec.setBottom(p.y());
-    if(resizeFlags_ == (Bottom | Right)) rec.setBottomRight(uniform1);
+    if(resizeFlags_ == (Bottom | Right)) rec.setBottomRight(rec.bottomRight() +
+							    uniform);
     setGeometry(mapToScene(rec).boundingRect());
   }
   QGraphicsWidget::mouseMoveEvent(event);
@@ -175,25 +181,31 @@ void Render::hoverMoveEvent(QGraphicsSceneHoverEvent* event){
   qreal vp2 = bl.y() - len;
 
   painter->setPen(pen);
-  /* top left end */
+  /* top left corner */
+  /* 1. top left end */
   painter->drawLine(tl.x(), tl.y(), tl.x() + len, tl.y());
-  /* top right end */
-  painter->drawLine(hp2, tr.y(), tr.x(), tr.y());
-
-  /* bottom left end*/
-  painter->drawLine(bl.x(), bl.y(), bl.x() + len, bl.y());
-  /* bottom right end */
-  painter->drawLine(hp2, br.y(), br.x(), br.y());
-
-  /* left top end */
+  /* 2. left top end */
   painter->drawLine(tl.x(), tl.y(), tl.x(), tl.y() + len);
-  /* left bottom end */
+
+  /* bottom right corner */
+  /* 1. bottom right end */
+  painter->drawLine(hp2, br.y(), br.x(), br.y());
+  /* 2. right bottom end */
+  painter->drawLine(tr.x(), vp2, tr.x(), br.y());
+
+  pen.setBrush(QBrush(QColor(0, 0, 200, 255), Qt::SolidPattern));
+  painter->setPen(pen);
+  /* bottom left corner*/
+  /* 1. bottom left end*/
+  painter->drawLine(bl.x(), bl.y(), bl.x() + len, bl.y());
+  /* 2. left bottom end */
   painter->drawLine(tl.x(), vp2, tl.x(), bl.y());
 
-  /* right top end */
+  /* top right corner */
+  /* 1. top right end */
+  painter->drawLine(hp2, tr.y(), tr.x(), tr.y());
+  /* 2. right top end */
   painter->drawLine(tr.x(), tr.y(), tr.x(), tr.y() + len);
-  /* right bottom end */
-  painter->drawLine(tr.x(), vp2, tr.x(), br.y());
 
   pen.setBrush(QBrush(QColor(200, 0, 0, 255), Qt::SolidPattern));
   painter->setPen(pen);
