@@ -111,6 +111,7 @@ private:
   unsigned imageHeight_;
   bool ready_;
   bool showResizeHandle_;
+  bool showImage_;
 
   enum {Left = 0x1, Top = 0x2, Right = 0x4, Bottom = 0x8};
 

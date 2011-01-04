@@ -43,6 +43,9 @@ Viewport::Viewport(){
 
   ready_ = false;
   abortRendering_ = false;
+  showResizeHandle_ = false;
+  showImage_ = true;
+  setMinimumSize(128, 128);
   initViewport(512.0, 512.0);
   initCamera();
 }
@@ -51,6 +54,9 @@ Viewport::Viewport(qreal w, qreal h){
 
   ready_ = false;
   abortRendering_ = false;
+  showResizeHandle_ = false;
+  showImage_ = true;
+  setMinimumSize(128, 128);
   initViewport(w, h);
   initCamera();
 }
@@ -147,9 +153,11 @@ void Viewport::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   if( showResizeHandle_ )
     paintResizeHandle(resizeHandleLength_, resizeHandleGap_,
 		      resizeHandleWidth_, painter);
-  QImage image(buffer_, 512, 512, QImage::Format_RGB32);
-  painter->drawImage(QPoint(resizeHandleWidth_, resizeHandleWidth_),
-		     image.mirrored());
+  if( showImage_ ){
+    QImage image(buffer_, 512, 512, QImage::Format_RGB32);
+    painter->drawImage(QPoint(resizeHandleWidth_, resizeHandleWidth_),
+		       image.mirrored());
+  }
 }
 
 bool Viewport::abortRendering() const{ return abortRendering_; }
@@ -158,71 +166,152 @@ int Viewport::threadCount() const{ return threadCount_; }
 
 void Viewport::mousePressEvent(QGraphicsSceneMouseEvent* event){
 
-  resizeFlags_ = 0;
-  qreal s = resizeHandleWidth_ * 4.0;
-  if(!rect().adjusted(s, s, -s, -s).contains(event->pos())){
-    qreal ext = resizeHandleGap_ + resizeHandleLength_;
-    qreal hext = (rect().width() - (ext * 2.0)) + resizeHandleGap_;
-    qreal vext = (rect().height() - (ext * 2.0)) + resizeHandleGap_;
-    QRectF r11 = rect().adjusted(0, 0, -(hext + ext), -(vext + ext));
-    QRectF r12 = rect().adjusted(ext, 0, -ext, -(vext + ext));
-    QRectF r13 = rect().adjusted(hext + ext, 0, 0, -(vext + ext));
-    QRectF r21 = rect().adjusted(0, ext, -(hext + ext), -ext);
-    QRectF r23 = rect().adjusted(hext + ext, ext, 0, -ext);
-    QRectF r31 = rect().adjusted(0, ext + vext, -(ext + hext), 0);
-    QRectF r32 = rect().adjusted(ext, ext + vext, -ext, 0);
-    QRectF r33 = rect().adjusted(ext + hext, ext + vext, 0, 0);
+  if(event->button() & Qt::LeftButton){
 
-    if(r11.contains(event->pos()))
-      resizeFlags_ = Top | Left;
-    else if(r12.contains(event->pos()))
-      resizeFlags_ = Top;
-    else if(r13.contains(event->pos()))
-      resizeFlags_ = Top | Right;
-    else if(r21.contains(event->pos()))
-      resizeFlags_ = Left;
-    else if(r23.contains(event->pos()))
-      resizeFlags_ = Right;
-    else if(r31.contains(event->pos()))
-      resizeFlags_ = Bottom | Left;
-    else if(r32.contains(event->pos()))
-      resizeFlags_ = Bottom;
-    else if(r33.contains(event->pos()))
-      resizeFlags_ = Bottom | Right;
+    resizeFlags_ = 0;
+    qreal s = resizeHandleWidth_ * 4.0;
+    if(!rect().adjusted(s, s, -s, -s).contains(event->pos())){
+
+      showImage_ = false;
+      qreal ext = resizeHandleGap_ + resizeHandleLength_;
+      qreal hext = (rect().width() - (ext * 2.0)) + resizeHandleGap_;
+      qreal vext = (rect().height() - (ext * 2.0)) + resizeHandleGap_;
+      QRectF r11 = rect().adjusted(0, 0, -(hext + ext), -(vext + ext));
+      QRectF r12 = rect().adjusted(ext, 0, -ext, -(vext + ext));
+      QRectF r13 = rect().adjusted(hext + ext, 0, 0, -(vext + ext));
+      QRectF r21 = rect().adjusted(0, ext, -(hext + ext), -ext);
+      QRectF r23 = rect().adjusted(hext + ext, ext, 0, -ext);
+      QRectF r31 = rect().adjusted(0, ext + vext, -(ext + hext), 0);
+      QRectF r32 = rect().adjusted(ext, ext + vext, -ext, 0);
+      QRectF r33 = rect().adjusted(ext + hext, ext + vext, 0, 0);
+
+      if(r11.contains(event->pos()))
+	resizeFlags_ = Top | Left;
+      else if(r12.contains(event->pos()))
+	resizeFlags_ = Top;
+      else if(r13.contains(event->pos()))
+	resizeFlags_ = Top | Right;
+      else if(r21.contains(event->pos()))
+	resizeFlags_ = Left;
+      else if(r23.contains(event->pos()))
+	resizeFlags_ = Right;
+      else if(r31.contains(event->pos()))
+	resizeFlags_ = Bottom | Left;
+      else if(r32.contains(event->pos()))
+	resizeFlags_ = Bottom;
+      else if(r33.contains(event->pos()))
+	resizeFlags_ = Bottom | Right;
+      else
+	return;
+
+      setAbortRendering(true);
+      if(thread_)
+	thread_->join();
+    }
   }
   QGraphicsWidget::mousePressEvent(event);
 }
 
 void Viewport::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
 
-  if(resizeFlags_){
-    setFlag(QGraphicsItem::ItemIsMovable, false);
-    QRectF rec = rect();
-    QPointF p = event->pos();
-    QPointF d = event->pos() - event->lastPos();
-    qreal max = qMax(abs(d.x()), abs(d.y()));
-    max *= (d.x() < 0 || d.y() < 0) ? -1.0 : 1.0;
+  if(event->buttons() & Qt::LeftButton){
+    if(resizeFlags_){
+      setFlag(QGraphicsItem::ItemIsMovable, false);
+      QRectF rec = rect();
+      QPointF p = event->pos();
+      QPointF d = event->pos() - event->lastPos();
+      qreal max = qMax(abs(d.x()), abs(d.y()));
+      max *= (d.x() < 0 || d.y() < 0) ? -1.0 : 1.0;
 
-    QPointF nonUniform = event->pos();
-    QPointF uniform = QPointF(max, max);
+      QPointF nonUniform = event->pos();
+      QPointF uniform = QPointF(max, max);
 
-    if(resizeFlags_ == (Top    | Left )) rec.setTopLeft(rec.topLeft() + uniform);
-    if(resizeFlags_ == (Top           )) rec.setTop(p.y());
-    if(resizeFlags_ == (Top    | Right)) rec.setTopRight(nonUniform);
-    if(resizeFlags_ == (         Left )) rec.setLeft(p.x());
-    if(resizeFlags_ == (         Right)) rec.setRight(p.x());
-    if(resizeFlags_ == (Bottom | Left )) rec.setBottomLeft(nonUniform);
-    if(resizeFlags_ == (Bottom        )) rec.setBottom(p.y());
-    if(resizeFlags_ == (Bottom | Right)) rec.setBottomRight(rec.bottomRight() +
-							    uniform);
-    setGeometry(mapToScene(rec).boundingRect());
+      if(resizeFlags_ == (Top    | Left ))
+	rec.setTopLeft(rec.topLeft() + uniform);
+      else if(resizeFlags_ == (Top           )) rec.setTop(p.y());
+      else if(resizeFlags_ == (Top    | Right)) rec.setTopRight(nonUniform);
+      else if(resizeFlags_ == (         Left )) rec.setLeft(p.x());
+      else if(resizeFlags_ == (         Right)) rec.setRight(p.x());
+      else if(resizeFlags_ == (Bottom | Left )) rec.setBottomLeft(nonUniform);
+      else if(resizeFlags_ == (Bottom        )) rec.setBottom(p.y());
+      else if(resizeFlags_ == (Bottom | Right))
+	rec.setBottomRight(rec.bottomRight() + uniform);
+
+      setGeometry(mapToScene(rec).boundingRect());
+    }
   }
   QGraphicsWidget::mouseMoveEvent(event);
-  setFlag(QGraphicsItem::ItemIsMovable, true);
+  if( !(flags() & QGraphicsItem::ItemIsMovable) )
+    setFlag(QGraphicsItem::ItemIsMovable, true);
 }
 
 void Viewport::mouseReleaseEvent(QGraphicsSceneMouseEvent* event){
 
+  if(event->button() == Qt::LeftButton && resizeFlags_){
+
+    QRectF rec = rect();
+    qreal offset = resizeHandleWidth_ * 2.0;
+    unsigned newWidth = (unsigned)qRound(rec.width() + offset);
+    unsigned newHeight = (unsigned)qRound(rec.height() + offset);
+
+    if(resizeFlags_ == (Top    | Left )){
+      camera_.top_ =
+	(camera_.top_ * (double)newHeight) / (double)imageHeight_;
+      camera_.left_ +=
+	camera_.right_ - ((camera_.right_ * (double)newWidth) /
+			  (double)imageWidth_);
+
+    }else if(resizeFlags_ == (Top           )){
+      camera_.top_ =
+	(camera_.top_ * (double)newHeight) / (double)imageHeight_;
+
+    }else if(resizeFlags_ == (Top    | Right)){
+      camera_.top_ =
+	(camera_.top_ * (double)newHeight) / (double)imageHeight_;
+      camera_.right_ =
+	(camera_.right_ * (double)newWidth) / (double)imageWidth_;
+
+    }else if(resizeFlags_ == (         Left )){
+      camera_.left_ +=
+	camera_.right_ - ((camera_.right_ * (double)newWidth) /
+			  (double)imageWidth_);
+
+    }else if(resizeFlags_ == (         Right)){
+      camera_.right_ =
+	(camera_.right_ * (double)newWidth) / (double)imageWidth_;
+
+    }else if(resizeFlags_ == (Bottom | Left )){
+      camera_.bottom_ +=
+	camera_.top_ - ((camera_.top_ * (double)newHeight) /
+			(double)imageHeight_);
+      camera_.left_ +=
+	camera_.right_ - ((camera_.right_ * (double)newWidth) /
+			  (double)imageWidth_);
+
+    }else if(resizeFlags_ == (Bottom        )){
+      camera_.bottom_ +=
+	camera_.top_ - ((camera_.top_ * (double)newHeight) /
+			(double)imageHeight_);
+
+    }else if(resizeFlags_ == (Bottom | Right)){
+      camera_.bottom_ +=
+	camera_.top_ - ((camera_.top_ * (double)newHeight) /
+			(double)imageHeight_);
+      camera_.right_ =
+	(camera_.right_ * (double)newWidth) / (double)imageWidth_;
+    }
+
+    imageWidth_ = newWidth;
+    imageHeight_ = newHeight;
+    cout << camera_.left_ << " <--  .  --> " << camera_.right_ << endl;
+    cout << camera_.bottom_ << " V  .  ^ " << camera_.top_ << endl << endl;
+
+    delete[] buffer_;
+    buffer_ = new unsigned char[4 * imageWidth_ * imageHeight_];
+    setAbortRendering(false);
+    if(ready_){ restartRendering(); }
+    showImage_ = true;
+  }
   QGraphicsWidget::mouseReleaseEvent(event);
 }
 
@@ -269,8 +358,8 @@ void Viewport::initViewport(qreal w, qreal h){
   qreal offset = resizeHandleWidth_ * 2.0;
   resize(w + offset, h + offset);
 
-  imageWidth_ = qRound(w);
-  imageHeight_ = qRound(h);
+  imageWidth_ = (unsigned)qRound(w);
+  imageHeight_ = (unsigned)qRound(h);
   buffer_ = new unsigned char[4 * imageWidth_ * imageHeight_];
 
   thread_ = 0;
