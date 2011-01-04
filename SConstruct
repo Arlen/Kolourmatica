@@ -10,8 +10,8 @@ time.strftime(" %I:%M:%S %p", time.localtime()), \
 print "\t\t---===== Build programe: running =====---\n"
 
 #############  M O C  ##############
-os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
-os.system('moc -o ./src/moc/moc_View.cpp  ./src/gui/view/View.hpp')
+#os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
+#os.system('moc -o ./src/moc/moc_View.cpp  ./src/gui/view/View.hpp')
 
 ###########  F L A G S  ############
 env = Environment()
@@ -26,6 +26,7 @@ elif int(gprof):
      env.Append(LINKFLAGS = '-O2 -Wall -pg -g')
 elif int(release):
      env.Append(CCFLAGS   = '-O2 -Wall -s')
+     env.Append(LINKFLAGS   = '-lboost_thread')
 else:
      env.Append(CCFLAGS   = '-O2 -Wall --verbose')
 
@@ -39,4 +40,3 @@ moc_source  = Glob('./src/moc/*.cpp')
 #########  C O N F I G S  ##########
 env.Program(target='./bin/kolourmatica', source=core_source + gui_source + moc_source)
 env.ParseConfig( 'pkg-config --cflags --libs QtGui QtCore' )
-

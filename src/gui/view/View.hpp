@@ -25,7 +25,9 @@
 #include <QtGui/QWidget>
 
 
-class Render;
+class Viewport;
+class ViewConfig;
+class ViewportConfig;
 
 class QHBoxLayout;
 class QVBoxLayout;
@@ -41,7 +43,7 @@ Q_OBJECT
 
 public:
   View();
-  void initialize(int wcs, int scs, int rw, int am);
+  void configure(const ViewConfig& vc);
 
 public slots:
   void setWorkingColourSpace(int wcs);
@@ -66,12 +68,23 @@ private:
   QGraphicsScene* pScene_;
   QGraphicsView* pView_;
 
-  Render* pRenderer_;
+  Viewport* pViewport_;
+
+  bool configured_;
 
 private slots:
   void setPrecision(int precision);
   void setAccuracy(const QString& accuracy);
   void setCamera(int camera);
+};
+
+
+struct ViewConfig{
+
+  int workingColourSpace_;
+  int systemColourSpace_;
+  int referenceWhite_;
+  int adaptationMethod_;
 };
 
 #endif

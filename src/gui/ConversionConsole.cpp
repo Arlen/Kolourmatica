@@ -80,10 +80,12 @@ void ConversionConsole::setViewer(View* const v){
     QObject::connect(pChromaticAdaptations_, SIGNAL(currentIndexChanged(int)),
 		     pView_, SLOT(setAdaptationMethod(int)));
 
-    pView_->initialize(pWorkingColourSpaces_->currentIndex(),
-		       pSystemColourSpaces_->currentIndex(),
-		       pReferenceWhites_->currentIndex(),
-		       pChromaticAdaptations_->currentIndex());
+    ViewConfig config;
+    config.workingColourSpace_ = pWorkingColourSpaces_->currentIndex();
+    config.systemColourSpace_ = pSystemColourSpaces_->currentIndex();
+    config.referenceWhite_ = pReferenceWhites_->currentIndex();
+    config.adaptationMethod_ = pChromaticAdaptations_->currentIndex();
+    pView_->configure(config);
   }
 }
 
@@ -519,16 +521,16 @@ void ConversionConsole::convertFrom_WideGamut_To_all(){
 
 struct UpdateRefWhite{
 
-  UpdateRefWhite(ReferenceWhite<double>& rw, Matrix<double, 3, 3>& ad ) :
-    rw_(&rw), ad_(&ad){ }
+  UpdateRefWhite(ReferenceWhite<double>& rw, Matrix<double, 3, 3>& am ) :
+    rw_(&rw), am_(&am){ }
 
   template <class T>
   void operator()(T& cs) const{
-    cs.adapt(*rw_, *ad_);
+    cs.adapt(*rw_, *am_);
   }
 
   ReferenceWhite<double>* rw_;
-  Matrix<double, 3, 3>* ad_;
+  Matrix<double, 3, 3>* am_;
 };
 
 void ConversionConsole::setRefWhite(int r){

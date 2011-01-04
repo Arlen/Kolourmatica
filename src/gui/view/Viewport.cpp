@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2011 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,7 +19,7 @@
 |************************************************************************/
 
 
-#include "Render.hpp"
+#include "Viewport.hpp"
 
 #include <QtGui/QGraphicsSceneResizeEvent>
 #include <QtGui/QPainter>
@@ -28,25 +28,118 @@
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsSceneMouseEvent>
 #include <QtCore/QRectF>
+#include <QtGui/QImage>
+
+#include <boost/fusion/container/vector.hpp>
+#include <boost/fusion/sequence/intrinsic/at_c.hpp>
+
+#include <unistd.h>
 
 #include <iostream>
 using namespace std;
 
 
-Render::Render(){
+Viewport::Viewport(){
 
-  resizeHandleWidth_ = 2.0;
-  resizeHandleLength_ = 32.0;
-  resizeHandleGap_ = 8.0;
-  resizeFlags_ = 0;
-  showResizeHandle_ = false;
-  setFlag(QGraphicsItem::ItemIsMovable, true);
-  setFlag(QGraphicsItem::ItemIsSelectable, true);
-  setAcceptHoverEvents(true);
-  resize(512, 512);
+  ready_ = false;
+  abortRendering_ = false;
+  initViewport(512.0, 512.0);
+  initCamera();
 }
 
-void Render::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
+Viewport::Viewport(qreal w, qreal h){
+
+  ready_ = false;
+  abortRendering_ = false;
+  initViewport(w, h);
+  initCamera();
+}
+
+void Viewport::configure(const ViewportConfig& config){
+
+  wcs_ = config.workingColourSpace_;
+  scs_ = config.systemColourSpace_;
+  setRW(config.referenceWhite_);
+  setAM(config.adaptationMethod_);
+  // = config.precision_;
+  // = config.accuracy_;
+  // = config.camera_;
+  ready_ = true;
+  restartRendering();
+}
+
+void Viewport::setWCS(int wcs){
+
+  setAbortRendering(true);
+  if(thread_){ thread_->join(); }
+  wcs_ = wcs;
+  setAbortRendering(false);
+  if(ready_){ restartRendering(); }
+}
+
+void Viewport::setSCS(int scs){
+
+  setAbortRendering(true);
+  if(thread_){ thread_->join(); }
+  scs_ = scs;
+  setAbortRendering(false);
+  if(ready_){ restartRendering(); }
+}
+
+void Viewport::setRW(int rw){
+
+  setAbortRendering(true);
+  if(thread_){ thread_->join(); }
+
+  switch(rw){
+  case 0:  rw_.setIlluminant(IlluminantA<Real>());    break;
+  case 1:  rw_.setIlluminant(IlluminantB<Real>());    break;
+  case 2:  rw_.setIlluminant(IlluminantC<Real>());    break;
+  case 3:  rw_.setIlluminant(IlluminantD50<Real>());  break;
+  case 4:  rw_.setIlluminant(IlluminantD55<Real>());  break;
+  case 5:  rw_.setIlluminant(IlluminantD65<Real>());  break;
+  case 6:  rw_.setIlluminant(IlluminantD75<Real>());  break;
+  case 7:  rw_.setIlluminant(IlluminantE<Real>());    break;
+  case 8:  rw_.setIlluminant(IlluminantF2<Real>());   break;
+  case 9:  rw_.setIlluminant(IlluminantF7<Real>());   break;
+  case 10: rw_.setIlluminant(IlluminantF11<Real>());  break;
+  default:
+    return;
+  }
+  GRW::value_ = rw_;
+  setAbortRendering(false);
+  if(ready_){ restartRendering(); }
+}
+
+void Viewport::setAM(int am){
+
+  setAbortRendering(true);
+  if(thread_){ thread_->join(); }
+
+  switch(am){
+  case 0: am_ = AdaptationMethod<Real>::XYZScaling_; break;
+  case 1: am_ = AdaptationMethod<Real>::VonKries_;   break;
+  case 2: am_ = AdaptationMethod<Real>::Bradford_;   break;
+  default:
+    return;
+  }
+  setAbortRendering(false);
+  if(ready_){ restartRendering(); }
+}
+
+void Viewport::setPrecision(int prec){
+
+}
+
+void Viewport::setAccuracy(double acc){
+
+}
+
+void Viewport::setCamera(int camera){
+
+}
+
+void Viewport::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
 		   QWidget* widget){
 
   painter->fillRect(0, 0, size().width(), size().height(), Qt::black);
@@ -54,13 +147,16 @@ void Render::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   if( showResizeHandle_ )
     paintResizeHandle(resizeHandleLength_, resizeHandleGap_,
 		      resizeHandleWidth_, painter);
+  QImage image(buffer_, 512, 512, QImage::Format_RGB32);
+  painter->drawImage(QPoint(resizeHandleWidth_, resizeHandleWidth_),
+		     image.mirrored());
 }
 
-void Render::resizeEvent(QGraphicsSceneResizeEvent* event){
+bool Viewport::abortRendering() const{ return abortRendering_; }
 
-}
+int Viewport::threadCount() const{ return threadCount_; }
 
-void Render::mousePressEvent(QGraphicsSceneMouseEvent* event){
+void Viewport::mousePressEvent(QGraphicsSceneMouseEvent* event){
 
   resizeFlags_ = 0;
   qreal s = resizeHandleWidth_ * 4.0;
@@ -97,7 +193,7 @@ void Render::mousePressEvent(QGraphicsSceneMouseEvent* event){
   QGraphicsWidget::mousePressEvent(event);
 }
 
-void Render::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
+void Viewport::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
 
   if(resizeFlags_){
     setFlag(QGraphicsItem::ItemIsMovable, false);
@@ -125,16 +221,17 @@ void Render::mouseMoveEvent(QGraphicsSceneMouseEvent* event){
   setFlag(QGraphicsItem::ItemIsMovable, true);
 }
 
-void Render::mouseReleaseEvent(QGraphicsSceneMouseEvent* event){
+void Viewport::mouseReleaseEvent(QGraphicsSceneMouseEvent* event){
 
   QGraphicsWidget::mouseReleaseEvent(event);
 }
 
-void Render::hoverEnterEvent(QGraphicsSceneHoverEvent* event){
+void Viewport::hoverEnterEvent(QGraphicsSceneHoverEvent* event){
 
+  QGraphicsWidget::hoverEnterEvent(event);
 }
 
-void Render::hoverLeaveEvent(QGraphicsSceneHoverEvent* event){
+void Viewport::hoverLeaveEvent(QGraphicsSceneHoverEvent* event){
 
   if( showResizeHandle_ ){
     showResizeHandle_ = false;
@@ -142,7 +239,7 @@ void Render::hoverLeaveEvent(QGraphicsSceneHoverEvent* event){
   }
 }
 
-void Render::hoverMoveEvent(QGraphicsSceneHoverEvent* event){
+void Viewport::hoverMoveEvent(QGraphicsSceneHoverEvent* event){
 
   qreal s = resizeHandleWidth_ * 4.0;
   if(!rect().adjusted(s, s, -s, -s).contains(event->pos())){
@@ -158,8 +255,46 @@ void Render::hoverMoveEvent(QGraphicsSceneHoverEvent* event){
 
 
 /* private */
- void Render::paintResizeHandle(qreal len, qreal gap, qreal width,
-				QPainter* painter){
+void Viewport::initViewport(qreal w, qreal h){
+
+  resizeHandleWidth_ = 2.0;
+  resizeHandleLength_ = 32.0;
+  resizeHandleGap_ = 8.0;
+  resizeFlags_ = 0;
+  showResizeHandle_ = false;
+  setFlag(QGraphicsItem::ItemIsMovable, true);
+  setFlag(QGraphicsItem::ItemIsSelectable, true);
+  setAcceptHoverEvents(true);
+
+  qreal offset = resizeHandleWidth_ * 2.0;
+  resize(w + offset, h + offset);
+
+  imageWidth_ = qRound(w);
+  imageHeight_ = qRound(h);
+  buffer_ = new unsigned char[4 * imageWidth_ * imageHeight_];
+
+  thread_ = 0;
+
+#if defined(Q_OS_MAC)
+  threadCount_ = (unsigned)MPProcessorsScheduled();
+#else
+  threadCount_ = (unsigned)sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+}
+
+void Viewport::initCamera(){
+
+  camera_.left_   = 0.0;
+  camera_.right_  = 1.0;
+  camera_.top_    = 1.0;
+  camera_.bottom_ = 0.0;
+  camera_.front_  = 1.0;
+  camera_.back_   = 0.0;
+}
+
+
+void Viewport::paintResizeHandle(qreal len, qreal gap, qreal width,
+				 QPainter* painter){
 
   painter->save();
   painter->setRenderHint(QPainter::Antialiasing);
@@ -220,3 +355,69 @@ void Render::hoverMoveEvent(QGraphicsSceneHoverEvent* event){
 
   painter->restore();
 }
+
+
+void Viewport::restartRendering(){
+
+  typedef Space_XYZ<Real> XYZ;
+  typedef Space_xyY<Real> xyY;
+  typedef Space_sRGB<Real> sRGB;
+  XYZ xyz;
+  xyY xyy;
+  sRGB srgb;
+  srgb.adapt(rw_, am_);
+
+  if( thread_ ){ thread_->join(); delete thread_; }
+  if( buffer_ ){
+    memset(buffer_, 0, 4 * 512 * 512);
+  }
+  update();
+
+  switch(wcs_){
+  case 0:{
+    switch(scs_){
+    case 20:{
+      thread_ = new boost::thread(ThreadCreator<XYZ, sRGB>
+				  (this, xyz, srgb, camera_,
+				   imageWidth_, imageHeight_));
+      break;
+    }
+    }
+    break;
+  }
+
+  case 1:{
+    switch(scs_){
+    case 20:{
+      thread_ = new boost::thread(ThreadCreator<xyY, sRGB>
+				  (this, xyy, srgb, camera_,
+				   imageWidth_, imageHeight_));
+      break;
+    }
+    }
+    break;
+  }
+  }
+
+
+}
+
+
+void Viewport::setAbortRendering(bool abort){
+
+  abortRenderingMutex_.lock();
+  abortRendering_ = abort;
+  abortRenderingMutex_.unlock();
+}
+
+
+
+
+
+
+
+
+
+
+
+

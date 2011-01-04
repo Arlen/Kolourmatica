@@ -20,7 +20,7 @@
 
 
 #include "View.hpp"
-#include "Render.hpp"
+#include "Viewport.hpp"
 
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QVBoxLayout>
@@ -31,38 +31,34 @@
 #include <QtGui/QDoubleValidator>
 
 
-View::View() : QWidget(){
+View::View(){
 
+  configured_ = false;
   initWidgets();
+  connectOptionsWidgets();
 }
 
-void View::initialize(int wcs, int scs, int rw, int am){
+void View::configure(const ViewConfig& vc){
 
+  if(!configured_){
+    ViewportConfig config;
+    config.workingColourSpace_ = vc.workingColourSpace_;
+    config.systemColourSpace_ = vc.systemColourSpace_;
+    config.referenceWhite_ = vc.referenceWhite_;
+    config.adaptationMethod_ = vc.adaptationMethod_;
+    config.precision_ = pPrecisionOptions_->currentIndex();
+    config.accuracy_ = pAccuracyOptions_->currentText().toDouble();
+    config.camera_ = pCameraOptions_->currentIndex();
+    pViewport_->configure(config);
+    configured_ = true;
+  }
 }
 
 /* public slots */
-#include <iostream>
-using namespace std;
-
-void View::setWorkingColourSpace(int wcs){
-
-  cout << "View::wcs -> " << wcs << endl;
-}
-
-void View::setSystemColourSpace(int scs){
-
-  cout << "View::scs -> " << scs << endl;
-}
-
-void View::setReferenceWhite(int rw){
-
-  cout << "View::rw -> " << rw << endl;
-}
-
-void View::setAdaptationMethod(int am){
-
-  cout << "View::am -> " << am << endl;
-}
+void View::setWorkingColourSpace(int wcs){ pViewport_->setWCS(wcs); }
+void View::setSystemColourSpace(int scs){ pViewport_->setSCS(scs); }
+void View::setReferenceWhite(int rw){ pViewport_->setRW(rw); }
+void View::setAdaptationMethod(int am){ pViewport_->setAM(am); }
 
 
 /* private */
@@ -87,7 +83,7 @@ void View::initWidgets(){
   pCameraOptions_ = new QComboBox;
 
   /* set up the widgets. */
-  pPrecisionOptions_->addItem("float");
+  pPrecisionOptions_->addItem("single");
   pPrecisionOptions_->addItem("double");
 
   pAccuracyOptions_->addItem("0.25");
@@ -102,8 +98,6 @@ void View::initWidgets(){
   pCameraOptions_->addItem("right");
   pCameraOptions_->addItem("top");
   pCameraOptions_->addItem("bottom");
-
-  connectOptionsWidgets();
 
   /* organize the options widgets. */
   pLayoutB1_->addWidget(pPrecision_);
@@ -127,8 +121,8 @@ void View::initWidgets(){
   pView_->setFrameShape(QFrame::NoFrame);
   pView_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   pView_->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-  pRenderer_ = new Render;
-  pScene_->addItem(pRenderer_);
+  pViewport_ = new Viewport;
+  pScene_->addItem(pViewport_);
 
   pLayoutA_->addLayout(pLayoutB1_);
   pLayoutA_->addWidget(pView_);
@@ -142,22 +136,16 @@ void View::connectOptionsWidgets(){
 		   this, SLOT(setAccuracy(const QString&)));
   QObject::connect(pCameraOptions_, SIGNAL(currentIndexChanged(int)),
 		   this, SLOT(setCamera(int)));
-  //initialize the values
 }
 
 
 /*private slots*/
-void View::setPrecision(int precision){
-
-  cout << "View::precision -> " << precision << endl;
-}
+void View::setPrecision(int precision){ pViewport_->setPrecision(precision); }
 
 void View::setAccuracy(const QString& accuracy){
 
-  cout << "View::accuracy -> " << accuracy.toStdString() << endl;
+  pViewport_->setAccuracy(accuracy.toDouble());
 }
 
-void View::setCamera(int camera){
+void View::setCamera(int camera){ pViewport_->setCamera(camera); }
 
-  cout << "View::camera -> " << camera << endl;
-}
