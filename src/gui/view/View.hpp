@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2011 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -58,8 +58,6 @@ private:
   QVBoxLayout* pLayoutA_;
   QHBoxLayout* pLayoutB1_;
 
-  QLabel* pPrecision_;
-  QComboBox* pPrecisionOptions_;
   QLabel* pAccuracy_;
   QComboBox* pAccuracyOptions_;
   QLabel* pCamera_;
@@ -73,7 +71,6 @@ private:
   bool configured_;
 
 private slots:
-  void setPrecision(int precision);
   void setAccuracy(const QString& accuracy);
   void setCamera(int camera);
 };

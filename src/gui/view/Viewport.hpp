@@ -67,7 +67,6 @@ public:
   void setSCS(int scs);
   void setRW(int rw);
   void setAM(int am);
-  void setPrecision(int p);
   void setAccuracy(double acc);
   void setCamera(int c);
   void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
@@ -129,7 +128,6 @@ struct ViewportConfig{
   int systemColourSpace_;
   int referenceWhite_;
   int adaptationMethod_;
-  int precision_;
   double accuracy_;
   int camera_;
 };

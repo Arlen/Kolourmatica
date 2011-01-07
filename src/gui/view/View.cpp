@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2011 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -46,7 +46,6 @@ void View::configure(const ViewConfig& vc){
     config.systemColourSpace_ = vc.systemColourSpace_;
     config.referenceWhite_ = vc.referenceWhite_;
     config.adaptationMethod_ = vc.adaptationMethod_;
-    config.precision_ = pPrecisionOptions_->currentIndex();
     config.accuracy_ = pAccuracyOptions_->currentText().toDouble();
     config.camera_ = pCameraOptions_->currentIndex();
     pViewport_->configure(config);
@@ -74,19 +73,13 @@ void View::initWidgets(){
   pLayoutB1_->setSpacing(1);
 
   /* create the widgets. */
-  pPrecision_ = new QLabel(" precision ");
   pAccuracy_ = new QLabel(" accuracy ");
   pCamera_ = new QLabel(" camera ");
 
-  pPrecisionOptions_ = new QComboBox;
   pAccuracyOptions_ = new QComboBox;
   pCameraOptions_ = new QComboBox;
 
-  /* set up the widgets. */
-  pPrecisionOptions_->addItem("single");
-  pPrecisionOptions_->addItem("double");
-
-  pAccuracyOptions_->addItem("0.25");
+  pAccuracyOptions_->addItem("0.90");
   pAccuracyOptions_->setEditable(true);
   QDoubleValidator* pValidator = new QDoubleValidator(pAccuracyOptions_);
   pValidator->setNotation(QDoubleValidator::StandardNotation);
@@ -100,11 +93,6 @@ void View::initWidgets(){
   pCameraOptions_->addItem("bottom");
 
   /* organize the options widgets. */
-  pLayoutB1_->addWidget(pPrecision_);
-  pLayoutB1_->addWidget(pPrecisionOptions_);
-  pLayoutB1_->addItem(new QSpacerItem(8, 1,
-				      QSizePolicy::Fixed,
-				      QSizePolicy::Fixed));
   pLayoutB1_->addWidget(pAccuracy_);
   pLayoutB1_->addWidget(pAccuracyOptions_);
   pLayoutB1_->addItem(new QSpacerItem(8, 1,
@@ -130,8 +118,6 @@ void View::initWidgets(){
 
 void View::connectOptionsWidgets(){
 
-  QObject::connect(pPrecisionOptions_, SIGNAL(currentIndexChanged(int)),
-		   this, SLOT(setPrecision(int)));
   QObject::connect(pAccuracyOptions_, SIGNAL(activated(const QString&)),
 		   this, SLOT(setAccuracy(const QString&)));
   QObject::connect(pCameraOptions_, SIGNAL(currentIndexChanged(int)),
@@ -140,8 +126,6 @@ void View::connectOptionsWidgets(){
 
 
 /*private slots*/
-void View::setPrecision(int precision){ pViewport_->setPrecision(precision); }
-
 void View::setAccuracy(const QString& accuracy){
 
   pViewport_->setAccuracy(accuracy.toDouble());

@@ -89,7 +89,6 @@ void Viewport::configure(const ViewportConfig& config){
   scs_ = config.systemColourSpace_;
   setRW(config.referenceWhite_);
   setAM(config.adaptationMethod_);
-  // = config.precision_;
   // = config.accuracy_;
   // = config.camera_;
   ready_ = true;
@@ -189,10 +188,6 @@ void Viewport::setAM(int am){
   }
   setAbortRendering(false);
   if(ready_){ restartRendering(); }
-}
-
-void Viewport::setPrecision(int prec){
-
 }
 
 void Viewport::setAccuracy(double acc){

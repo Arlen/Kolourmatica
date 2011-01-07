@@ -9,9 +9,11 @@ time.strftime(" %I:%M:%S %p", time.localtime()), \
 " REC:Log>"
 print "\t\t---===== Build programe: running =====---\n"
 
+
 #############  M O C  ##############
-#os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
-#os.system('moc -o ./src/moc/moc_View.cpp  ./src/gui/view/View.hpp')
+os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
+os.system('moc -o ./src/moc/moc_View.cpp  ./src/gui/view/View.hpp')
+
 
 ###########  F L A G S  ############
 env = Environment()
@@ -20,15 +22,17 @@ gprof = ARGUMENTS.get('gprof', 0)
 release = ARGUMENTS.get('release', 0)
 
 if int(valgrind):
-   env.Append(CCFLAGS   = '-O0 -Wall -g')
+     env.Append(CCFLAGS   = '-O0 -Wall -g')
+     env.Append(LINKFLAGS = '-lboost_thread')
 elif int(gprof):
-     env.Append(CCFLAGS   = '-O2 -Wall -pg -g')
-     env.Append(LINKFLAGS = '-O2 -Wall -pg -g')
+     env.Append(CCFLAGS   = '-O0 -Wall -pg -g')
+     env.Append(LINKFLAGS = '-lboost_thread')
 elif int(release):
      env.Append(CCFLAGS   = '-O2 -Wall -s')
      env.Append(LINKFLAGS   = '-lboost_thread')
 else:
-     env.Append(CCFLAGS   = '-O2 -Wall --verbose')
+     env.Append(CCFLAGS   = '-O2 -Wall -s')
+     env.Append(LINKFLAGS   = '-lboost_thread')
 
 
 ###########  F I L E S  ############
