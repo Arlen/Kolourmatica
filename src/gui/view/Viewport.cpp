@@ -154,7 +154,7 @@ void Viewport::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
     paintResizeHandle(resizeHandleLength_, resizeHandleGap_,
 		      resizeHandleWidth_, painter);
   if( showImage_ ){
-    QImage image(buffer_, 512, 512, QImage::Format_RGB32);
+    QImage image(buffer_, imageWidth_, imageHeight_, QImage::Format_RGB32);
     painter->drawImage(QPoint(resizeHandleWidth_, resizeHandleWidth_),
 		       image.mirrored());
   }
@@ -169,7 +169,7 @@ void Viewport::mousePressEvent(QGraphicsSceneMouseEvent* event){
   if(event->button() & Qt::LeftButton){
 
     resizeFlags_ = 0;
-    qreal s = resizeHandleWidth_ * 4.0;
+    qreal s = resizeHandleWidth_ * 3.0;
     if(!rect().adjusted(s, s, -s, -s).contains(event->pos())){
 
       showImage_ = false;
@@ -250,61 +250,55 @@ void Viewport::mouseReleaseEvent(QGraphicsSceneMouseEvent* event){
   if(event->button() == Qt::LeftButton && resizeFlags_){
 
     QRectF rec = rect();
-    qreal offset = resizeHandleWidth_ * 2.0;
-    unsigned newWidth = (unsigned)qRound(rec.width() + offset);
-    unsigned newHeight = (unsigned)qRound(rec.height() + offset);
+    Real offset = resizeHandleWidth_ * 2.0;
+    Real newWidthF = rec.width() - offset;
+    Real newHeightF = rec.height() - offset;
+    Real oldWidthF = (Real)imageWidth_;
+    Real oldHeightF = (Real)imageHeight_;
+
+    Real newTop = (camera_.top_ * newHeightF) / oldHeightF;
+    Real newBottom = (camera_.bottom_ * newHeightF) / oldHeightF;
+    Real newRight = (camera_.right_ * newWidthF) / oldWidthF;
+    Real newLeft  = (camera_.left_ * newWidthF) / oldWidthF;
+    Real newHDist = newRight - newLeft;
+    Real oldHDist = camera_.right_ - camera_.left_;
+    Real hOffset = newHDist - oldHDist;
+    Real newVDist = newTop - newBottom;
+    Real oldVDist = camera_.top_ - camera_.bottom_;
+    Real vOffset = newVDist - oldVDist;
+
 
     if(resizeFlags_ == (Top    | Left )){
-      camera_.top_ =
-	(camera_.top_ * (double)newHeight) / (double)imageHeight_;
-      camera_.left_ +=
-	camera_.right_ - ((camera_.right_ * (double)newWidth) /
-			  (double)imageWidth_);
+      camera_.top_ = camera_.top_ + vOffset;
+      camera_.left_ = camera_.left_ - hOffset;
 
     }else if(resizeFlags_ == (Top           )){
-      camera_.top_ =
-	(camera_.top_ * (double)newHeight) / (double)imageHeight_;
+      camera_.top_ = camera_.top_ + vOffset;
 
     }else if(resizeFlags_ == (Top    | Right)){
-      camera_.top_ =
-	(camera_.top_ * (double)newHeight) / (double)imageHeight_;
-      camera_.right_ =
-	(camera_.right_ * (double)newWidth) / (double)imageWidth_;
+      camera_.top_ = camera_.top_ + vOffset;
+      camera_.right_ = camera_.right_ + hOffset;
 
     }else if(resizeFlags_ == (         Left )){
-      camera_.left_ +=
-	camera_.right_ - ((camera_.right_ * (double)newWidth) /
-			  (double)imageWidth_);
+      camera_.left_ = camera_.left_ - hOffset;
 
     }else if(resizeFlags_ == (         Right)){
-      camera_.right_ =
-	(camera_.right_ * (double)newWidth) / (double)imageWidth_;
+      camera_.right_ = camera_.right_ + hOffset;
 
     }else if(resizeFlags_ == (Bottom | Left )){
-      camera_.bottom_ +=
-	camera_.top_ - ((camera_.top_ * (double)newHeight) /
-			(double)imageHeight_);
-      camera_.left_ +=
-	camera_.right_ - ((camera_.right_ * (double)newWidth) /
-			  (double)imageWidth_);
+      camera_.bottom_ = camera_.bottom_ - vOffset;
+      camera_.left_ = camera_.left_ - hOffset;
 
     }else if(resizeFlags_ == (Bottom        )){
-      camera_.bottom_ +=
-	camera_.top_ - ((camera_.top_ * (double)newHeight) /
-			(double)imageHeight_);
-
+      camera_.bottom_ = camera_.bottom_ - vOffset;
+ 
     }else if(resizeFlags_ == (Bottom | Right)){
-      camera_.bottom_ +=
-	camera_.top_ - ((camera_.top_ * (double)newHeight) /
-			(double)imageHeight_);
-      camera_.right_ =
-	(camera_.right_ * (double)newWidth) / (double)imageWidth_;
+      camera_.bottom_ = camera_.bottom_ - vOffset;
+      camera_.right_ = camera_.right_ + hOffset;
     }
 
-    imageWidth_ = newWidth;
-    imageHeight_ = newHeight;
-    cout << camera_.left_ << " <--  .  --> " << camera_.right_ << endl;
-    cout << camera_.bottom_ << " V  .  ^ " << camera_.top_ << endl << endl;
+    imageWidth_ = (unsigned)newWidthF;
+    imageHeight_ = (unsigned)newHeightF;
 
     delete[] buffer_;
     buffer_ = new unsigned char[4 * imageWidth_ * imageHeight_];
@@ -330,7 +324,7 @@ void Viewport::hoverLeaveEvent(QGraphicsSceneHoverEvent* event){
 
 void Viewport::hoverMoveEvent(QGraphicsSceneHoverEvent* event){
 
-  qreal s = resizeHandleWidth_ * 4.0;
+  qreal s = resizeHandleWidth_ * 3.0;
   if(!rect().adjusted(s, s, -s, -s).contains(event->pos())){
     if( !showResizeHandle_ )
       showResizeHandle_ = true;
@@ -458,11 +452,13 @@ void Viewport::restartRendering(){
 
   if( thread_ ){ thread_->join(); delete thread_; }
   if( buffer_ ){
-    memset(buffer_, 0, 4 * 512 * 512);
+    memset(buffer_, 0, 4 * imageWidth_ * imageHeight_);
   }
   update();
 
   switch(wcs_){
+
+
   case 0:{
     switch(scs_){
     case 20:{
@@ -486,9 +482,9 @@ void Viewport::restartRendering(){
     }
     break;
   }
+
+
   }
-
-
 }
 
 

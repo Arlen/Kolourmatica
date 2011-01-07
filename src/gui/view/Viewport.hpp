@@ -146,8 +146,20 @@ struct ViewportConfig{
 template <class From, class To>
 struct Renderer{
 
-  Renderer(Viewport* pViewport, From* from, To* to, unsigned segment) :
-    pViewport_(pViewport), from_(from), to_(to), segment_(segment){ }
+  Renderer(Viewport* pViewport,
+	   From* from,
+	   To* to,
+	   Camera<Real>* camera,
+	   unsigned width,
+	   unsigned height,
+	   unsigned segment) :
+    pViewport_(pViewport),
+    from_(from),
+    to_(to),
+    camera_(camera),
+    width_(width),
+    height_(height),
+    segment_(segment){ }
 
   ~Renderer(){
     if(thread_){
@@ -161,29 +173,31 @@ struct Renderer{
     Vector3d boxMin(Vector3d::Zero());
     Vector3d boxMax(Vector3d::Ones());
     Vector3d out;
-    float x, y, Y;
-    float delta = 0.01;
+    double x, y, z;
+    double delta = 0.1;
 
-    unsigned si = segment_ * 512; // w
-    y = static_cast<float>(segment_) / static_cast<float>(512);
-    Y = 1.0;
+    unsigned si = segment_ * width_;
+    y = ((static_cast<double>(segment_) * (camera_->top_ - camera_->bottom_)) /
+    	 (static_cast<double>(height_))) + camera_->bottom_;
+    z = 1.0;
 
-    for(unsigned j = 0; j < 512; ++j){  // w
-      x = static_cast<float>(j) / static_cast<float>(512);
-      Y = 1.0;
+    for(unsigned j = 0; j < width_; ++j){
+      x = ((static_cast<double>(j) * (camera_->right_ - camera_->left_)) /
+       (static_cast<double>(width_))) + camera_->left_;
+      z = 1.0;
 
       do{
-	out = to_->operator()(from_->operator()(Vector3d(x, y, Y))).position();
+	out = to_->operator()(from_->operator()(Vector3d(x, y, z))).position();
 	if( (boxMax.cwise() > out).all() ){
 	  break;
 	}
-	Y -= delta;
-      }while(Y > 0.0);
+	z -= delta;
+      }while(z > 0.0);
       if( (boxMin.cwise() > out).any() ){ out << 0, 0, 0; }
 
-      buffer[4 * (si + j)    ] = static_cast<unsigned char>(255.0 * out(2, 0));
-      buffer[4 * (si + j) + 1] = static_cast<unsigned char>(255.0 * out(1, 0));
-      buffer[4 * (si + j) + 2] = static_cast<unsigned char>(255.0 * out(0, 0));
+      buffer[4 * (si + j)    ] = static_cast<unsigned char>(255.0 * out(2));
+      buffer[4 * (si + j) + 1] = static_cast<unsigned char>(255.0 * out(1));
+      buffer[4 * (si + j) + 2] = static_cast<unsigned char>(255.0 * out(0));
     }
   }
 
@@ -198,6 +212,9 @@ struct Renderer{
   Viewport* pViewport_;
   From* from_;
   To* to_;
+  Camera<Real>* camera_;
+  unsigned width_;
+  unsigned height_;
   unsigned segment_;
   boost::thread* thread_;
 };
@@ -236,7 +253,9 @@ struct ThreadCreator{
       jobs = new Renderer<From, To>* [blockSize];
 
       for(unsigned work = 0; work < blockSize; ++work){
-	jobs[work] = new Renderer<From, To>(pViewport_, &from_, &to_, work + block);
+	jobs[work] = new Renderer<From, To>
+	  (pViewport_, &from_, &to_, &camera_,
+	   imageWidth_, imageHeight_, work + block);
 	jobs[work]->start();
       }
 
