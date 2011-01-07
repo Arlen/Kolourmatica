@@ -22,26 +22,14 @@
 #ifndef VIEWPORT_HPP
 #define VIEWPORT_HPP
 
-#include "../../core/Utility.hpp"
-#include "../../core/AdaptationMethod.hpp"
 #include "../../core/ReferenceWhite.hpp"
-#include "../../core/Space_XYZ.hpp"
-#include "../../core/Space_xyY.hpp"
-#include "../../core/Space_sRGB.hpp"
 
 #include "../../../../eigen/Eigen/Dense"
 
-
 #include <QtGui/QGraphicsWidget>
 
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/thread.hpp>
 
-#include <vector>
-#include <iostream>
-using namespace std;
-
-using boost::ptr_vector;
 using boost::thread;
 
 struct ViewportConfig;
@@ -49,6 +37,7 @@ struct ViewportConfig;
 class QImage;
 
 typedef double Real;
+
 
 template <typename Real>
 struct Camera{
@@ -59,11 +48,16 @@ struct Camera{
   Real bottom_;
   Real front_;
   Real back_;
+  Real zoom_;
+  Real rayDir_;
+  Real rayDelta_;
+  unsigned horIndex_;
+  unsigned verIndex_;
+  unsigned rayIndex_;
 };
 
 
 class Viewport : public QGraphicsWidget{
-
 
 public:
   Viewport();
@@ -80,7 +74,6 @@ public:
   bool abortRendering() const;
   int threadCount() const;
 
-
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent* event);
   void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
@@ -89,7 +82,6 @@ protected:
   void hoverEnterEvent(QGraphicsSceneHoverEvent* event);
   void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
   void hoverMoveEvent (QGraphicsSceneHoverEvent* event);
-
 
 private:
   typedef GlobalReferenceWhite<Real> GRW;
@@ -130,6 +122,7 @@ private:
   boost::mutex abortRenderingMutex_;
 };
 
+
 struct ViewportConfig{
 
   int workingColourSpace_;
@@ -140,7 +133,6 @@ struct ViewportConfig{
   double accuracy_;
   int camera_;
 };
-
 
 
 template <class From, class To>
@@ -169,31 +161,36 @@ struct Renderer{
   }
 
   void operator()(){
+
     unsigned char* const buffer = pViewport_->buffer_;
     Vector3d boxMin(Vector3d::Zero());
     Vector3d boxMax(Vector3d::Ones());
     Vector3d out;
-    double x, y, z;
-    double delta = 0.1;
-
+    Vector3d in;
+    double delta = camera_->rayDelta_ * camera_->rayDir_;
     unsigned si = segment_ * width_;
-    y = ((static_cast<double>(segment_) * (camera_->top_ - camera_->bottom_)) /
-    	 (static_cast<double>(height_))) + camera_->bottom_;
-    z = 1.0;
+
+    double segmentF = (double)segment_;
+    double vDist = camera_->top_ - camera_->bottom_;
+    double hDist = camera_->right_ - camera_->left_;
+
+    in(camera_->verIndex_) = ((segmentF * vDist) / height_) + camera_->bottom_;
 
     for(unsigned j = 0; j < width_; ++j){
-      x = ((static_cast<double>(j) * (camera_->right_ - camera_->left_)) /
-       (static_cast<double>(width_))) + camera_->left_;
-      z = 1.0;
+      in(camera_->horIndex_) = ((static_cast<double>(j) * hDist) / width_) + 
+	camera_->left_;
+      in(camera_->rayIndex_) = camera_->front_;
 
       do{
-	out = to_->operator()(from_->operator()(Vector3d(x, y, z))).position();
-	if( (boxMax.cwise() > out).all() ){
+	out = to_->operator()(from_->operator()(in)).position();
+	if( (boxMax.cwise() > out).all() )
 	  break;
-	}
-	z -= delta;
-      }while(z > 0.0);
-      if( (boxMin.cwise() > out).any() ){ out << 0, 0, 0; }
+
+	in(camera_->rayIndex_) += delta;
+      }while(in(camera_->rayIndex_) > camera_->back_);
+
+      if( (boxMin.cwise() > out).any() )
+	out << 0, 0, 0;
 
       buffer[4 * (si + j)    ] = static_cast<unsigned char>(255.0 * out(2));
       buffer[4 * (si + j) + 1] = static_cast<unsigned char>(255.0 * out(1));
@@ -213,8 +210,8 @@ struct Renderer{
   From* from_;
   To* to_;
   Camera<Real>* camera_;
-  unsigned width_;
-  unsigned height_;
+  double width_;
+  double height_;
   unsigned segment_;
   boost::thread* thread_;
 };
@@ -247,7 +244,9 @@ struct ThreadCreator{
       if(pViewport_->abortRendering()){ return; }
 
       unsigned blockSize =
-	(block + threadCount_) > imageHeight_ ? imageHeight_ % block : threadCount_;
+	(block + threadCount_) > imageHeight_ ?
+	imageHeight_ % block :
+	threadCount_;
 
       Renderer<From, To>** jobs;
       jobs = new Renderer<From, To>* [blockSize];
@@ -255,7 +254,7 @@ struct ThreadCreator{
       for(unsigned work = 0; work < blockSize; ++work){
 	jobs[work] = new Renderer<From, To>
 	  (pViewport_, &from_, &to_, &camera_,
-	   imageWidth_, imageHeight_, work + block);
+	   (double)imageWidth_, (double)imageHeight_, work + block);
 	jobs[work]->start();
       }
 
@@ -276,9 +275,6 @@ struct ThreadCreator{
   unsigned imageHeight_;
   unsigned threadCount_;
 };
-
-
-
 
 
 #endif
