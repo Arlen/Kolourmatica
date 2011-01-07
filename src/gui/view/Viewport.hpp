@@ -31,6 +31,7 @@
 #include <boost/thread.hpp>
 
 using boost::thread;
+using namespace Eigen;
 
 struct ViewportConfig;
 
@@ -161,8 +162,6 @@ struct Renderer{
   void operator()(){
 
     unsigned char* const buffer = pViewport_->buffer_;
-    Vector3d boxMin(Vector3d::Zero());
-    Vector3d boxMax(Vector3d::Ones());
     Vector3d out;
     Vector3d in;
     double delta = camera_->rayDelta_ * camera_->rayDir_;
@@ -181,13 +180,13 @@ struct Renderer{
 
       do{
 	out = to_->operator()(from_->operator()(in)).position();
-	if( (boxMax.cwise() > out).all() )
+	if( (out.array() < 1).all() )
 	  break;
 
 	in(camera_->rayIndex_) += delta;
       }while(in(camera_->rayIndex_) > camera_->back_);
 
-      if( (boxMin.cwise() > out).any() )
+      if( (out.array() < 0).any() )
 	out << 0, 0, 0;
 
       buffer[4 * (si + j)    ] = static_cast<unsigned char>(255.0 * out(2));
