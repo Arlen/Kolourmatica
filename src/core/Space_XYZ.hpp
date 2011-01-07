@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2011 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -148,9 +148,21 @@ public:
   XYZ operator()(const LinearRGB& colourSpace) const{
 
     Vector3 tri;
-    tri(0) = pow(colourSpace.position()(0), colourSpace.gamma());
-    tri(1) = pow(colourSpace.position()(1), colourSpace.gamma());
-    tri(2) = pow(colourSpace.position()(2), colourSpace.gamma());
+    if(colourSpace.position()(0) < 0.0)
+      tri(0) = pow(-colourSpace.position()(0), colourSpace.gamma()) * -1.0;
+    else
+      tri(0) = pow(colourSpace.position()(0), colourSpace.gamma());
+
+    if(colourSpace.position()(1) < 0.0)
+      tri(1) = pow(-colourSpace.position()(1), colourSpace.gamma()) * -1.0;
+    else
+      tri(1) = pow(colourSpace.position()(1), colourSpace.gamma());
+
+    if(colourSpace.position()(2) < 0.0)
+      tri(2) = pow(-colourSpace.position()(2), colourSpace.gamma()) * -1.0;
+    else
+      tri(2) = pow(colourSpace.position()(2), colourSpace.gamma());
+
     return XYZ(colourSpace.m_adapted() * tri);
   }
 

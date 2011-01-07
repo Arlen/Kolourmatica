@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2011 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -75,9 +75,22 @@ public:
     Vector3 rgb;
     Real p = 1.0 / gamma_;
     rgb = m_1_adapted_ * colourSpace.position();
-    rgb(0) = pow(rgb(0), p);
-    rgb(1) = pow(rgb(1), p);
-    rgb(2) = pow(rgb(2), p);
+
+    if(rgb(0) < 0.0)
+      rgb(0) = pow(-rgb(0), p) * -1.0;
+    else
+      rgb(0) = pow(rgb(0), p);
+
+    if(rgb(1) < 0.0)
+      rgb(1) = pow(-rgb(1), p) * -1.0;
+    else
+      rgb(1) = pow(rgb(1), p);
+
+    if(rgb(2) < 0.0)
+      rgb(2) = pow(-rgb(2), p) * -1.0; 
+    else
+      rgb(2) = pow(rgb(2), p);
+
     tmp.tri_ = rgb;
     return tmp;
   }
