@@ -11,6 +11,7 @@ print "\t\t---===== Build programe: running =====---\n"
 
 
 #############  M O C  ##############
+os.system('mkdir ./src/moc/')
 os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
 os.system('moc -o ./src/moc/moc_View.cpp  ./src/gui/view/View.hpp')
 
