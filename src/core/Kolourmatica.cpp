@@ -19,7 +19,7 @@
 |************************************************************************/
 
 
-#include "../gui/MainWindow.hpp"
+#include "MainWindow.hpp"
 
 #include <QtGui/QApplication>
 

@@ -20,7 +20,7 @@
 
 
 #include "ConversionConsole.hpp"
-#include "view/View.hpp"
+#include "View.hpp"
 
 #include <QtGui/QDoubleValidator>
 #include <QtCore/QStringList>

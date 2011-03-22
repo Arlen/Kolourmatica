@@ -22,9 +22,9 @@
 #ifndef VIEWPORT_HPP
 #define VIEWPORT_HPP
 
-#include "../../core/ReferenceWhite.hpp"
+#include "ReferenceWhite.hpp"
 
-#include "../../../../eigen/Eigen/Dense"
+#include <Eigen/Dense>
 
 #include <QtGui/QGraphicsWidget>
 

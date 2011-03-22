@@ -22,8 +22,8 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
-#include "../../../eigen/Eigen/Core"
-#include "../../../eigen/Eigen/Dense"
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 
 template <class Real>

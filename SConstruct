@@ -3,45 +3,73 @@ import sys
 import time
 import datetime
 
-print "\n\tCall trans opt: received.", \
-time.strftime(" %m-%d-%Y"   , time.localtime()), \
-time.strftime(" %I:%M:%S %p", time.localtime()), \
-" REC:Log>"
-print "\t\t---===== Build programe: running =====---\n"
+abort_build_msg = "Build program: aborting"
+
+#################  I N T R O D U C T I O N  ##################
+print "\n\tCall trans opt: received.",                       \
+time.strftime(" %m-%d-%Y", time.localtime()),                \
+time.strftime(" %H:%M:%S", time.localtime()), " REC:Log>"
+print "\t\t\tK O L O U R M A T I C A"
+print "\tBuild program: running"
 
 
-#############  M O C  ##############
-os.system('mkdir ./src/moc/')
-os.system('moc -o ./src/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
-os.system('moc -o ./src/moc/moc_View.cpp  ./src/gui/view/View.hpp')
 
-
-###########  F L A G S  ############
-env = Environment()
-valgrind = ARGUMENTS.get('valgrind', 0)
-gprof = ARGUMENTS.get('gprof', 0)
-release = ARGUMENTS.get('release', 0)
-
-if int(valgrind):
-     env.Append(CCFLAGS   = '-O0 -Wall -g')
-     env.Append(LINKFLAGS = '-lboost_thread')
-elif int(gprof):
-     env.Append(CCFLAGS   = '-O0 -Wall -pg -g')
-     env.Append(LINKFLAGS = '-lboost_thread')
-elif int(release):
-     env.Append(CCFLAGS   = '-O2 -Wall -s')
-     env.Append(LINKFLAGS   = '-lboost_thread')
+#################    B U I L D . M O D E    ##################
+mode = ARGUMENTS.get('mode', 'release')
+print "\t  build args: processed.  " + mode,
+if mode not in ['release', 'debug', 'valgrind', 'gprof']:
+   print "\t\t RTN:Error>" + "\n\t" + abort_build_msg
+   Exit(1)
 else:
-     env.Append(CCFLAGS   = '-O2 -Wall -s')
-     env.Append(LINKFLAGS   = '-lboost_thread')
+   print
 
 
-###########  F I L E S  ############
-core_source = Glob('./src/core/*.cpp')
-gui_source  = Glob('./src/gui/*.cpp') + Glob('./src/gui/view/*.cpp')
-moc_source  = Glob('./src/moc/*.cpp')
+
+#################           M O C           ##################
+moc = ARGUMENTS.get('moc', 'on')
+print "\t  moc args: processed.  " + moc,
+if moc not in ['on', 'off']:
+   print "\t\t RTN:Error>" + "\n\t" + abort_build_msg
+   Exit(1)
+elif moc == 'on':
+   if not os.path.exists('./build/moc'):
+      os.makedirs('./build/moc')
+   moc_msg = "meta object code: generated."
+   print "\n\tBuild program: compiling meta objects"
+
+   os.system('moc -o ./build/moc/moc_ConversionConsole.cpp  ./src/gui/ConversionConsole.hpp')
+   print "\t  " + moc_msg + "  ./build/moc/moc_ConversionConsole.cpp"
+
+   os.system('moc -o ./build/moc/moc_View.cpp  ./src/gui/view/View.hpp')
+   print "\t  " + moc_msg + "  ./build/moc/moc_View.cpp"
+else:
+   print
 
 
-#########  C O N F I G S  ##########
+
+#################         B U I L D         ##################
+print "\tBuild program: building\n\n"
+VariantDir('build', 'src', duplicate = 0)
+env = Environment(CPPPATH = ['#src/core', '#src/gui', '#src/gui/view'])
+
+
+if mode == 'release':
+   env.Append(CCFLAGS = '-O2 -Wall -s -DQT_NO_DEBUG_OUTPUT')
+   env.Append(LINKFLAGS   = '-lboost_thread')
+elif mode == 'debug':
+   env.Append(CCFLAGS = '-O2 -Wall -s')
+   env.Append(LINKFLAGS   = '-lboost_thread')
+elif mode == 'valgrind':
+   env.Append(CCFLAGS = ['-O0 -Wall -g'])
+   env.Append(LINKFLAGS   = '-lboost_thread')
+elif mode == 'gprof':
+   env.Append(CCFLAGS   = ['-O2 -Wall -pg -g'])
+   env.Append(LINKFLAGS = ['-O2 -Wall -pg -g -lboost_thread'])
+
+core_source = Glob('./build/core/*.cpp')
+gui_source  = Glob('./build/gui/*.cpp') + Glob('./build/gui/view/*.cpp')
+moc_source  = Glob('./build/moc/*.cpp')
+
 env.Program(target='./bin/kolourmatica', source=core_source + gui_source + moc_source)
 env.ParseConfig( 'pkg-config --cflags --libs QtGui QtCore' )
+

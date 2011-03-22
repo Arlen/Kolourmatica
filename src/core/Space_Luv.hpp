@@ -24,8 +24,8 @@
 
 #include "ForwardDeclarations.hpp"
 
-#include "../../../eigen/Eigen/Core"
-#include "../../../eigen/Eigen/Dense"
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 #include <boost/mpl/assert.hpp>
 #include <boost/type_traits/is_floating_point.hpp>

@@ -21,7 +21,7 @@
 
 #include "MainWindow.hpp"
 #include "ConversionConsole.hpp"
-#include "view/View.hpp"
+#include "View.hpp"
 
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QSplitter>
