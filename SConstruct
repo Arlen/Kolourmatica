@@ -60,16 +60,16 @@ elif mode == 'debug':
    env.Append(CCFLAGS = '-O2 -Wall -s')
    env.Append(LINKFLAGS   = '-lboost_thread')
 elif mode == 'valgrind':
-   env.Append(CCFLAGS = ['-O0 -Wall -g'])
+   env.Append(CCFLAGS = '-O0 -Wall -g')
    env.Append(LINKFLAGS   = '-lboost_thread')
 elif mode == 'gprof':
-   env.Append(CCFLAGS   = ['-O2 -Wall -pg -g'])
-   env.Append(LINKFLAGS = ['-O2 -Wall -pg -g -lboost_thread'])
+   env.Append(CCFLAGS   = '-O2 -Wall -pg -g')
+   env.Append(LINKFLAGS = '-O2 -Wall -pg -g -lboost_thread')
 
 core_source = Glob('./build/core/*.cpp')
 gui_source  = Glob('./build/gui/*.cpp') + Glob('./build/gui/view/*.cpp')
 moc_source  = Glob('./build/moc/*.cpp')
 
 env.Program(target='./bin/kolourmatica', source=core_source + gui_source + moc_source)
-env.ParseConfig( 'pkg-config --cflags --libs QtGui QtCore' )
+env.ParseConfig( 'pkg-config --cflags --libs QtGui QtCore eigen3' )
 
