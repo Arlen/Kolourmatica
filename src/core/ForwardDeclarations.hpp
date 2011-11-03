@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2011 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -22,33 +22,29 @@
 #ifndef FORWARDDECLARATIONS_HPP
 #define FORWARDDECLARATIONS_HPP
 
-template <class Real> class Space_XYZ;
-template <class Real> class Space_xyY;
-template <class Real> class Space_Lab;
-template <class Real> class Space_LCHab;
-template <class Real> class Space_Luv;
-template <class Real> class Space_LCHuv;
-template <class Real> class BaseRGB;
-template <class Real> class Space_LinearRGB;
-template <class Real> class Space_AdobeRGB;
-template <class Real> class Space_AppleRGB;
-template <class Real> class Space_BestRGB;
-template <class Real> class Space_BetaRGB;
-template <class Real> class Space_BruceRGB;
-template <class Real> class Space_CIERGB;
-template <class Real> class Space_ColorMatchRGB;
-template <class Real> class Space_DonRGB4;
-template <class Real> class Space_ECIRGB;
-template <class Real> class Space_EktaSpacePS5;
-template <class Real> class Space_NTSCRGB;
-template <class Real> class Space_PAL_SECAMRGB;
-template <class Real> class Space_ProPhotoRGB;
-template <class Real> class Space_SMPTE_CRGB;
-template <class Real> class Space_WideGamutRGB;
-template <class Real> class Space_sRGB;
-template <class Real> class ReferenceWhite;
-template <class Real> class GlobalReferenceWhite;
-//template <class Real> class IlluminantD65;
-
+template <class Real> class BaseIlluminant;
+template <class Real> class Colour_XYZ;
+template <class Real> class Colour_xyY;
+template <class Real> class Colour_Lab;
+template <class Real> class Colour_LCHab;
+template <class Real> class Colour_Luv;
+template <class Real> class Colour_LCHuv;
+template <class Real> class RGB;
+template <class Real> class Colour_AdobeRGB;
+template <class Real> class Colour_AppleRGB;
+template <class Real> class Colour_BestRGB;
+template <class Real> class Colour_BetaRGB;
+template <class Real> class Colour_BruceRGB;
+template <class Real> class Colour_CIERGB;
+template <class Real> class Colour_ColorMatchRGB;
+template <class Real> class Colour_DonRGB4;
+template <class Real> class Colour_ECIRGB;
+template <class Real> class Colour_EktaSpacePS5;
+template <class Real> class Colour_NTSCRGB;
+template <class Real> class Colour_PAL_SECAMRGB;
+template <class Real> class Colour_ProPhotoRGB;
+template <class Real> class Colour_SMPTE_CRGB;
+template <class Real> class Colour_WideGamutRGB;
+template <class Real> class Colour_sRGB;
 
 #endif
