@@ -37,24 +37,24 @@ struct AdaptationMethod{
 
   BOOST_MPL_ASSERT(( is_floating_point<Real> ));
  
-  static const Matrix<Real, 3, 3> XYZScaling_;
-  static const Matrix<Real, 3, 3> VonKries_;
-  static const Matrix<Real, 3, 3> Bradford_;
+  static const Matrix<Real, 3, 3> _XYZScaling;
+  static const Matrix<Real, 3, 3> _VonKries;
+  static const Matrix<Real, 3, 3> _Bradford;
   static const Real xyzscaling[];
   static const Real vonkries[];
   static const Real bradford[];
 };
 
 template <class Real>
-const Matrix<Real, 3, 3> AdaptationMethod<Real>::XYZScaling_ =
+const Matrix<Real, 3, 3> AdaptationMethod<Real>::_XYZScaling =
   Matrix<Real, 3, 3>(xyzscaling);
 
 template <class Real>
-const Matrix<Real, 3, 3> AdaptationMethod<Real>::VonKries_ =
+const Matrix<Real, 3, 3> AdaptationMethod<Real>::_VonKries =
   Matrix<Real, 3, 3>(vonkries);
 
 template <class Real>
-const Matrix<Real, 3, 3> AdaptationMethod<Real>::Bradford_ =
+const Matrix<Real, 3, 3> AdaptationMethod<Real>::_Bradford =
   Matrix<Real, 3, 3>(bradford);
 
 template <class Real>
