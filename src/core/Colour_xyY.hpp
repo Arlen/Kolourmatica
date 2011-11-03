@@ -48,15 +48,15 @@ class Colour_xyY : public ColourSpace<Real, Matrix<Real, 3, 1> >{
   typedef Colour_Luv<Real> Luv;
   typedef Colour_LCHuv<Real> LCHuv;
   typedef BaseIlluminant<Real> Illuminant;
-  typedef Matrix<Real, 3, 1> Vector3;
+  typedef Matrix<Real, 3, 1> Coord3;
 
 public:
-  Colour_xyY(const Vector3& tri) : ColourSpace<Real, Vector3>{tri}{ }
+  Colour_xyY(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
 
   Colour_xyY(const Real X = 1, const Real Y = 1, const Real Z = 1) :
-    ColourSpace<Real, Vector3>{Vector3(X, Y, Z)}{ }
+    ColourSpace<Real, Coord3>{Coord3(X, Y, Z)}{ }
 
-  Colour_xyY(const xyY& col) : ColourSpace<Real, Vector3>{col._coords}{ }
+  Colour_xyY(const xyY& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
   const xyY& from(const XYZ& col){

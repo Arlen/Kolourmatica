@@ -48,15 +48,15 @@ class Colour_LCHuv : public ColourSpace<Real, Matrix<Real, 3, 1> >{
   typedef Colour_Luv<Real> Luv;
   typedef Colour_LCHuv<Real> LCHuv;
   typedef BaseIlluminant<Real> Illuminant;
-  typedef Matrix<Real, 3, 1> Vector3;
+  typedef Matrix<Real, 3, 1> Coord3;
 
 public:
-  Colour_LCHuv(const Vector3& tri) : ColourSpace<Real, Vector3>{tri}{ }
+  Colour_LCHuv(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
 
   Colour_LCHuv(const Real L = 100, const Real C = 0, const Real H = 0) :
-    ColourSpace<Real, Vector3>{Vector3(L, C, H)}{ }
+    ColourSpace<Real, Coord3>{Coord3(L, C, H)}{ }
 
-  Colour_LCHuv(const LCHuv& col) : ColourSpace<Real, Vector3>{col._coords}{ }
+  Colour_LCHuv(const LCHuv& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
   const LCHuv& from(const XYZ& col, const Illuminant& rw){
