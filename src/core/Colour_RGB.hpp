@@ -86,8 +86,6 @@ public:
 template <class Real>
 class Colour_AppleRGB : public RGB<Real>{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef IlluminantD65<Real, _1931_2> D65_1931_2;
@@ -138,8 +136,6 @@ public:
 
 template <class Real>
 class Colour_BestRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
@@ -192,8 +188,6 @@ public:
 template <class Real>
 class Colour_BetaRGB : public RGB<Real>{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef IlluminantD50<Real, _1931_2> D50_1931_2;
@@ -244,8 +238,6 @@ public:
 
 template <class Real>
 class Colour_BruceRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
@@ -298,8 +290,6 @@ public:
 template <class Real>
 class Colour_CIERGB : public RGB<Real>{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef IlluminantE<Real, _1931_2> E_1931_2;
@@ -350,8 +340,6 @@ public:
 
 template <class Real>
 class Colour_ColorMatchRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
@@ -404,8 +392,6 @@ public:
 template <class Real>
 class Colour_DonRGB4 : public RGB<Real>{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef IlluminantD50<Real, _1931_2> D50_1931_2;
@@ -456,8 +442,6 @@ public:
 
 template <class Real>
 class Colour_ECIRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
@@ -510,8 +494,6 @@ public:
 template <class Real>
 class Colour_EktaSpacePS5 : public RGB<Real>{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef IlluminantD50<Real, _1931_2> D50_1931_2;
@@ -562,8 +544,6 @@ public:
 
 template <class Real>
 class Colour_NTSCRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
@@ -616,8 +596,6 @@ public:
 template <class Real>
 class Colour_PAL_SECAMRGB : public RGB<Real>{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef IlluminantD65<Real, _1931_2> D65_1931_2;
@@ -668,8 +646,6 @@ public:
 
 template <class Real>
 class Colour_ProPhotoRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
@@ -722,8 +698,6 @@ public:
 template <class Real>
 class Colour_SMPTE_CRGB : public RGB<Real>{
 
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
-
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef IlluminantD65<Real, _1931_2> D65_1931_2;
@@ -774,8 +748,6 @@ public:
 
 template <class Real>
 class Colour_WideGamutRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
@@ -875,8 +847,6 @@ Matrix<Real, 3, 1> inverse_sRGB_Companding(const Real gamma,
 
 template <class Real>
 class Colour_sRGB : public RGB<Real>{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_xyY<Real> xyY;
   typedef Matrix<Real, 3, 1> Coord3;
