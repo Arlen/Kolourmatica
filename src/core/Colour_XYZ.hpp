@@ -29,17 +29,11 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include <boost/mpl/assert.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
-
 using namespace Eigen;
-using namespace boost;
 
 
 template <class Real>
 class Colour_XYZ : public ColourSpace<Real, Matrix<Real, 3, 1> >{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
 
   typedef Colour_XYZ<Real> XYZ;
   typedef Colour_xyY<Real> xyY;
