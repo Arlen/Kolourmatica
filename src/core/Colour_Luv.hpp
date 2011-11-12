@@ -57,8 +57,8 @@ public:
 
     Real yr, up, vp, urp, vrp, L, u, v;
     yr = col[1] / rw.colour_XYZ()[1];
-    ComputeUoVo<Real, Coord3>(up, vp, col.coords());
-    ComputeUoVo<Real, Coord3>(urp, vrp, rw.colour_XYZ().coords());
+    ComputeUoVo<Real>(up, vp, col.coords());
+    ComputeUoVo<Real>(urp, vrp, rw.colour_XYZ().coords());
 
     if( yr > Constants<Real>::_cie_epsilon )
       L = 116.0 * pow(yr, 1.0/3.0) - 16.0;

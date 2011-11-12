@@ -48,7 +48,6 @@ public:
   	      xyY(0.15, 0.06, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_AdobeRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -59,7 +58,6 @@ public:
   	      xyY(0.15, 0.06, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_AdobeRGB(const Colour_AdobeRGB<Real>& col) :
@@ -70,7 +68,6 @@ public:
   	      xyY(0.15, 0.06, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_AdobeRGB<Real>& operator=(const Colour_AdobeRGB<Real>& col){
@@ -99,7 +96,6 @@ public:
 	      xyY(0.155, 0.070, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_AppleRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -110,7 +106,6 @@ public:
 	      xyY(0.155, 0.070, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_AppleRGB(const Colour_AppleRGB<Real>& col) :
@@ -121,7 +116,6 @@ public:
 	      xyY(0.155, 0.070, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_AppleRGB<Real>& operator=(const Colour_AppleRGB<Real>& col){
@@ -150,7 +144,6 @@ public:
 	      xyY(0.1300, 0.0350, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BestRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -161,7 +154,6 @@ public:
 	      xyY(0.1300, 0.0350, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BestRGB(const Colour_BestRGB<Real>& col) :
@@ -172,7 +164,6 @@ public:
 	      xyY(0.1300, 0.0350, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BestRGB<Real>& operator=(const Colour_BestRGB<Real>& col){
@@ -201,7 +192,6 @@ public:
 	      xyY(0.1265, 0.0352, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BetaRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -212,7 +202,6 @@ public:
 	      xyY(0.1265, 0.0352, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BetaRGB(const Colour_BetaRGB<Real>& col) :
@@ -223,7 +212,6 @@ public:
 	      xyY(0.1265, 0.0352, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BetaRGB<Real>& operator=(const Colour_BetaRGB<Real>& col){
@@ -252,7 +240,6 @@ public:
 	      xyY(0.15, 0.06, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BruceRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -263,7 +250,6 @@ public:
 	      xyY(0.15, 0.06, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BruceRGB(const Colour_BruceRGB<Real>& col) :
@@ -274,7 +260,6 @@ public:
 	      xyY(0.15, 0.06, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_BruceRGB<Real>& operator=(const Colour_BruceRGB<Real>& col){
@@ -303,7 +288,6 @@ public:
 	      xyY(0.167, 0.009, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_CIERGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -314,7 +298,6 @@ public:
 	      xyY(0.167, 0.009, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_CIERGB(const Colour_CIERGB<Real>& col) :
@@ -325,7 +308,6 @@ public:
 	      xyY(0.167, 0.009, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_CIERGB<Real>& operator=(const Colour_CIERGB<Real>& col){
@@ -354,7 +336,6 @@ public:
 	      xyY(0.150, 0.075, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ColorMatchRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -365,7 +346,6 @@ public:
 	      xyY(0.150, 0.075, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ColorMatchRGB(const Colour_ColorMatchRGB<Real>& col) :
@@ -376,7 +356,6 @@ public:
 	      xyY(0.150, 0.075, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ColorMatchRGB<Real>& operator=(const Colour_ColorMatchRGB<Real>& col){
@@ -405,7 +384,6 @@ public:
 	      xyY(0.130, 0.035, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_DonRGB4(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -416,7 +394,6 @@ public:
 	      xyY(0.130, 0.035, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_DonRGB4(const Colour_DonRGB4<Real>& col) :
@@ -427,7 +404,6 @@ public:
 	      xyY(0.130, 0.035, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_DonRGB4<Real>& operator=(const Colour_DonRGB4<Real>& col){
@@ -456,7 +432,6 @@ public:
 	      xyY(0.14, 0.08, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ECIRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -467,7 +442,6 @@ public:
 	      xyY(0.14, 0.08, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ECIRGB(const Colour_ECIRGB<Real>& col) :
@@ -478,7 +452,6 @@ public:
 	      xyY(0.14, 0.08, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ECIRGB<Real>& operator=(const Colour_ECIRGB<Real>& col){
@@ -507,7 +480,6 @@ public:
 	      xyY(0.110, 0.005, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_EktaSpacePS5(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -518,7 +490,6 @@ public:
 	      xyY(0.110, 0.005, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_EktaSpacePS5(const Colour_EktaSpacePS5<Real>& col) :
@@ -529,7 +500,6 @@ public:
 	      xyY(0.110, 0.005, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_EktaSpacePS5<Real>& operator=(const Colour_EktaSpacePS5<Real>& col){
@@ -558,7 +528,6 @@ public:
 	      xyY(0.14, 0.08, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_NTSCRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -569,7 +538,6 @@ public:
 	      xyY(0.14, 0.08, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_NTSCRGB(const Colour_NTSCRGB<Real>& col) :
@@ -580,7 +548,6 @@ public:
 	      xyY(0.14, 0.08, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_NTSCRGB<Real>& operator=(const Colour_NTSCRGB<Real>& col){
@@ -609,7 +576,6 @@ public:
 	      xyY(0.15, 0.06, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_PAL_SECAMRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -620,7 +586,6 @@ public:
 	      xyY(0.15, 0.06, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_PAL_SECAMRGB(const Colour_PAL_SECAMRGB<Real>& col) :
@@ -631,7 +596,6 @@ public:
 	      xyY(0.15, 0.06, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_PAL_SECAMRGB<Real>& operator=(const Colour_PAL_SECAMRGB<Real>& col){
@@ -660,7 +624,6 @@ public:
 	      xyY(0.0366, 0.0001, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ProPhotoRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -671,7 +634,6 @@ public:
 	      xyY(0.0366, 0.0001, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ProPhotoRGB(const Colour_ProPhotoRGB<Real>& col) :
@@ -682,7 +644,6 @@ public:
 	      xyY(0.0366, 0.0001, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_ProPhotoRGB<Real>& operator=(const Colour_ProPhotoRGB<Real>& col){
@@ -711,7 +672,6 @@ public:
 	      xyY(0.155, 0.070, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_SMPTE_CRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -722,7 +682,6 @@ public:
 	      xyY(0.155, 0.070, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_SMPTE_CRGB(const Colour_SMPTE_CRGB<Real>& col) :
@@ -733,7 +692,6 @@ public:
 	      xyY(0.155, 0.070, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_SMPTE_CRGB<Real>& operator=(const Colour_SMPTE_CRGB<Real>& col){
@@ -762,7 +720,6 @@ public:
 	      xyY(0.157, 0.018, 1.0),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_WideGamutRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -773,7 +730,6 @@ public:
 	      xyY(0.157, 0.018, 1.0),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_WideGamutRGB(const Colour_WideGamutRGB<Real>& col) :
@@ -784,7 +740,6 @@ public:
 	      xyY(0.157, 0.018, 1.0),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_WideGamutRGB<Real>& operator=(const Colour_WideGamutRGB<Real>& col){
@@ -866,7 +821,6 @@ public:
 	      InverseCompanding( inverse_sRGB_Companding<Real> ),
   	      tri){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_sRGB(const Real r = 1, const Real g = 1, const Real b = 1) :
@@ -879,7 +833,6 @@ public:
 	      InverseCompanding( inverse_sRGB_Companding<Real> ),
   	      Coord3(r, g, b)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_sRGB(const Colour_sRGB<Real>& col) :
@@ -892,7 +845,6 @@ public:
 	      InverseCompanding( inverse_sRGB_Companding<Real> ),
   	      Coord3(0, 0, 0)){
     RGB<Real>::_rw = &_rw;
-    adapt(_rw, AdaptationMethod<Real>::_Bradford);
   }
 
   Colour_sRGB<Real>& operator=(const Colour_sRGB<Real>& col){

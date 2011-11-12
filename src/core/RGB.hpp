@@ -25,7 +25,7 @@
 #include "ColourSpace.hpp"
 #include "ForwardDeclarations.hpp"
 #include "Illuminant.hpp"
-#include "AdaptationMethod.hpp"
+#include "ChromaticAdaptation.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -104,56 +104,50 @@ public:
 
   const Matrix3& m() const{ return _m; }
 
-  const Matrix3& m_adapted() const{ return _m_adapted; }
-
   const Matrix3& m_1() const{ return _m_1; }
 
-  const Matrix3& m_1_adapted() const{ return _m_1_adapted; }
+  const Illuminant& referenceWhite() const{ return *_rw; }
 
   Coord3 inverseCompanding(const Real gamma, const Coord3& coords) const{
 
     return _inv_companding(gamma, coords);
   }
 
-  void adapt(const Illuminant& target,
-	     const Matrix3& method = AdaptationMethod<Real>::_Bradford){
+  RGB& from(const XYZ& col){
 
-    _m_adapted =
-      computeChromaticAdaptationMatrix(*_rw, target, method) * _m;
-    _m_1_adapted = _m_adapted.inverse();
-  }
-
-
-  const RGB& from(const XYZ& col){
-
-    this->_coords = _m_1_adapted * col.coords();
+    this->_coords = _m_1 * col.coords();
     _companding(_gamma, this->_coords);
     return *this;
   }
 
-  const RGB& from(const xyY& col){ return from(XYZ().from(col)); }
+  RGB& from(const xyY& col){ return from(XYZ().from(col)); }
 
-  const RGB& from(const Lab& col){ return from(XYZ().from(col)); }
+  RGB& from(const Lab& col, const Illuminant& rw){
 
-  const RGB& from(const LCHab& col){ return from(XYZ().from(col)); }
+    return from(XYZ().from(col, rw));
+  }
 
-  const RGB& from(const Luv& col){ return from(XYZ().from(col)); }
+  RGB& from(const LCHab& col, const Illuminant& rw){
 
-  const RGB& from(const LCHuv& col){ return from(XYZ().from(col)); }
+    return from(XYZ().from(col, rw));
+  }
+
+  RGB& from(const Luv& col, const Illuminant& rw){
+
+    return from(XYZ().from(col, rw));
+  }
+
+  RGB& from(const LCHuv& col, const Illuminant& rw){
+
+    return from(XYZ().from(col, rw));
+  }
 
 
   template <class Colour>
   Colour to() const{ return Colour().from(*this); }
 
   template <class Colour, class ReferenceWhite>
-  Colour to(const ReferenceWhite& rw){
-
-    ReferenceWhite* a = dynamic_cast<ReferenceWhite*>(_rw);
-
-    if( !a )
-      this->adapt(rw);
-    return Colour().from(*this, rw);
-  }
+  Colour to(const ReferenceWhite& rw){ return Colour().from(*this, rw); }
 
 protected:
   RGB(const Illuminant& rw,
@@ -208,26 +202,11 @@ private:
     return M;
   }
 
-  Matrix3 computeChromaticAdaptationMatrix(const Illuminant& source,
-					   const Illuminant& target,
-					   const Matrix3& method){
-
-    Coord3 S = method * source.colour_XYZ().coords();
-    Coord3 D = method * target.colour_XYZ().coords();
-    Matrix3 tmp = Matrix3::Zero();
-    tmp(0, 0) = D(0) / S(0);
-    tmp(1, 1) = D(1) / S(1);
-    tmp(2, 2) = D(2) / S(2);
-    return method.inverse() * tmp * method;
-  }
-
 protected:
   Illuminant* _rw;
   Real _gamma;
   const Matrix3 _m;
-  Matrix3 _m_adapted;
   const Matrix3 _m_1;
-  Matrix3 _m_1_adapted;
   const Companding _companding;
   const InverseCompanding _inv_companding;
 };

@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2011 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,8 +19,10 @@
 |************************************************************************/
 
 
-#ifndef ADAPTATIONMETHOD_HPP
-#define ADAPTATIONMETHOD_HPP
+#ifndef CHROMATIC_ADAPTATION_HPP
+#define CHROMATIC_ADAPTATION_HPP
+
+#include "Illuminant.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -62,5 +64,20 @@ const Real AdaptationMethod<Real>::vonkries[] =
 template <class Real>
 const Real AdaptationMethod<Real>::bradford[] =
   {0.8951, -0.7502, 0.0389, 0.2664, 1.7135, -0.0685, -0.1614, 0.0367, 1.0296};
+
+
+template <typename Real>
+Matrix<Real, 3, 3> chromaticAdaptationMatrix(const BaseIlluminant<Real>& source,
+					     const BaseIlluminant<Real>& target,
+					     const Matrix<Real, 3, 3>& method){
+
+  Matrix<Real, 3, 1> S = method * source.colour_XYZ().coords();
+  Matrix<Real, 3, 1> D = method * target.colour_XYZ().coords();
+  Matrix<Real, 3, 3> tmp = Matrix<Real, 3, 3>::Zero();
+  tmp(0, 0) = D(0) / S(0);
+  tmp(1, 1) = D(1) / S(1);
+  tmp(2, 2) = D(2) / S(2);
+  return method.inverse() * tmp * method;
+}
 
 #endif

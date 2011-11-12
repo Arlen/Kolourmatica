@@ -108,7 +108,7 @@ public:
   XYZ& from(const Luv& col, const Illuminant& rw){
 
     Real a, b, c, d, uo, vo, x, y, z;
-    ComputeUoVo<Real, Coord3>(uo, vo, rw.colour_XYZ().coords());
+    ComputeUoVo<Real>(uo, vo, rw.colour_XYZ().coords());
 
     c = -1.0 / 3.0;
     a = (((52.0 * col[0]) /
@@ -138,7 +138,7 @@ public:
   XYZ& from(const RGB<Real>& col){
 
     Coord3 tri = col.inverseCompanding(col.gamma(), col.coords());
-    this->_coords = col.m_adapted() * tri;
+    this->_coords = col.m() * tri;
     return *this;
   }
 
