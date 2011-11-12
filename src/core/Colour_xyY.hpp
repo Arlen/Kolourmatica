@@ -53,7 +53,7 @@ public:
   Colour_xyY(const xyY& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
-  const xyY& from(const XYZ& col){
+  xyY& from(const XYZ& col){
 
     Real sum = col.coords().sum();
     this->_coords(0) = col[0] / sum;
@@ -62,27 +62,27 @@ public:
     return *this;
   }
 
-  const xyY& from(const Lab& col, const Illuminant& rw){
+  xyY& from(const Lab& col, const Illuminant& rw){
 
     return from(XYZ().from(col, rw));
   }
 
-  const xyY& from(const LCHab& col, const Illuminant& rw){
+  xyY& from(const LCHab& col, const Illuminant& rw){
 
     return from(XYZ().from(col, rw));
   }
 
-  const xyY& from(const Luv& col, const Illuminant& rw){
+  xyY& from(const Luv& col, const Illuminant& rw){
 
     return from(XYZ().from(col, rw));
   }
 
-  const xyY& from(const LCHuv& col, const Illuminant& rw){
+  xyY& from(const LCHuv& col, const Illuminant& rw){
 
     return from(XYZ().from(col, rw));
   }
 
-  const xyY& from(const RGB<Real>& col){
+  xyY& from(const RGB<Real>& col){
 
     return from(XYZ().from(col));
   }

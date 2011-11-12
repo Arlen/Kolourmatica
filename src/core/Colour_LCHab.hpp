@@ -53,17 +53,17 @@ public:
   Colour_LCHab(const LCHab& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
-  const LCHab& from(const XYZ& col, const Illuminant& rw){
+  LCHab& from(const XYZ& col, const Illuminant& rw){
 
     return from(Lab().from(col, rw));
   }
 
-  const LCHab& from(const xyY& col, const Illuminant& rw){
+  LCHab& from(const xyY& col, const Illuminant& rw){
 
     return from(Lab().from(col, rw));
   }
 
-  const LCHab& from(const Lab& col){
+  LCHab& from(const Lab& col){
 
     Real L, C, H;
     L = col[0];
@@ -79,17 +79,17 @@ public:
     return *this;
   }
 
-  const LCHab& from(const Luv& col, const Illuminant& rw){
+  LCHab& from(const Luv& col, const Illuminant& rw){
 
     return from(Lab().from(col, rw));
   }
 
-  const LCHab& from(const LCHuv& col, const Illuminant& rw){
+  LCHab& from(const LCHuv& col, const Illuminant& rw){
 
     return from(Lab().from(col, rw));
   }
 
-  const LCHab& from(const RGB<Real>& col, const Illuminant& rw){
+  LCHab& from(const RGB<Real>& col, const Illuminant& rw){
 
     return from(Lab().from(col, rw));
   }

@@ -53,27 +53,27 @@ public:
   Colour_LCHuv(const LCHuv& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
-  const LCHuv& from(const XYZ& col, const Illuminant& rw){
+  LCHuv& from(const XYZ& col, const Illuminant& rw){
 
     return from(Luv().from(col, rw));
   }
 
-  const LCHuv& from(const xyY& col, const Illuminant& rw){
+  LCHuv& from(const xyY& col, const Illuminant& rw){
 
     return from(Luv().from(col, rw));
   }
 
-  const LCHuv& from(const Lab& col, const Illuminant& rw){
+  LCHuv& from(const Lab& col, const Illuminant& rw){
     
     return from(Luv().from(col, rw));
   }
 
-  const LCHuv& from(const LCHab& col, const Illuminant& rw){
+  LCHuv& from(const LCHab& col, const Illuminant& rw){
 
     return from(Luv().from(col, rw));
   }
 
-  const LCHuv& from(const Luv& col){
+  LCHuv& from(const Luv& col){
 
     Real L, C, H;
     L = col[0];
@@ -89,7 +89,7 @@ public:
     return *this;
   }
 
-  const LCHuv& from(const RGB<Real>& col, const Illuminant& rw){
+  LCHuv& from(const RGB<Real>& col, const Illuminant& rw){
 
     return from(Luv().from(col, rw));
   }

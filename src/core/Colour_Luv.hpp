@@ -53,7 +53,7 @@ public:
   Colour_Luv(const Luv& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
-  const Luv& from(const XYZ& col, const Illuminant& rw){
+  Luv& from(const XYZ& col, const Illuminant& rw){
 
     Real yr, up, vp, urp, vrp, L, u, v;
     yr = col[1] / rw.colour_XYZ()[1];
@@ -74,22 +74,22 @@ public:
     return *this;
   }
 
-  const Luv& from(const xyY& col, const Illuminant& rw){
+  Luv& from(const xyY& col, const Illuminant& rw){
 
     return from(XYZ().from(col), rw);
   }
 
-  const Luv& from(const Lab& col, const Illuminant& rw){
+  Luv& from(const Lab& col, const Illuminant& rw){
     
     return from(XYZ().from(col, rw), rw);
   }
 
-  const Luv& from(const LCHab& col, const Illuminant& rw){
+  Luv& from(const LCHab& col, const Illuminant& rw){
     
     return from(XYZ().from(col, rw), rw);
   }
 
-  const Luv& from(const LCHuv& col){
+  Luv& from(const LCHuv& col){
 
     this->_coords(0) = col[0];
     this->_coords(1) = col[1] * cos(col[2] * Constants<Real>::_radian);
@@ -97,7 +97,7 @@ public:
     return *this;
   }
 
-  const Luv& from(const RGB<Real>& col, const Illuminant& rw){
+  Luv& from(const RGB<Real>& col, const Illuminant& rw){
 
     return from(XYZ().from(col), rw);
   }

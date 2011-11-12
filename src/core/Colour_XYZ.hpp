@@ -53,7 +53,7 @@ public:
   Colour_XYZ(const XYZ& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
-  const XYZ& from(const xyY& col){
+  XYZ& from(const xyY& col){
 
     /*
       X = (x * Y) / y
@@ -68,7 +68,7 @@ public:
     return *this;
   }
 
-  const XYZ& from(const Lab& col, const Illuminant& rw){
+  XYZ& from(const Lab& col, const Illuminant& rw){
 
     Real fx, fy, fz, fxCube, fzCube, xr, yr, zr;
     fy = (col[0] + 16.0) * Constants<Real>::_116_inv;
@@ -100,12 +100,12 @@ public:
     return *this;
   }
 
-  const XYZ& from(const LCHab& col, const Illuminant& rw){
+  XYZ& from(const LCHab& col, const Illuminant& rw){
 
     return from(Lab().from(col), rw);
   }
 
-  const XYZ& from(const Luv& col, const Illuminant& rw){
+  XYZ& from(const Luv& col, const Illuminant& rw){
 
     Real a, b, c, d, uo, vo, x, y, z;
     ComputeUoVo<Real, Coord3>(uo, vo, rw.colour_XYZ().coords());
@@ -130,12 +130,12 @@ public:
     return *this;
   }
 
-  const XYZ& from(const LCHuv& col, const Illuminant& rw){
+  XYZ& from(const LCHuv& col, const Illuminant& rw){
 
     return from(Luv().from(col), rw);
   }
 
-  const XYZ& from(const RGB<Real>& col){
+  XYZ& from(const RGB<Real>& col){
 
     Coord3 tri = col.inverseCompanding(col.gamma(), col.coords());
     this->_coords = col.m_adapted() * tri;
