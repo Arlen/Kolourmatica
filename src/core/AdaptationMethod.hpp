@@ -25,17 +25,11 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include <boost/mpl/assert.hpp>
-#include <boost/type_traits/is_floating_point.hpp>
-
 using namespace Eigen;
-using namespace boost;
 
 
 template <class Real>
 struct AdaptationMethod{
-
-  BOOST_MPL_ASSERT(( is_floating_point<Real> ));
  
   static const Matrix<Real, 3, 3> _XYZScaling;
   static const Matrix<Real, 3, 3> _VonKries;
