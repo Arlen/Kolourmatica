@@ -144,10 +144,13 @@ public:
 
 
   template <class Colour>
-  Colour to() const{ return Colour().from(*this); }
+  Colour to() const{ Colour rt; rt.from(*this); return rt;}
 
   template <class Colour, class ReferenceWhite>
-  Colour to(const ReferenceWhite& rw){ return Colour().from(*this, rw); }
+  Colour to(const ReferenceWhite& rw){
+
+    Colour rt; rt.from(*this, rw); return rt;
+  }
 
 protected:
   RGB(const Illuminant& rw,

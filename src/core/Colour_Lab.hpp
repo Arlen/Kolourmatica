@@ -111,10 +111,13 @@ public:
 
 
   template <class Colour>
-  Colour to() const{ return Colour().from(*this); }
+  Colour to() const{ Colour rt; rt.from(*this); return rt; }
 
   template <class Colour>
-  Colour to(const Illuminant& rw) const{ return Colour().from(*this, rw); }
+  Colour to(const Illuminant& rw) const{
+
+    Colour rt; rt.from(*this, rw); return rt;
+  }
 };
 
 #endif
