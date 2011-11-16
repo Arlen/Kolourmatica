@@ -43,6 +43,8 @@ class Colour_Luv : public ColourSpace<Real, Matrix<Real, 3, 1> >{
   typedef Colour_LCHuv<Real> LCHuv;
   typedef BaseIlluminant<Real> Illuminant;
   typedef Matrix<Real, 3, 1> Coord3;
+  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+
 
 public:
   Colour_Luv(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
@@ -51,6 +53,17 @@ public:
     ColourSpace<Real, Coord3>{Coord3(L, a, b)}{ }
 
   Colour_Luv(const Luv& col) : ColourSpace<Real, Coord3>{col._coords}{ }
+
+
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr){
+
+    XYZ xyz; xyz.from(*this, *rw); return xyz.coords();
+  }
+
+  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
+
+    from(XYZ(coords), *rw); return Parent::_coords;
+  }
 
 
   Luv& from(const XYZ& col, const Illuminant& rw){
@@ -68,9 +81,9 @@ public:
     u = 13.0 * L * (up - urp);
     v = 13.0 * L * (vp - vrp);
 
-    this->_coords(0) = L;
-    this->_coords(1) = u;
-    this->_coords(2) = v;
+    Parent::_coords(0) = L;
+    Parent::_coords(1) = u;
+    Parent::_coords(2) = v;
     return *this;
   }
 
@@ -91,9 +104,9 @@ public:
 
   Luv& from(const LCHuv& col){
 
-    this->_coords(0) = col[0];
-    this->_coords(1) = col[1] * cos(col[2] * Constants<Real>::_radian);
-    this->_coords(2) = col[1] * sin(col[2] * Constants<Real>::_radian);
+    Parent::_coords(0) = col[0];
+    Parent::_coords(1) = col[1] * cos(col[2] * Constants<Real>::_radian);
+    Parent::_coords(2) = col[1] * sin(col[2] * Constants<Real>::_radian);
     return *this;
   }
 

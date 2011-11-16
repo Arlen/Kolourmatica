@@ -43,6 +43,8 @@ class Colour_XYZ : public ColourSpace<Real, Matrix<Real, 3, 1> >{
   typedef Colour_LCHuv<Real> LCHuv;
   typedef BaseIlluminant<Real> Illuminant;
   typedef Matrix<Real, 3, 1> Coord3;
+  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+
 
 public:
   Colour_XYZ(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
@@ -51,6 +53,14 @@ public:
     ColourSpace<Real, Coord3>{Coord3(X, Y, Z)}{ }
 
   Colour_XYZ(const XYZ& col) : ColourSpace<Real, Coord3>{col._coords}{ }
+
+
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr){ return Parent::_coords; }
+
+  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
+
+    Parent::_coords = coords; return Parent::_coords;
+  }
 
 
   XYZ& from(const xyY& col){
@@ -62,9 +72,9 @@ public:
      */
 
     Real y_inv = 1.0 / col[1];
-    this->_coords(0) = col[0] * col[2] * y_inv;
-    this->_coords(1) = col[2];
-    this->_coords(2) = (1.0 - col[0] - col[1]) * col[2] * y_inv;
+    Parent::_coords(0) = col[0] * col[2] * y_inv;
+    Parent::_coords(1) = col[2];
+    Parent::_coords(2) = (1.0 - col[0] - col[1]) * col[2] * y_inv;
     return *this;
   }
 
@@ -94,9 +104,9 @@ public:
     else
       zr = ((116.0 * fz) - 16.0) / Constants<Real>::_cie_kappa;
 
-    this->_coords(0) = xr * rw.colour_XYZ()[0];
-    this->_coords(1) = yr * rw.colour_XYZ()[1];
-    this->_coords(2) = zr * rw.colour_XYZ()[2];
+    Parent::_coords(0) = xr * rw.colour_XYZ()[0];
+    Parent::_coords(1) = yr * rw.colour_XYZ()[1];
+    Parent::_coords(2) = zr * rw.colour_XYZ()[2];
     return *this;
   }
 
@@ -124,9 +134,9 @@ public:
     x = (d - b) / (a - c);
     z = x * a + b;
 
-    this->_coords(0) = x;
-    this->_coords(1) = y;
-    this->_coords(2) = z;
+    Parent::_coords(0) = x;
+    Parent::_coords(1) = y;
+    Parent::_coords(2) = z;
     return *this;
   }
 
@@ -138,7 +148,7 @@ public:
   XYZ& from(const RGB<Real>& col){
 
     Coord3 tri = col.inverseCompanding(col.gamma(), col.coords());
-    this->_coords = col.m() * tri;
+    Parent::_coords = col.m() * tri;
     return *this;
   }
 

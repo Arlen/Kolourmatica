@@ -95,6 +95,8 @@ class RGB : public ColourSpace<Real, Matrix<Real, 3, 1> >{
   typedef BaseIlluminant<Real> Illuminant;
   typedef Matrix<Real, 3, 1> Coord3;
   typedef Matrix<Real, 3, 3> Matrix3;
+  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+
   typedef std::function<void (const Real, Coord3& coords)> Companding;
   typedef std::function<Coord3 (const Real,
 				const Coord3& coords)> InverseCompanding;
@@ -108,15 +110,29 @@ public:
 
   const Illuminant& referenceWhite() const{ return *_rw; }
 
+  void referenceWhite(const Illuminant*& rw){ rw = _rw; }
+
   Coord3 inverseCompanding(const Real gamma, const Coord3& coords) const{
 
     return _inv_companding(gamma, coords);
   }
 
+
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr){
+
+    XYZ xyz; xyz.from(*this); return xyz.coords();
+  }
+
+  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
+
+    from(XYZ(coords)); return Parent::_coords;
+  }
+
+
   RGB& from(const XYZ& col){
 
-    this->_coords = _m_1 * col.coords();
-    _companding(_gamma, this->_coords);
+    Parent::_coords = _m_1 * col.coords();
+    _companding(_gamma, Parent::_coords);
     return *this;
   }
 

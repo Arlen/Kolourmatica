@@ -43,6 +43,8 @@ class Colour_LCHab : public ColourSpace<Real, Matrix<Real, 3, 1> >{
   typedef Colour_LCHuv<Real> LCHuv;
   typedef BaseIlluminant<Real> Illuminant;
   typedef Matrix<Real, 3, 1> Coord3;
+  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+
 
 public:
   Colour_LCHab(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
@@ -51,6 +53,17 @@ public:
     ColourSpace<Real, Coord3>{Coord3(L, C, H)}{ }
 
   Colour_LCHab(const LCHab& col) : ColourSpace<Real, Coord3>{col._coords}{ }
+
+
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr){
+
+    XYZ xyz; xyz.from(*this, *rw); return xyz.coords();
+  }
+
+  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
+
+    from(XYZ(coords), *rw); return Parent::_coords;
+  }
 
 
   LCHab& from(const XYZ& col, const Illuminant& rw){
@@ -73,9 +86,9 @@ public:
     if(h >= 360.0){ h -= 360.0; }
     H = h;
 
-    this->_coords(0) = L;
-    this->_coords(1) = C;
-    this->_coords(2) = H;
+    Parent::_coords(0) = L;
+    Parent::_coords(1) = C;
+    Parent::_coords(2) = H;
     return *this;
   }
 

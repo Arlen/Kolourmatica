@@ -22,6 +22,8 @@
 #ifndef COLOUR_SPACE_HPP
 #define COLOUR_SPACE_HPP
 
+#include "Illuminant.hpp"
+
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
@@ -48,6 +50,8 @@ struct Constants{
 template <class Real, class Coord>
 class ColourSpace{
 
+  typedef BaseIlluminant<Real> Illuminant;
+
 public:
   ColourSpace(){ }
   //virtual ~ColourSpace(){ }
@@ -61,6 +65,15 @@ public:
   const Coord& coords() const{ return _coords; }
 
   Coord& coords(){ return _coords; }
+
+  virtual Coord to_XYZ(const Illuminant* const rw = nullptr){ return _coords; }
+
+  virtual Coord& from_XYZ(const Coord& coords,
+			  const Illuminant* const rw = nullptr){
+    return _coords;
+  }
+
+  virtual void referenceWhite(const Illuminant*& rw){ rw = nullptr; }
 
 protected:
   Coord _coords;

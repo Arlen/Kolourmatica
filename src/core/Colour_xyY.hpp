@@ -43,6 +43,8 @@ class Colour_xyY : public ColourSpace<Real, Matrix<Real, 3, 1> >{
   typedef Colour_LCHuv<Real> LCHuv;
   typedef BaseIlluminant<Real> Illuminant;
   typedef Matrix<Real, 3, 1> Coord3;
+  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+
 
 public:
   Colour_xyY(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
@@ -53,12 +55,23 @@ public:
   Colour_xyY(const xyY& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr){
+
+    XYZ xyz; xyz.from(*this); return xyz.coords();
+  }
+
+  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
+
+    this->from(XYZ(coords)); return Parent::_coords;
+  }
+
+
   xyY& from(const XYZ& col){
 
     Real sum = col.coords().sum();
-    this->_coords(0) = col[0] / sum;
-    this->_coords(1) = col[1] / sum;
-    this->_coords(2) = col[1];
+    Parent::_coords(0) = col[0] / sum;
+    Parent::_coords(1) = col[1] / sum;
+    Parent::_coords(2) = col[1];
     return *this;
   }
 
