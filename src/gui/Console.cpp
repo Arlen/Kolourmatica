@@ -56,7 +56,14 @@ Console::Console() : QWidget(){
     new F12_1964_10
   };
 
-  //pView_ = 0;
+  _cs = {
+    new XYZ, new xyY, new Luv, new LCHuv, new Lab, new LCHab, new AdobeRGB,
+    new AppleRGB, new BestRGB, new BetaRGB, new BruceRGB, new CIERGB,
+    new ColorMatchRGB, new DonRGB4, new ECIRGB, new EktaSpacePS5, new NTSCRGB,
+    new PAL_SECAMRGB, new ProPhotoRGB, new SMPTE_CRGB, new sRGB,
+    new WideGamutRGB
+  };
+
   _view = nullptr;
   _scene = nullptr;
 
@@ -67,14 +74,18 @@ Console::Console() : QWidget(){
   _srcObsIndex = 0;
   _dstObsIndex = 0;
   _camIndex = 2;
+
   initWidgets();
   setAdaptationMethod(_camIndex);
 }
 
 Console::~Console(){
 
-  for(Illuminant* i : _rw)
-    delete i;
+  for(Illuminant* rw : _rw)
+    delete rw;
+
+  for(BaseColourSpace* cs : _cs)
+    delete cs;
 
   delete _view;
   delete _scene;
@@ -306,6 +317,12 @@ void Console::initWidgets(){
 
 void Console::doCompute(){
 
+  // Matrix3 CAM = chromaticAdaptationMatrix(SRC_RW, DST_RW, METHOD);
+  // XYZ.from(SRC, SRC_RW);
+  // XYZ = CAM * XYZ
+  // SRC.from(XYZ, DST_RW);
+  // SRC 
+
   int srwIndex = _srwIndex + _srcObsIndex;
   int drwIndex = _drwIndex + _dstObsIndex;
   const Illuminant* srw = nullptr;
@@ -317,85 +334,23 @@ void Console::doCompute(){
   tri(1) = get<2>(_input)->text().toFloat();
   tri(2) = get<3>(_input)->text().toFloat();
 
-  /* over written in the next switch statement if source is any RGB model. */
-  srw = _rw[srwIndex];
+  if(_fromIndex >= 0 and _fromIndex <= 5)
+    srw = _rw[srwIndex];
+  else
+    _cs[_fromIndex]->referenceWhite(srw);
 
-  switch(_fromIndex){
-  case 0:{ xyz.coords() = tri; } break;
-  case 1:{ get<1>(_cs).coords() = tri; xyz.from(get<1>(_cs)); } break;
-  case 2:{ get<2>(_cs).coords() = tri; xyz.from(get<2>(_cs), *_rw[srwIndex]); } break;
-  case 3:{ get<3>(_cs).coords() = tri; xyz.from(get<3>(_cs), *_rw[srwIndex]); } break;
-  case 4:{ get<4>(_cs).coords() = tri; xyz.from(get<4>(_cs), *_rw[srwIndex]); } break;
-  case 5:{ get<5>(_cs).coords() = tri; xyz.from(get<5>(_cs), *_rw[srwIndex]); } break;
-  case 6:{ get<6>(_cs).coords() = tri; xyz.from(get<6>(_cs)); srw = &get<6>(_cs).referenceWhite(); } break;
-  case 7:{ get<7>(_cs).coords() = tri; xyz.from(get<7>(_cs)); srw = &get<7>(_cs).referenceWhite(); } break;
-  case 8:{ get<8>(_cs).coords() = tri; xyz.from(get<8>(_cs)); srw = &get<8>(_cs).referenceWhite(); } break;
-  case 9:{ get<9>(_cs).coords() = tri; xyz.from(get<9>(_cs)); srw = &get<9>(_cs).referenceWhite(); } break;
-  case 10:{ get<10>(_cs).coords() = tri; xyz.from(get<10>(_cs)); srw = &get<10>(_cs).referenceWhite(); } break;
-  case 11:{ get<11>(_cs).coords() = tri; xyz.from(get<11>(_cs)); srw = &get<11>(_cs).referenceWhite(); } break;
-  case 12:{ get<12>(_cs).coords() = tri; xyz.from(get<12>(_cs)); srw = &get<12>(_cs).referenceWhite(); } break;
-  case 13:{ get<13>(_cs).coords() = tri; xyz.from(get<13>(_cs)); srw = &get<13>(_cs).referenceWhite(); } break;
-  case 14:{ get<14>(_cs).coords() = tri; xyz.from(get<14>(_cs)); srw = &get<14>(_cs).referenceWhite(); } break;
-  case 15:{ get<15>(_cs).coords() = tri; xyz.from(get<15>(_cs)); srw = &get<15>(_cs).referenceWhite(); } break;
-  case 16:{ get<16>(_cs).coords() = tri; xyz.from(get<16>(_cs)); srw = &get<16>(_cs).referenceWhite(); } break;
-  case 17:{ get<17>(_cs).coords() = tri; xyz.from(get<17>(_cs)); srw = &get<17>(_cs).referenceWhite(); } break;
-  case 18:{ get<18>(_cs).coords() = tri; xyz.from(get<18>(_cs)); srw = &get<18>(_cs).referenceWhite(); } break;
-  case 19:{ get<19>(_cs).coords() = tri; xyz.from(get<19>(_cs)); srw = &get<19>(_cs).referenceWhite(); } break;
-  case 20:{ get<20>(_cs).coords() = tri; xyz.from(get<20>(_cs)); srw = &get<20>(_cs).referenceWhite(); } break;
-  case 21:{ get<21>(_cs).coords() = tri; xyz.from(get<21>(_cs)); srw = &get<21>(_cs).referenceWhite(); } break;
-  }
 
-  /* find out destination reference white. */
-  if(_toIndex >= 0 and _toIndex < 6){
+  if(_toIndex >= 0 and _toIndex <= 5)
     drw = _rw[drwIndex];
-  }else{
-    switch(_toIndex){
-    case 6:{ drw = &get<6>(_cs).referenceWhite(); } break;
-    case 7:{ drw = &get<7>(_cs).referenceWhite(); } break;
-    case 8:{ drw = &get<8>(_cs).referenceWhite(); } break;
-    case 9:{ drw = &get<9>(_cs).referenceWhite(); } break;
-    case 10:{ drw = &get<10>(_cs).referenceWhite(); } break;
-    case 11:{ drw = &get<11>(_cs).referenceWhite(); } break;
-    case 12:{ drw = &get<12>(_cs).referenceWhite(); } break;
-    case 13:{ drw = &get<13>(_cs).referenceWhite(); } break;
-    case 14:{ drw = &get<14>(_cs).referenceWhite(); } break;
-    case 15:{ drw = &get<15>(_cs).referenceWhite(); } break;
-    case 16:{ drw = &get<16>(_cs).referenceWhite(); } break;
-    case 17:{ drw = &get<17>(_cs).referenceWhite(); } break;
-    case 18:{ drw = &get<18>(_cs).referenceWhite(); } break;
-    case 19:{ drw = &get<19>(_cs).referenceWhite(); } break;
-    case 20:{ drw = &get<20>(_cs).referenceWhite(); } break;
-    case 21:{ drw = &get<21>(_cs).referenceWhite(); } break;
-    }
-  }
+  else
+    _cs[_toIndex]->referenceWhite(drw);
 
+  _cs[_fromIndex]->coords() = tri;
+  xyz.coords() = _cs[_fromIndex]->to_XYZ(srw);
   Matrix3 cam = chromaticAdaptationMatrix(*srw, *drw, _adaptMethod);
   xyz.coords() = cam * xyz.coords();
-
-  switch(_toIndex){
-  case 0:{ tri = xyz.coords(); } break;
-  case 1:{ get<1>(_cs).from(xyz); tri = get<1>(_cs).coords(); } break;
-  case 2:{ get<2>(_cs).from(xyz, *_rw[drwIndex]); tri = get<2>(_cs).coords(); } break;
-  case 3:{ get<3>(_cs).from(xyz, *_rw[drwIndex]); tri = get<3>(_cs).coords(); } break;
-  case 4:{ get<4>(_cs).from(xyz, *_rw[drwIndex]); tri = get<4>(_cs).coords(); } break;
-  case 5:{ get<5>(_cs).from(xyz, *_rw[drwIndex]); tri = get<5>(_cs).coords(); } break;
-  case 6:{ get<6>(_cs).from(xyz); tri = get<6>(_cs).coords(); } break;
-  case 7:{ get<7>(_cs).from(xyz); tri = get<7>(_cs).coords(); } break;
-  case 8:{ get<8>(_cs).from(xyz); tri = get<8>(_cs).coords(); } break;
-  case 9:{ get<9>(_cs).from(xyz); tri = get<9>(_cs).coords(); } break;
-  case 10:{ get<10>(_cs).from(xyz); tri = get<10>(_cs).coords(); } break;
-  case 11:{ get<11>(_cs).from(xyz); tri = get<11>(_cs).coords(); } break;
-  case 12:{ get<12>(_cs).from(xyz); tri = get<12>(_cs).coords(); } break;
-  case 13:{ get<13>(_cs).from(xyz); tri = get<13>(_cs).coords(); } break;
-  case 14:{ get<14>(_cs).from(xyz); tri = get<14>(_cs).coords(); } break;
-  case 15:{ get<15>(_cs).from(xyz); tri = get<15>(_cs).coords(); } break;
-  case 16:{ get<16>(_cs).from(xyz); tri = get<16>(_cs).coords(); } break;
-  case 17:{ get<17>(_cs).from(xyz); tri = get<17>(_cs).coords(); } break;
-  case 18:{ get<18>(_cs).from(xyz); tri = get<18>(_cs).coords(); } break;
-  case 19:{ get<19>(_cs).from(xyz); tri = get<19>(_cs).coords(); } break;
-  case 20:{ get<20>(_cs).from(xyz); tri = get<20>(_cs).coords(); } break;
-  case 21:{ get<21>(_cs).from(xyz); tri = get<21>(_cs).coords(); } break;
-  }
+  _cs[_toIndex]->from_XYZ(xyz.coords(), drw);
+  tri = _cs[_toIndex]->coords();
 
   get<1>(_output)->setText(QString::number( tri(0), 'f', 10));
   get<2>(_output)->setText(QString::number( tri(1), 'f', 10));
@@ -486,6 +441,7 @@ void Console::setDstObserver(int index){
 
 void Console::setAdaptationMethod(int index){
 
+  clearOutput();
   if(index == 0)
     _adaptMethod = AdaptationMethod<Real>::_XYZScaling;
   else if(index == 1)

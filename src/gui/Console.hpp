@@ -22,6 +22,7 @@
 #ifndef CONSOLE_HPP
 #define CONSOLE_HPP
 
+#include "ColourSpace.hpp"
 #include "Colour_XYZ.hpp"
 #include "Colour_xyY.hpp"
 #include "Colour_Lab.hpp"
@@ -64,6 +65,7 @@ private:
   typedef double Real;
   typedef Matrix<Real, 3, 3> Matrix3;
   typedef Matrix<Real, 3, 1> Vector3;
+  typedef ColourSpace<Real, Vector3> BaseColourSpace;
   typedef Colour_XYZ<Real> XYZ;
   typedef Colour_xyY<Real> xyY;
   typedef Colour_Lab<Real> Lab;
@@ -165,9 +167,7 @@ private:
   Matrix3 _adaptMethod;
   Input _input;
   Output _output;
-  tuple<XYZ, xyY, Luv, LCHuv, Lab, LCHab, AdobeRGB, AppleRGB, BestRGB, BetaRGB,
-	BruceRGB, CIERGB, ColorMatchRGB, DonRGB4, ECIRGB, EktaSpacePS5, NTSCRGB,
-	PAL_SECAMRGB, ProPhotoRGB, SMPTE_CRGB, sRGB, WideGamutRGB> _cs;
+  vector<BaseColourSpace*> _cs;
   vector<Illuminant*> _rw;
 
 private slots:
