@@ -20,6 +20,7 @@
 
 
 #include "Console.hpp"
+#include "View.hpp"
 #include "ChromaticAdaptation.hpp"
 
 #include <QtGui/QGraphicsScene>
@@ -87,14 +88,28 @@ void Console::initWidgets(){
 
   /* adding view. */
   _scene = new QGraphicsScene;
+  _scene->setSceneRect(-1000, -1000, 2000, 2000);
   _view = new QGraphicsView(_scene);
   _view->setFrameShape(QFrame::NoFrame);
   _view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   _view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   _view->setDragMode(QGraphicsView::ScrollHandDrag);
-  _view->setBackgroundBrush(QBrush(QColor(127, 127, 127, 255)));
-  //pViewport_ = new Viewport;
-  //_scene->addItem(pViewport_);
+  _view->setBackgroundBrush(QBrush(QColor(32, 32, 32, 255)));
+  _frontView = new View;
+  _frontView->setVisible(false);
+  _leftView = new View;
+  _leftView->setVisible(false);
+  _rightView = new View;
+  _rightView->setVisible(false);
+  _topView = new View;
+  _topView->setVisible(false);
+  _bottomView = new View;
+  _bottomView->setVisible(false);
+  _scene->addItem(_frontView);
+  _scene->addItem(_leftView);
+  _scene->addItem(_rightView);
+  _scene->addItem(_topView);
+  _scene->addItem(_bottomView);
   layoutA->addWidget(_view);
 
 
@@ -484,10 +499,10 @@ void Console::frontView(){
   if(_front->text() == QString("Front")){
     _front->setText("::::::::  FRONT  ::::::::");
     // stop rendering
-    // hide front view
+    _frontView->setVisible(true);
   }else{
     _front->setText("Front");
-    // show front view
+    _frontView->setVisible(false);
     // start rendering
   }
 }
@@ -497,10 +512,10 @@ void Console::leftView(){
   if(_left->text() == QString("Left")){
     _left->setText("::::::::  LEFT :::");
     // stop rendering
-    // hide front view
+    _leftView->setVisible(true);
   }else{
     _left->setText("Left");
-    // show front view
+    _leftView->setVisible(false);
     // start rendering
   }
 }
@@ -510,10 +525,10 @@ void Console::rightView(){
   if(_right->text() == QString("Right")){
     _right->setText("::::::::  RIGHT  ::::::::");
     // stop rendering
-    // hide front view
+    _rightView->setVisible(true);
   }else{
     _right->setText("Right");
-    // show front view
+    _rightView->setVisible(false);
     // start rendering
   }
 }
@@ -523,10 +538,10 @@ void Console::topView(){
   if(_top->text() == QString("Top")){
     _top->setText("::::::::  TOP  ::::::::");
     // stop rendering
-    // hide front view
+    _topView->setVisible(true);
   }else{
     _top->setText("Top");
-    // show front view
+    _topView->setVisible(false);
     // start rendering
   }
 }
@@ -536,10 +551,10 @@ void Console::bottomView(){
   if(_bottom->text() == QString("Bottom")){
     _bottom->setText("::::::::  BOTTOM  ::::::::");
     // stop rendering
-    // hide front view
+    _bottomView->setVisible(true);
   }else{
     _bottom->setText("Bottom");
-    // show front view
+    _bottomView->setVisible(false);
     // start rendering
   }
 }

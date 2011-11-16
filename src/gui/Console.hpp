@@ -41,6 +41,7 @@
 using std::tuple;
 using std::vector;
 
+class View;
 
 class QComboBox;
 class QLineEdit;
@@ -145,6 +146,11 @@ private:
   QPushButton* _right;
   QPushButton* _top;
   QPushButton* _bottom;
+  View* _frontView;
+  View* _leftView;
+  View* _rightView;
+  View* _topView;
+  View* _bottomView;
 
   ColourSpace<Real, Vector3>* _result;
   QGraphicsScene* _scene;
