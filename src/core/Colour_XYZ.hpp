@@ -55,7 +55,7 @@ public:
   Colour_XYZ(const XYZ& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr){ return Parent::_coords; }
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{ return Parent::_coords; }
 
   Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
 
@@ -150,16 +150,6 @@ public:
     Coord3 tri = col.inverseCompanding(col.gamma(), col.coords());
     Parent::_coords = col.m() * tri;
     return *this;
-  }
-
-
-  template <class Colour>
-  Colour to() const{ Colour rt; rt.from(*this); return rt; }
-
-  template <class Colour>
-  Colour to(const Illuminant& rw) const{
-
-    Colour rt; rt.from(*this, rw); return rt;
   }
 };
 

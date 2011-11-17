@@ -55,7 +55,7 @@ public:
   Colour_Lab(const Lab& col) : ColourSpace<Real, Coord3>{col._coords}{ }
 
 
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr){
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{
 
     XYZ xyz; xyz.from(*this, *rw); return xyz.coords();
   }
@@ -120,16 +120,6 @@ public:
   Lab& from(const RGB<Real>& col, const Illuminant& rw){
 
     return from(XYZ().from(col), rw);
-  }
-
-
-  template <class Colour>
-  Colour to() const{ Colour rt; rt.from(*this); return rt; }
-
-  template <class Colour>
-  Colour to(const Illuminant& rw) const{
-
-    Colour rt; rt.from(*this, rw); return rt;
   }
 };
 

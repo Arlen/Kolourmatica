@@ -118,7 +118,7 @@ public:
   }
 
 
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr){
+  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{
 
     XYZ xyz; xyz.from(*this); return xyz.coords();
   }
@@ -158,15 +158,6 @@ public:
     return from(XYZ().from(col, rw));
   }
 
-
-  template <class Colour>
-  Colour to() const{ Colour rt; rt.from(*this); return rt;}
-
-  template <class Colour, class ReferenceWhite>
-  Colour to(const ReferenceWhite& rw){
-
-    Colour rt; rt.from(*this, rw); return rt;
-  }
 
 protected:
   RGB(const Illuminant& rw,

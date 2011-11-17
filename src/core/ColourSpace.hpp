@@ -54,7 +54,6 @@ class ColourSpace{
 
 public:
   ColourSpace(){ }
-  //virtual ~ColourSpace(){ }
 
   ColourSpace(const Coord& coords) : _coords(coords){ }
 
@@ -66,18 +65,26 @@ public:
 
   Coord& coords(){ return _coords; }
 
-  virtual Coord to_XYZ(const Illuminant* const rw = nullptr){ return _coords; }
+  virtual Coord to_XYZ(const Illuminant* const rw = nullptr) const = 0;
 
   virtual Coord& from_XYZ(const Coord& coords,
-			  const Illuminant* const rw = nullptr){
-    return _coords;
-  }
+			  const Illuminant* const rw = nullptr) = 0;
 
   virtual void referenceWhite(const Illuminant*& rw){ rw = nullptr; }
 
 protected:
   Coord _coords;
 };
+
+
+template <class Colour1, class Colour2>
+Colour2 to(const Colour1& col){ Colour2 rt; rt.from(col); return rt; }
+
+template <class Colour1, class Colour2, class Illuminant>
+Colour2 to(const Colour1& col, const Illuminant& rw){
+
+  Colour2 rt; rt.from(col, rw); return rt;
+}
 
 
 template <typename Real>
