@@ -39,6 +39,7 @@
 #include <tuple>
 #include <vector>
 
+using namespace Eigen;
 using std::tuple;
 using std::vector;
 
@@ -49,6 +50,9 @@ class QLineEdit;
 class QPushButton;
 class QGraphicsScene;
 class QGraphicsView;
+class QHBoxLayout;
+class QVBoxLayout;
+class QGridLayout;
 
 
 class Console : public QWidget{
@@ -132,6 +136,9 @@ private:
   typedef IlluminantF12<Real, _1964_10> F12_1964_10;
 
   void initWidgets();
+  void setupViews(QVBoxLayout* layout);
+  void setupViewButtons(QHBoxLayout* layout);
+  void setupControls(QGridLayout* layout);
   void doCompute();
   void clearInput();
   void clearOutput();
@@ -171,7 +178,7 @@ private:
   vector<Illuminant*> _rw;
 
 private slots:
-  void setFrom(int intdex);
+  void setFrom(int index);
   void setTo(int index);
   void setSrcRefWhite(int index);
   void setDstRefWhite(int index);

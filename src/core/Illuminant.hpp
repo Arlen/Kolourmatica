@@ -46,7 +46,7 @@ public:
   virtual ~BaseIlluminant(){ }
 
 protected:
-  BaseIlluminant(const xyY& rw) : _rw(rw.template to<XYZ>()){ }
+  BaseIlluminant(const xyY& rw){ _rw.from(rw); }
 
 private:
   XYZ _rw;

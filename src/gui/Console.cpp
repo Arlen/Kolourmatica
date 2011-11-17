@@ -34,9 +34,6 @@
 #include <QtGui/QLabel>
 #include <QtGui/QComboBox>
 
-#include <list>
-
-using std::list;
 using std::string;
 using std::get;
 
@@ -97,7 +94,27 @@ void Console::initWidgets(){
   layoutA->setContentsMargins(0, 0, 0, 0);
   layoutA->setSpacing(0);
 
-  /* adding view. */
+  /* adding views. */
+  setupViews(layoutA);
+
+  /* adding view buttons. */
+  QHBoxLayout* layoutB1 = new QHBoxLayout;
+  setupViewButtons(layoutB1);
+  layoutA->addLayout(layoutB1);
+
+  /* adding controls. */
+  QWidget* widget = new QWidget;
+  QGridLayout* layoutB2 = new QGridLayout(widget);
+  setupControls(layoutB2);
+  layoutA->addWidget(widget);
+  layoutA->setAlignment(widget, Qt::AlignHCenter);
+
+  clearInput();
+  clearOutput();
+}
+
+void Console::setupViews(QVBoxLayout* layout){
+
   _scene = new QGraphicsScene;
   _scene->setSceneRect(-1000, -1000, 2000, 2000);
   _view = new QGraphicsView(_scene);
@@ -106,48 +123,47 @@ void Console::initWidgets(){
   _view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   _view->setDragMode(QGraphicsView::ScrollHandDrag);
   _view->setBackgroundBrush(QBrush(QColor(32, 32, 32, 255)));
-  _frontView = new View;
+  _frontView = new View(View::Side::Front);
   _frontView->setVisible(false);
-  _leftView = new View;
+  _leftView = new View(View::Side::Left);
   _leftView->setVisible(false);
-  _rightView = new View;
+  _rightView = new View(View::Side::Right);
   _rightView->setVisible(false);
-  _topView = new View;
+  _topView = new View(View::Side::Top);
   _topView->setVisible(false);
-  _bottomView = new View;
+  _bottomView = new View(View::Side::Bottom);
   _bottomView->setVisible(false);
   _scene->addItem(_frontView);
   _scene->addItem(_leftView);
   _scene->addItem(_rightView);
   _scene->addItem(_topView);
   _scene->addItem(_bottomView);
-  layoutA->addWidget(_view);
+  layout->addWidget(_view);
+}
 
+void Console::setupViewButtons(QHBoxLayout* layout){
 
-  /* adding view buttons. */
   _front = new QPushButton("Front");
   _left = new QPushButton("Left");
   _right = new QPushButton("Right");
   _top = new QPushButton("Top");
   _bottom = new QPushButton("Bottom");
-  QHBoxLayout* layoutB1 = new QHBoxLayout;
-  layoutB1->addWidget(_front);
-  layoutB1->addWidget(_left);
-  layoutB1->addWidget(_right);
-  layoutB1->addWidget(_top);
-  layoutB1->addWidget(_bottom);
+  layout->addWidget(_front);
+  layout->addWidget(_left);
+  layout->addWidget(_right);
+  layout->addWidget(_top);
+  layout->addWidget(_bottom);
   connect(_front, SIGNAL(clicked()), this, SLOT(frontView()));
   connect(_left, SIGNAL(clicked()), this, SLOT(leftView()));
   connect(_right, SIGNAL(clicked()), this, SLOT(rightView()));
   connect(_top, SIGNAL(clicked()), this, SLOT(topView()));
   connect(_bottom, SIGNAL(clicked()), this, SLOT(bottomView()));
-  layoutA->addLayout(layoutB1);
+}
 
+void Console::setupControls(QGridLayout* layout){
 
-  QWidget* widget = new QWidget;
-  QGridLayout* layoutB2 = new QGridLayout(widget);
-  layoutB2->setContentsMargins(0, 2, 0, 2);
-  layoutB2->setSpacing(1);
+  layout->setContentsMargins(0, 2, 0, 2);
+  layout->setSpacing(1);
 
   QLabel* label1 = new QLabel(" From ");
   QLabel* label2 = new QLabel(" To ");
@@ -166,20 +182,19 @@ void Console::initWidgets(){
   setDoubleValidator(get<3>(_input));
   get<4>(_input) = new QPushButton("==");
   get<4>(_input)->setFixedSize(32, 28);
-  connect(get<4>(_input), SIGNAL(clicked()),
-	  this, SLOT(compute()));
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 0, 0);
-  layoutB2->addWidget(label1, 0, 1);
-  layoutB2->addWidget(get<0>(_input), 0, 2);
-  layoutB2->addWidget(get<1>(_input), 0, 3);
-  layoutB2->addWidget(get<2>(_input), 0, 4);
-  layoutB2->addWidget(get<3>(_input), 0, 5);
-  layoutB2->addWidget(get<4>(_input), 0, 6);
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 0, 7);
+  connect(get<4>(_input), SIGNAL(clicked()), this, SLOT(compute()));
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 0, 0);
+  layout->addWidget(label1, 0, 1);
+  layout->addWidget(get<0>(_input), 0, 2);
+  layout->addWidget(get<1>(_input), 0, 3);
+  layout->addWidget(get<2>(_input), 0, 4);
+  layout->addWidget(get<3>(_input), 0, 5);
+  layout->addWidget(get<4>(_input), 0, 6);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 0, 7);
 
   /* the output line. */
   get<0>(_output) = new QComboBox;
@@ -193,30 +208,28 @@ void Console::initWidgets(){
   get<3>(_output) = new QLineEdit;
   get<3>(_output)->setFixedSize(128, 28);
   setDoubleValidator(get<3>(_output));
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 1, 0);
-  layoutB2->addWidget(label2, 1, 1);
-  layoutB2->addWidget(get<0>(_output), 1, 2);
-  layoutB2->addWidget(get<1>(_output), 1, 3);
-  layoutB2->addWidget(get<2>(_output), 1, 4);
-  layoutB2->addWidget(get<3>(_output), 1, 5);
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 1, 6);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 1, 0);
+  layout->addWidget(label2, 1, 1);
+  layout->addWidget(get<0>(_output), 1, 2);
+  layout->addWidget(get<1>(_output), 1, 3);
+  layout->addWidget(get<2>(_output), 1, 4);
+  layout->addWidget(get<3>(_output), 1, 5);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 1, 6);
 
   /* adding colour space names to the QComboBoxes in input and output lines. */
-  for(string& s :
-	list<string>{
-	  "XYZ", "xyY", "Luv", "LCHuv", "Lab", "LCHab", "Adobe RGB",
-	    "Apple RGB", "Best RGB", "Beta RGB", "Bruce RGB", "CIE RGB",
-	    "ColorMatch RGB", "Don RGB 4", "ECI RGB", "Ekta Space PS5",
-	    "NTSC RGB", "PAL/SECAM RGB", "ProPhoto RGB", "SMPTE-C RGB", "sRGB",
-	    "Wide Gamut RGB"}
-      ){
+  for(const char* s : {
+      "XYZ", "xyY", "Luv", "LCHuv", "Lab", "LCHab", "Adobe RGB", "Apple RGB",
+	"Best RGB", "Beta RGB", "Bruce RGB", "CIE RGB",	"ColorMatch RGB",
+	"Don RGB 4", "ECI RGB", "Ekta Space PS5", "NTSC RGB", "PAL/SECAM RGB",
+	"ProPhoto RGB", "SMPTE-C RGB", "sRGB","Wide Gamut RGB"
+	}){
 
-    get<0>(_input)->addItem(s.c_str());
-    get<0>(_output)->addItem(s.c_str());
+    get<0>(_input)->addItem(s);
+    get<0>(_output)->addItem(s);
   }
   get<0>(_input)->setCurrentIndex(_fromIndex);
   connect(get<0>(_input), SIGNAL(currentIndexChanged(int)),
@@ -241,45 +254,44 @@ void Console::initWidgets(){
   comboBox5->setFixedSize(144, 28);
 
   /* source reference white line. */
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 2, 0);
-  layoutB2->addWidget(label3, 2, 1);
-  layoutB2->addWidget(_comboBox1, 2, 2);
-  layoutB2->addWidget(_comboBox2, 2, 3);
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 2, 6);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 2, 0);
+  layout->addWidget(label3, 2, 1);
+  layout->addWidget(_comboBox1, 2, 2);
+  layout->addWidget(_comboBox2, 2, 3);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 2, 6);
 
   /* destination reference white line. */
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 3, 0);
-  layoutB2->addWidget(label4, 3, 1);
-  layoutB2->addWidget(_comboBox3, 3, 2);
-  layoutB2->addWidget(_comboBox4, 3, 3);
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 3, 6);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 3, 0);
+  layout->addWidget(label4, 3, 1);
+  layout->addWidget(_comboBox3, 3, 2);
+  layout->addWidget(_comboBox4, 3, 3);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 3, 6);
 
   /* chromatic adaptation line. */
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 4, 0);
-  layoutB2->addWidget(label5, 4, 1);
-  layoutB2->addWidget(comboBox5, 4, 2);
-  layoutB2->addItem(new QSpacerItem(128, 1,
-				    QSizePolicy::MinimumExpanding,
-				    QSizePolicy::Ignored), 4, 6);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 4, 0);
+  layout->addWidget(label5, 4, 1);
+  layout->addWidget(comboBox5, 4, 2);
+  layout->addItem(new QSpacerItem(128, 1,
+				  QSizePolicy::MinimumExpanding,
+				  QSizePolicy::Ignored), 4, 6);
 
-  for(string& s :
-	list<string>{
-	  "A", "B", "C", "D50", "D55", "D65", "D75", "E", "F1", "F2", "F3",
-	    "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"}
-      ){
+  for(const char* s : {
+      "A", "B", "C", "D50", "D55", "D65", "D75", "E", "F1", "F2", "F3", "F4",
+	"F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"
+	}){
 
-    _comboBox1->addItem(s.c_str());
-    _comboBox3->addItem(s.c_str());
+    _comboBox1->addItem(s);
+    _comboBox3->addItem(s);
   }
 
   _comboBox1->setCurrentIndex(_srwIndex);
@@ -301,18 +313,12 @@ void Console::initWidgets(){
   connect(_comboBox4, SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setDstObserver(int)));
 
-  for(string& s : list<string>{"XYZ Scaling", "Von Kries", "Bradford"} )
-    comboBox5->addItem(s.c_str());
+  for(const char* s : {"XYZ Scaling", "Von Kries", "Bradford"} )
+    comboBox5->addItem(s);
 
   comboBox5->setCurrentIndex(_camIndex);
   connect(comboBox5, SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setAdaptationMethod(int)));
-
-  layoutA->addWidget(widget);
-  layoutA->setAlignment(widget, Qt::AlignHCenter);
-
-  clearInput();
-  clearOutput();
 }
 
 void Console::doCompute(){
@@ -402,6 +408,9 @@ void Console::setFrom(int index){
     setSrcRefWhiteDisabled(true);
   else
     setSrcRefWhiteDisabled(false);
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    view->setFrom(index);
 }
 
 void Console::setTo(int index){
@@ -413,66 +422,77 @@ void Console::setTo(int index){
     setDstRefWhiteDisabled(true);
   else
     setDstRefWhiteDisabled(false);
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    view->setTo(index);
 }
 
 void Console::setSrcRefWhite(int index){
 
   clearOutput();
   _srwIndex = index * 2;
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    view->setSrcRefWhite(index);
 }
 
 void Console::setDstRefWhite(int index){
 
   clearOutput();
   _drwIndex = index * 2;
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    view->setDstRefWhite(index);
 }
 
 void Console::setSrcObserver(int index){
 
   clearOutput();
   _srcObsIndex = index;
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    view->setSrcObserver(index);
 }
 
 void Console::setDstObserver(int index){
 
   clearOutput();
   _dstObsIndex = index;
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    view->setDstObserver(index);
 }
 
 void Console::setAdaptationMethod(int index){
 
+  switch(_camIndex){
+  case 0: _adaptMethod = AdaptationMethod<Real>::_XYZScaling; break;
+  case 1: _adaptMethod = AdaptationMethod<Real>::_VonKries; break;
+  case 2: _adaptMethod = AdaptationMethod<Real>::_Bradford; break;
+  default: return;
+  }
   clearOutput();
-  if(index == 0)
-    _adaptMethod = AdaptationMethod<Real>::_XYZScaling;
-  else if(index == 1)
-    _adaptMethod = AdaptationMethod<Real>::_VonKries;
-  else
-    _adaptMethod = AdaptationMethod<Real>::_Bradford;
+  _camIndex = index;
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    view->setAdaptationMethod(index);
 }
 
 void Console::frontView(){
 
   if(_front->text() == QString("Front")){
     _front->setText("::::::::  FRONT  ::::::::");
-    // stop rendering
     _frontView->setVisible(true);
   }else{
     _front->setText("Front");
     _frontView->setVisible(false);
-    // start rendering
   }
 }
 
 void Console::leftView(){
 
   if(_left->text() == QString("Left")){
-    _left->setText("::::::::  LEFT :::");
-    // stop rendering
+    _left->setText("::::::::  LEFT ::::::::");
     _leftView->setVisible(true);
   }else{
     _left->setText("Left");
     _leftView->setVisible(false);
-    // start rendering
   }
 }
 
@@ -480,12 +500,10 @@ void Console::rightView(){
 
   if(_right->text() == QString("Right")){
     _right->setText("::::::::  RIGHT  ::::::::");
-    // stop rendering
     _rightView->setVisible(true);
   }else{
     _right->setText("Right");
     _rightView->setVisible(false);
-    // start rendering
   }
 }
 
@@ -493,12 +511,10 @@ void Console::topView(){
 
   if(_top->text() == QString("Top")){
     _top->setText("::::::::  TOP  ::::::::");
-    // stop rendering
     _topView->setVisible(true);
   }else{
     _top->setText("Top");
     _topView->setVisible(false);
-    // start rendering
   }
 }
 
@@ -506,12 +522,10 @@ void Console::bottomView(){
 
   if(_bottom->text() == QString("Bottom")){
     _bottom->setText("::::::::  BOTTOM  ::::::::");
-    // stop rendering
     _bottomView->setVisible(true);
   }else{
     _bottom->setText("Bottom");
     _bottomView->setVisible(false);
-    // start rendering
   }
 }
 
