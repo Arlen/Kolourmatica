@@ -61,6 +61,12 @@ Console::Console() : QWidget(){
     new WideGamutRGB
   };
 
+  _am = {
+    AdaptationMethod<Real>::_XYZScaling,
+    AdaptationMethod<Real>::_VonKries,
+    AdaptationMethod<Real>::_Bradford
+  };
+
   _view = nullptr;
   _scene = nullptr;
 
@@ -353,7 +359,7 @@ void Console::doCompute(){
 
   _cs[_fromIndex]->coords() = tri;
   xyz.coords() = _cs[_fromIndex]->to_XYZ(srw);
-  Matrix3 cam = chromaticAdaptationMatrix(*srw, *drw, _adaptMethod);
+  Matrix3 cam = chromaticAdaptationMatrix(*srw, *drw, _am[_camIndex]);
   xyz.coords() = cam * xyz.coords();
   _cs[_toIndex]->from_XYZ(xyz.coords(), drw);
   tri = _cs[_toIndex]->coords();
@@ -461,15 +467,8 @@ void Console::setDstObserver(int index){
 
 void Console::setAdaptationMethod(int index){
 
-  switch(_camIndex){
-  case 0: _adaptMethod = AdaptationMethod<Real>::_XYZScaling; break;
-  case 1: _adaptMethod = AdaptationMethod<Real>::_VonKries; break;
-  case 2: _adaptMethod = AdaptationMethod<Real>::_Bradford; break;
-  default: return;
-  }
   clearOutput();
   _camIndex = index;
-
   for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
     view->setAdaptationMethod(index);
 }
