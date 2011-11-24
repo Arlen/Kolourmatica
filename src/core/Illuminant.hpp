@@ -223,7 +223,7 @@ class IlluminantE<Real, _1964_10> : public BaseIlluminant<Real>{
   typedef Colour_xyY<Real> xyY;
 
 public:
-  IlluminantE() : Illuminant(xyY(1/3, 1/3)){ }
+  IlluminantE() : Illuminant(xyY(Real(1) / Real(3), Real(1) / Real(3))){ }
 };
 
 template <class Real>
@@ -233,7 +233,7 @@ class IlluminantE<Real, _1931_2> : public BaseIlluminant<Real>{
   typedef Colour_xyY<Real> xyY;
 
 public:
-  IlluminantE() : Illuminant(xyY(1/3, 1/3)){ }
+  IlluminantE() : Illuminant(xyY(Real(1) / Real(3), Real(1) / Real(3))){ }
 };
 
 
