@@ -6,21 +6,27 @@
 #include <QtGui/QGraphicsWidget>
 #include <QtCore/QTimer>
 #include <QtCore/QTime>
+#include <QtCore/QSemaphore>
 
 #include <Eigen/Core>
 
 #include <tuple>
+#include <utility>
 #include <vector>
+#include <list>
 #include <map>
 
 using namespace Eigen;
 using std::tuple;
+using std::pair;
 using std::vector;
+using std::list;
 using std::map;
 
 class Dispatcher;
 class Renderer;
 class QThread;
+class QImage;
 
 struct Camera{
 
@@ -71,7 +77,10 @@ public:
   void setDstObserver(int index);
   void setAdaptationMethod(int index);
   void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
-  unsigned char* const buffer() const;
+  uchar* const buffer() const;
+
+public slots:
+  void saveToImage(uchar*);
 
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent* event);
@@ -86,13 +95,20 @@ private:
   typedef map<QThread*, Dispatcher*> Dispatchers;
   typedef map<QThread*, Renderer*> Renderers;
 
+  typedef pair<QThread*, Dispatcher*> DispatchUnit;
+  typedef pair<QThread*, Renderer*> RenderUnit;
+  typedef pair<DispatchUnit, RenderUnit> WorkUnit;
+  typedef list<WorkUnit> WorkUnits;
+  typedef map<uchar* const, WorkUnits> WorkArea;
+
+  WorkArea _workArea;
 
   int idealThreadCount() const;
   void resetView(qreal w, qreal h);
   void setupCamera(int fromIndex);
   void paintResizeHandle(qreal len, qreal gap, qreal width, QPainter* painter);
   void render();
-  void resetBuffer();
+  WorkArea::iterator createWorkArea();
   void abortRendering();
   bool isRenderingReady();
   bool isRendererRunning();
@@ -116,7 +132,9 @@ private:
   Dispatchers _dispatchers;
   Renderers _renderers;
 
+  QImage _renderedImage;
   QTimer _timer;
+  QSemaphore* _bufSem;
   bool _showResizeHandle;
   bool _dirty;
   bool _showImage;
@@ -124,7 +142,7 @@ private:
   Side _side;
 
 public:
-  unsigned char* _buffer;
+  uchar* _activeBuffer;
 
 private slots:
   void updateView();
@@ -169,11 +187,12 @@ Q_OBJECT
   typedef ColourSpace<Real, Vector3> BaseColourSpace;
 
 signals:
+  void wroteToBuffer(uchar*);
   void rendered();
   void finished();
 
 public:
-  Renderer(unsigned char* const buffer, Camera* camera, int imageHeight,
+  Renderer(uchar* const buffer, Camera* camera, int imageHeight,
 	   int fromIndex, int toIndex, int camIndex, int srwIndex,
 	   int drwIndex);
   ~Renderer();
@@ -183,7 +202,7 @@ public slots:
   void abortRendering();
 
 private:
-  unsigned char* const _buffer;
+  uchar* _buffer;
   Camera* _camera;
   const Illuminant* _srw;
   const Illuminant* _drw;

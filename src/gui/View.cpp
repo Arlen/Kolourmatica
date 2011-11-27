@@ -41,12 +41,16 @@ View::View(Side side){
   _timer.setSingleShot(true);
   connect(&_timer, SIGNAL(timeout()), this, SLOT(updateView()));
 
-  _buffer = nullptr;
+  //_buffer = nullptr;
+  _activeBuffer = nullptr;
   setMinimumSize(128, 128);
   resetView(512.0, 512.0);
-  _buffer = new unsigned char[4 * _imageWidth * _imageHeight]; /////////// remove
+  // _buffer = new uchar[4 * _imageWidth * _imageHeight]; /////////// remove
   setupCamera(_fromIndex);
   setCursor(Qt::ArrowCursor);
+  typedef uchar* BufferType;
+  qRegisterMetaType<BufferType>("BufferType");
+  _bufSem = new QSemaphore(1);
 }
 
 void View::setFrom(int index){
@@ -127,13 +131,19 @@ void View::paint(QPainter* painter, const QStyleOptionGraphicsItem* option,
   if( _showImage ){
     if(_dirty)
       render();
-    QImage image(_buffer, _imageWidth, _imageHeight, QImage::Format_RGB32);
     painter->drawImage(QPoint(_resizeHandleThickness, _resizeHandleThickness),
-		       image.mirrored());
+		       _renderedImage.mirrored());
   }
 }
 
-unsigned char* const View::buffer() const{ return _buffer; }
+void View::saveToImage(uchar* buffer){
+
+  _renderedImage = QImage(buffer, _imageWidth, _imageHeight,
+			  QImage::Format_RGB32).copy();
+  update();
+}
+
+uchar* const View::buffer() const{ return _activeBuffer; }
 
 void View::mousePressEvent(QGraphicsSceneMouseEvent* event){
 
@@ -461,89 +471,84 @@ void View::paintResizeHandle(qreal len, qreal gap, qreal width,
 
 void View::render(){
 
+  cout << _workArea.size() << "  <><><> " << endl;
   _dirty = false;
-  resetBuffer();
+  WorkArea::iterator wa = createWorkArea();
+  _bufSem->acquire();
+  _activeBuffer = wa->first;
+  _bufSem->release();
 
   int srwIndex = _srwIndex + _srcObsIndex;
   int drwIndex = _drwIndex + _dstObsIndex;
   int idealHeight = _imageHeight / idealThreadCount();
-  Dispatchers d1;
-  Renderers r1;
 
   for( int y = 0; y < _imageHeight; ){
 
     Dispatcher* ds = new Dispatcher(y, _imageWidth, idealHeight);
-    Renderer* rn = new Renderer(buffer(), &_camera, _imageHeight, _fromIndex,
+    Renderer* rn = new Renderer(_activeBuffer, &_camera, _imageHeight, _fromIndex,
 				_toIndex, _camIndex, srwIndex, drwIndex);
     QThread* dsThread = new QThread;
     QThread* rnThread = new QThread;
     ds->moveToThread(dsThread);
     rn->moveToThread(rnThread);
 
-    connect(rn, SIGNAL(rendered()), this, SLOT(updateView()));
+    connect(rn, SIGNAL(wroteToBuffer(uchar*)), this, SLOT(saveToImage(uchar*)));
     connect(rn, SIGNAL(rendered()), ds, SLOT(dispatch()));
     connect(ds, SIGNAL(dispatched(int, int, int, int)),
 	    rn, SLOT(render(int, int, int, int)));
 
-    // connect(dsThread, SIGNAL(started()), ds, SLOT(dispatch()));
-    // connect(this, SIGNAL(renderingAborted()), rn, SLOT(abortRendering()));
-    // connect(this, SIGNAL(renderingAborted()), ds, SLOT(abortDispatching()));
-    // connect(rn, SIGNAL(finished()), rnThread, SLOT(quit()));
-    // connect(ds, SIGNAL(finished()), dsThread, SLOT(quit()));
-    // connect(rnThread, SIGNAL(finished()), this, SLOT(resetRenderer()));
-    // connect(rnThread, SIGNAL(finished()), this, SLOT(updateView()));
-    // connect(dsThread, SIGNAL(finished()), this, SLOT(resetRenderer()));
-    // connect(dsThread, SIGNAL(finished()), this, SLOT(updateView()));
-
-
-
     connect(dsThread, SIGNAL(started()), ds, SLOT(dispatch()));
     connect(this, SIGNAL(renderingAborted()), rn, SLOT(abortRendering()));
-    //connect(this, SIGNAL(renderingAborted()), ds, SLOT(abortDispatching()));
+    connect(this, SIGNAL(renderingAborted()), ds, SLOT(abortDispatching())); /////////
     connect(rn, SIGNAL(finished()), rnThread, SLOT(quit()));
-    connect(rnThread, SIGNAL(finished()), dsThread, SLOT(quit()));
+    connect(ds, SIGNAL(finished()), dsThread, SLOT(quit()));
+    //connect(rnThread, SIGNAL(finished()), dsThread, SLOT(quit()));
     connect(dsThread, SIGNAL(finished()), this, SLOT(resetRenderer()));
+    connect(rnThread, SIGNAL(finished()), this, SLOT(resetRenderer()));
     //connect(dsThread, SIGNAL(finished()), this, SLOT(updateView()));
 
-    _dispatchers[dsThread] = ds;
-    _renderers[rnThread] = rn;
-
-    d1[dsThread] = ds;
-    r1[rnThread] = rn;
+    DispatchUnit dsUnit(dsThread, ds);
+    RenderUnit rnUnit(rnThread, rn);
+    WorkUnit workUnit(dsUnit, rnUnit);
+    wa->second.push_back(workUnit);
 
     y += idealHeight;
     if((_imageHeight - y) < idealHeight)
       idealHeight = _imageHeight - y;
   }
-  //for(auto th : _renderers) th.first->start();
-  //for(auto th : _dispatchers) th.first->start();
-  for(auto th : r1) th.first->start();
-  for(auto th : d1) th.first->start();
+  // for(auto th : r1) th.first->start();
+  // for(auto th : d1) th.first->start();
+  for(auto renderer : wa->second) renderer.second.first->start();
+  for(auto dispatcher : wa->second) dispatcher.first.first->start();
+  cout << _workArea.size() << "  [][][] " << endl << endl;
 }
 
-void View::resetBuffer(){
-  return;
+View::WorkArea::iterator View::createWorkArea(){
 
-  if(!isRendererRunning()){
-    if(_buffer != nullptr)
-      delete[] _buffer;
-    _buffer = new unsigned char[4 * _imageWidth * _imageHeight];
-  }
-  memset(_buffer, 0, 4 * _imageWidth * _imageHeight);
+  uchar* buffer = new uchar[4 * _imageWidth * _imageHeight];
+  memset(buffer, 0, 4 * _imageWidth * _imageHeight);
+  //_workArea[buffer] = WorkUnits();
+  return _workArea.insert(_workArea.end(), pair<uchar* const, WorkUnits>(buffer, WorkUnits()));
+  //return _workArea.find(buffer);
 }
 
 void View::abortRendering(){ emit renderingAborted(); }
 
 bool View::isRendererRunning(){
 
-  for(auto th : _renderers)
-    if(th.first->isRunning())
-      return true;
+  _bufSem->acquire();
+  auto wus = _workArea.find(_activeBuffer);
+  _bufSem->release();
 
-  for(auto th : _dispatchers)
-    if(th.first->isRunning())
-      return true;
+  if(wus == _workArea.end())
+    return false;
 
+  for(auto wu : wus->second){
+    if(wu.first.first and wu.first.first->isRunning())
+      return true;
+    if(wu.second.first and wu.second.first->isRunning())
+      return true;
+  }
   return false;
 }
 
@@ -551,38 +556,51 @@ void View::updateView(){ update(); }
 
 void View::resetRenderer(){
 
-  Renderers rn;
-  Dispatchers ds;
+  list<uchar*> toRemove;
 
-  for(auto th : _renderers){
-    if(th.first->isFinished()){
-      QThread* k = th.first;
-      Renderer* v = th.second;
-      //k->quit();
-      if(v) delete v; else cout << " VVVVVVVVV " << endl;
-      if(k) delete k; else cout << " KKKKKKKKK " << endl;
-      rn[k] = v;
+  for(auto& wa : _workArea){
+    for(auto& wu : wa.second){
+
+      QThread* rnThread = wu.second.first;
+      Renderer* rn = wu.second.second;
+      QThread* dsThread = wu.first.first;
+      Dispatcher* ds = wu.first.second;
+      //cout << rnThread << " <> " << rn << " [] " << dsThread << " <> " << ds << endl;
+
+      if(rnThread and rn){
+	if(rnThread->isFinished()){
+	  delete rnThread;
+	  delete rn;
+	  wu.second.first = nullptr;
+	  wu.second.second = nullptr;
+	}
+      }
+      if(dsThread and ds){
+	if(dsThread->isFinished()){
+	  delete dsThread;
+	  delete ds;
+	  wu.first.first = nullptr;
+	  wu.first.second = nullptr;
+	}
+      }
     }
+    wa.second.remove(WorkUnit(DispatchUnit(nullptr, nullptr), RenderUnit(nullptr, nullptr)));
+    if(wa.second.empty())
+      toRemove.push_back(wa.first);
   }
-
-  for(auto th : _dispatchers){
-    if(th.first->isFinished()){
-      QThread* k = th.first;
-      Dispatcher* v = th.second;
-      //k->quit();
-      if(v) delete v; else cout << " VVVVVVVVV " << endl;
-      if(k) delete k; else cout << " KKKKKKKKK " << endl;
-      ds[k] = v;
-    }
+  int bs = _workArea.size();
+  cout << bs << " buffers and " << toRemove.size() << " buffers set for deletion. " << endl;
+  for(auto wa : _workArea){
+    cout << "  " << --bs << ": " << wa.second.size() << endl;
   }
+  cout << endl;
 
-  for(auto p : rn) _renderers.erase(p.first);
-  for(auto p : ds) _dispatchers.erase(p.first);
 
-  cout << _renderers.size() << " <> " << _dispatchers.size() << endl;
-
-  if(_renderers.size() == 0 and _dispatchers.size() == 0)
-    update();
+  for(uchar* buf : toRemove){
+    //cout << " Del buffer: " << buf << endl << endl;
+    _workArea.erase(buf);
+    delete[] buf;
+  }
 }
 
 
@@ -610,7 +628,7 @@ void Dispatcher::abortDispatching(){ _abort = true; emit finished(); }
 
 
 /* Renderer */
-Renderer::Renderer(unsigned char* const buffer, Camera* camera, int imageHeight,
+Renderer::Renderer(uchar* buffer, Camera* camera, int imageHeight,
 		   int fromIndex, int toIndex, int camIndex, int srwIndex, int drwIndex) :
   _buffer(buffer), _camera(camera), _srw(nullptr), _drw(nullptr),
   _imageHeight(imageHeight),  _fromIndex(fromIndex), _toIndex(toIndex),
@@ -711,10 +729,11 @@ void Renderer::render(int oldY, int y, int width, int height){
     if( (out.array() < 0).any() ) out << 0, 0, 0;
     if( (out.array() > 1).any() ) out << 0, 0, 0;
 
-    _buffer[4 * (si + j)    ] = static_cast<unsigned char>(255.0 * out(2));
-    _buffer[4 * (si + j) + 1] = static_cast<unsigned char>(255.0 * out(1));
-    _buffer[4 * (si + j) + 2] = static_cast<unsigned char>(255.0 * out(0));
+    _buffer[4 * (si + j)    ] = static_cast<uchar>(255.0 * out(2));
+    _buffer[4 * (si + j) + 1] = static_cast<uchar>(255.0 * out(1));
+    _buffer[4 * (si + j) + 2] = static_cast<uchar>(255.0 * out(0));
   }
+  emit wroteToBuffer(_buffer);
   emit rendered();
 }
 
