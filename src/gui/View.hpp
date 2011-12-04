@@ -4,29 +4,22 @@
 #include "Typedefs.hpp"
 
 #include <QtGui/QGraphicsWidget>
+#include <QtCore/QThread>
 #include <QtCore/QTimer>
-#include <QtCore/QTime>
-#include <QtCore/QSemaphore>
+#include <QtCore/QStack>
 
 #include <Eigen/Core>
 
-#include <tuple>
-#include <utility>
-#include <vector>
 #include <list>
-#include <map>
+#include <vector>
 
-using namespace Eigen;
-using std::tuple;
-using std::pair;
-using std::vector;
+using Eigen::Matrix;
 using std::list;
-using std::map;
+using std::vector;
 
-class Dispatcher;
 class Renderer;
-class QThread;
 class QImage;
+
 
 struct Camera{
 
@@ -62,13 +55,19 @@ class View : public QGraphicsWidget{
   typedef ColourSpace<Real, Vector3> BaseColourSpace;
 
 signals:
-  void renderingAborted();
+  void renderingStarted();
+  void renderingStopped();
+  void viewSizeChanged();
+  void saved();
 
 public:
   enum class Side { Front, Left, Right, Top, Bottom };
 
   View(Side side);
   // ~View need to delete all the running threads if any
+  void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+
+public slots:
   void setFrom(int index);
   void setTo(int index);
   void setSrcRefWhite(int index);
@@ -76,11 +75,6 @@ public:
   void setSrcObserver(int index);
   void setDstObserver(int index);
   void setAdaptationMethod(int index);
-  void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
-  uchar* const buffer() const;
-
-public slots:
-  void saveToImage(uchar*);
 
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent* event);
@@ -90,29 +84,16 @@ protected:
   void hoverMoveEvent (QGraphicsSceneHoverEvent* event);
 
 private:
-  enum class Region { None, Top, Bottom, Left, Right, TopLeft, TopRight, BottomLeft, BottomRight };
-
-  typedef map<QThread*, Dispatcher*> Dispatchers;
-  typedef map<QThread*, Renderer*> Renderers;
-
-  typedef pair<QThread*, Dispatcher*> DispatchUnit;
-  typedef pair<QThread*, Renderer*> RenderUnit;
-  typedef pair<DispatchUnit, RenderUnit> WorkUnit;
-  typedef list<WorkUnit> WorkUnits;
-  typedef map<uchar* const, WorkUnits> WorkArea;
-
-  WorkArea _workArea;
+  enum class Region { None, Top, Bottom, Left, Right, TopLeft, TopRight,
+      BottomLeft, BottomRight };
 
   int idealThreadCount() const;
   void resetView(qreal w, qreal h);
   void setupCamera(int fromIndex);
   void paintResizeHandle(qreal len, qreal gap, qreal width, QPainter* painter);
-  void render();
-  WorkArea::iterator createWorkArea();
-  void abortRendering();
-  bool isRenderingReady();
-  bool isRendererRunning();
+  void restartRendering();
 
+  uchar* _activeBuffer;
   qreal _resizeHandleOffsetX;
   qreal _resizeHandleOffsetY;
   qreal _resizeHandleThickness;
@@ -129,52 +110,37 @@ private:
   int _camIndex;
   Camera _camera;
 
-  Dispatchers _dispatchers;
-  Renderers _renderers;
-
+  QStack<bool> _threads;
   QImage _renderedImage;
   QTimer _timer;
-  QSemaphore* _bufSem;
   bool _showResizeHandle;
   bool _dirty;
   bool _showImage;
   Region _region;
   Side _side;
 
-public:
-  uchar* _activeBuffer;
-
 private slots:
   void updateView();
-  void resetRenderer();
+  void saveToImage();
+  void startStopRendering();
+  void render();
+  void setViewSize();
+  void deleteThread(QThread* thread);
 };
 
 
-class Dispatcher : public QObject{
+class Thread : public QThread{
 
 Q_OBJECT
 
-  typedef Matrix<Real, 3, 3> Matrix3;
-  typedef Matrix<Real, 3, 1> Vector3;
-  typedef ColourSpace<Real, Vector3> BaseColourSpace;
-
 signals:
-  void dispatched(int oldY, int y, int width, int height);
-  void finished();
+  void expired(QThread* thread);
 
 public:
-  Dispatcher(int y, int width, int height);
+  Thread();
 
-public slots:
-  void dispatch();
-  void abortDispatching();
-
-private:
-  int _oldY;
-  int _y;
-  int _width;
-  int _height;
-  bool _abort;
+private slots:
+  void deleteMe();
 };
 
 
@@ -187,29 +153,34 @@ Q_OBJECT
   typedef ColourSpace<Real, Vector3> BaseColourSpace;
 
 signals:
-  void wroteToBuffer(uchar*);
+  void dispatched(int oldY, int y, int width, int height);
   void rendered();
   void finished();
 
 public:
-  Renderer(uchar* const buffer, Camera* camera, int imageHeight,
-	   int fromIndex, int toIndex, int camIndex, int srwIndex,
+  Renderer(uchar* const buffer, Camera camera, int imageHeight,
+	   int fromIndex, int toIndex, int camIndex, int y, int width, int height, int srwIndex,
 	   int drwIndex);
   ~Renderer();
 
 public slots:
+  void dispatch();
   void render(int oldY, int y, int width, int height);
-  void abortRendering();
+  void abort();
 
 private:
   uchar* _buffer;
-  Camera* _camera;
+  Camera _camera;
   const Illuminant* _srw;
   const Illuminant* _drw;
   int _imageHeight;
   int _fromIndex;
   int _toIndex;
   int _camIndex;
+  int _oldY;
+  int _y;
+  int _width;
+  int _height;
   Matrix3 _cam;
   vector<BaseColourSpace*> _cs;
   vector<Illuminant*> _rw;
