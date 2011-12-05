@@ -1,15 +1,5 @@
-I started this project to learn more about colour theory, and to take a break
-from my main project.  I only worked on it for maybe two months.  I had to rush
-it because of my finals and because I wanted to get back to my main project.  I
-did rewrite the core several times, but I never finished implementing all the
-features that I wanted Kolourmatica to have.  Here is a list of things that
-needs to be done, in order of importance:
 
-1. Implement full orthographic view.  Currently only front view is supported.
-2. Implement zooming.
-3. Improve rendering speed.  Currently rendering is fully multi-threaded, but it
-   is slow.  It is a very simple ray tracer, and it sure has a lot of room for
-   improvements.
-4. Implement heads-up-display, such as grids and guides and other useful info
-   about the current colour spaces.
-5. Implement or remove the 'accuracy' option.
+1. View: implement a way to destroy running thread(s) when Kolourmatica is closed while rendering.
+2. View: implement zooming.
+3. View: implement heads-up-display.
+4. View: improve rendering speed by solving the surface equations.
