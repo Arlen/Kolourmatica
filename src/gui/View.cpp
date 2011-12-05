@@ -1,20 +1,34 @@
+/***********************************************************************
+|*  Copyright (C) 2011 Arlen Avakian
+|*
+|*  This file is part of Kolourmatica.
+|*
+|*  Kolourmatica is free software: you can redistribute it and/or modify
+|*  it under the terms of the GNU General Public License as published by
+|*  the Free Software Foundation, either version 3 of the License, or
+|*  (at your option) any later version.
+|*
+|*  Kolourmatica is distributed in the hope that it will be useful,
+|*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+|*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+|*  GNU General Public License for more details.
+|*
+|*  You should have received a copy of the GNU General Public License
+|*  along with Kolourmatica.  If not, see <http://www.gnu.org/licenses/>.
+|*
+|************************************************************************/
+
+
 #include "View.hpp"
 #include "ChromaticAdaptation.hpp"
 
-
 #include <QtGui/QGraphicsSceneResizeEvent>
-#include <QtGui/QPainter>
-#include <QtGui/QStyleOptionGraphicsItem>
-#include <QtGui/QGraphicsLineItem>
-#include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsSceneMouseEvent>
+#include <QtGui/QStyleOptionGraphicsItem>
+#include <QtGui/QPainter>
 #include <QtCore/QRectF>
-#include <QtCore/QThread>
-#include <QtCore/QDebug>
-//#include <QtGui/QImage>
 
-#include <iostream>
-using namespace std;
+#include <list>
 
 
 View::View(Side side){
@@ -410,7 +424,7 @@ void View::startStopRendering(){
 void View::render(){
 
   _dirty = false;
-  list<QThread*> threads;
+  std::list<QThread*> threads;
 
   int srwIndex = _srwIndex + _srcObsIndex;
   int drwIndex = _drwIndex + _dstObsIndex;
