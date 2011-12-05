@@ -150,10 +150,15 @@ void Console::setupViews(QVBoxLayout* layout){
 void Console::setupViewButtons(QHBoxLayout* layout){
 
   _front = new QPushButton("Front");
+  _front->setDisabled(true);
   _left = new QPushButton("Left");
+  _left->setDisabled(true);
   _right = new QPushButton("Right");
+  _right->setDisabled(true);
   _top = new QPushButton("Top");
+  _top->setDisabled(true);
   _bottom = new QPushButton("Bottom");
+  _bottom->setDisabled(true);
   layout->addWidget(_front);
   layout->addWidget(_left);
   layout->addWidget(_right);
@@ -240,9 +245,19 @@ void Console::setupControls(QGridLayout* layout){
   get<0>(_input)->setCurrentIndex(_fromIndex);
   connect(get<0>(_input), SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setFrom(int)));
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    connect(get<0>(_input), SIGNAL(currentIndexChanged(int)),
+	    view, SLOT(setFrom(int)));
+
   get<0>(_output)->setCurrentIndex(_toIndex);
   connect(get<0>(_output), SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setTo(int)));
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    connect(get<0>(_output), SIGNAL(currentIndexChanged(int)),
+	    view, SLOT(setTo(int)));
+
 
   /* the reference white and chromatic adaptation lines. */
   QLabel* label3 = new QLabel(" Source Ref. White ");
@@ -303,9 +318,18 @@ void Console::setupControls(QGridLayout* layout){
   _comboBox1->setCurrentIndex(_srwIndex);
   connect(_comboBox1, SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setSrcRefWhite(int)));
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    connect(_comboBox1, SIGNAL(currentIndexChanged(int)),
+	    view, SLOT(setSrcRefWhite(int)));
+
   _comboBox3->setCurrentIndex(_drwIndex);
   connect(_comboBox3, SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setDstRefWhite(int)));
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    connect(_comboBox3, SIGNAL(currentIndexChanged(int)),
+	    view, SLOT(setDstRefWhite(int)));
 
   _comboBox2->addItem(" 1931 2" + QString(QChar(730)));
   _comboBox2->addItem(" 1964 10" + QString(QChar(730)));
@@ -313,11 +337,19 @@ void Console::setupControls(QGridLayout* layout){
   connect(_comboBox2, SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setSrcObserver(int)));
 
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    connect(_comboBox2, SIGNAL(currentIndexChanged(int)),
+	    view, SLOT(setSrcObserver(int)));
+
   _comboBox4->addItem(" 1931 2" + QString(QChar(730)));
   _comboBox4->addItem(" 1964 10" + QString(QChar(730)));
   _comboBox4->setCurrentIndex(_dstObsIndex);
   connect(_comboBox4, SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setDstObserver(int)));
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    connect(_comboBox4, SIGNAL(currentIndexChanged(int)),
+	    view, SLOT(setDstObserver(int)));
 
   for(const char* s : {"XYZ Scaling", "Von Kries", "Bradford"} )
     comboBox5->addItem(s);
@@ -325,6 +357,10 @@ void Console::setupControls(QGridLayout* layout){
   comboBox5->setCurrentIndex(_camIndex);
   connect(comboBox5, SIGNAL(currentIndexChanged(int)),
 	  this, SLOT(setAdaptationMethod(int)));
+
+  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
+    connect(comboBox5, SIGNAL(currentIndexChanged(int)),
+	    view, SLOT(setAdaptationMethod(int)));
 }
 
 void Console::doCompute(){
@@ -414,9 +450,6 @@ void Console::setFrom(int index){
     setSrcRefWhiteDisabled(true);
   else
     setSrcRefWhiteDisabled(false);
-
-  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
-    view->setFrom(index);
 }
 
 void Console::setTo(int index){
@@ -424,53 +457,61 @@ void Console::setTo(int index){
   clearOutput();
   _toIndex = index;
 
-  if(_toIndex >= 6 and _toIndex <= 21)
+  if(_toIndex >= 6 and _toIndex <= 21){
+
     setDstRefWhiteDisabled(true);
-  else
+    _front->setDisabled(false);
+    _left->setDisabled(false);
+    _right->setDisabled(false);
+    _top->setDisabled(false);
+    _bottom->setDisabled(false);
+
+  }else{
+
     setDstRefWhiteDisabled(false);
 
-  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
-    view->setTo(index);
+    if(_frontView->isVisible()) frontView();
+    if(_leftView->isVisible()) leftView();
+    if(_rightView->isVisible()) rightView();
+    if(_topView->isVisible()) topView();
+    if(_bottomView->isVisible()) bottomView();
+
+    _front->setDisabled(true);
+    _left->setDisabled(true);
+    _right->setDisabled(true);
+    _top->setDisabled(true);
+    _bottom->setDisabled(true);
+  }
 }
 
 void Console::setSrcRefWhite(int index){
 
   clearOutput();
   _srwIndex = index * 2;
-  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
-    view->setSrcRefWhite(index);
 }
 
 void Console::setDstRefWhite(int index){
 
   clearOutput();
   _drwIndex = index * 2;
-  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
-    view->setDstRefWhite(index);
 }
 
 void Console::setSrcObserver(int index){
 
   clearOutput();
   _srcObsIndex = index;
-  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
-    view->setSrcObserver(index);
 }
 
 void Console::setDstObserver(int index){
 
   clearOutput();
   _dstObsIndex = index;
-  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
-    view->setDstObserver(index);
 }
 
 void Console::setAdaptationMethod(int index){
 
   clearOutput();
   _camIndex = index;
-  for(View* view : {_frontView, _leftView, _rightView, _topView, _bottomView})
-    view->setAdaptationMethod(index);
 }
 
 void Console::frontView(){
