@@ -7,19 +7,16 @@ A simple colour space calculator for GNU/Linux.
 Requirements
 ------------
 
-* [Qt 4.x](http://qt.nokia.com/products/) tested with Qt 4.6.3
-* [Boost](http://www.boost.org/) tested with 1.42.0
+* [Qt 4.x](http://qt.nokia.com/products/)
 * [Eigen 3](http://eigen.tuxfamily.org/index.php?title=Main_Page)
 
 
-Install
+Build
 -------
 
     $ git clone git://github.com/Arlen/Kolourmatica.git
     $ cd Kolourmatica
-    $ scons mode=release moc=on
-
-Note: Viewport.cpp takes about five minutes to compile.
+    $ scons
 
 
 TODO
