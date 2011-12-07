@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import datetime
+import commands
 
 abort_build_msg = "Build program: aborting"
 
@@ -29,12 +30,15 @@ else:
 moc = ARGUMENTS.get('moc', 'on')
 print "\t  moc args: processed.  " + moc
 
-moc_cmd = ''
+(_,moc_cmd) = commands.getstatusoutput("whereis moc-qt4")
+moc_cmd = moc_cmd.replace("moc-qt4:","")
 
-if os.path.abspath('moc-qt4'):
-   moc_cmd = 'moc-qt4'
-elif os.path.abspath('moc'):
-   moc_cmd = 'moc'
+if moc_cmd is '':
+   (_,moc_cmd) = commands.getstatusoutput("whereis moc-qt4")
+   moc_cmd = moc_cmd.replace("moc","")
+   if moc_cmd is '':
+      print "moc not found!"
+      Exit(1)
 
 if moc not in ['on', 'off']:
    print "\t\t RTN:Error>" + "\n\t" + abort_build_msg
