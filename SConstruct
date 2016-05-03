@@ -49,10 +49,10 @@ elif moc == 'on':
    moc_msg = "meta object code: generated."
    print "\n\tBuild program: compiling meta objects"
 
-   os.system(moc_cmd + ' -o ./build/moc/moc_Console.cpp  ./src/gui/Console.hpp')
+   os.system(moc_cmd + " -o ./build/moc/moc_Console.cpp  ./src/gui/Console.hpp")
    print "\t  " + moc_msg + "  ./build/moc/moc_Console.cpp"
 
-   os.system(moc_cmd + ' -o ./build/moc/moc_View.cpp  ./src/gui/View.hpp')
+   os.system(moc_cmd + " -o ./build/moc/moc_View.cpp  ./src/gui/View.hpp")
    print "\t  " + moc_msg + "  ./build/moc/moc_View.cpp"
 else:
    print

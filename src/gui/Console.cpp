@@ -430,6 +430,12 @@ void Console::setDoubleValidator(QLineEdit* const lineEdit){
 void Console::setSrcRefWhiteDisabled(bool disable){
 
   /* if reference white is disabled, so is the observer year. */
+
+  /*
+    TODO:
+    Right before disabling the comboboxes, set the comboboxes to the current
+    source ref white.
+   */
   _comboBox1->setDisabled(disable);
   _comboBox2->setDisabled(disable);
 }
@@ -437,6 +443,11 @@ void Console::setSrcRefWhiteDisabled(bool disable){
 void Console::setDstRefWhiteDisabled(bool disable){
 
   /* if reference white is disabled, so is the observer year. */
+
+  /*
+    TODO:
+    ditto
+  */
   _comboBox3->setDisabled(disable);
   _comboBox4->setDisabled(disable);
 }
