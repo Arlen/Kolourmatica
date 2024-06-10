@@ -68,9 +68,9 @@ namespace km
             using Eigen::Matrix3d;
             const Matrix3d method =
                 (Matrix3d() <<
-                    0.40024, -0.2263,
-                    0.0, 0.7076, 1.16532,
-                    0.0, -0.08081, 0.0457, 0.91822)
+                    0.40024, 0.7076, -0.08081,
+                    -0.2263, 1.16532, 0.0457,
+                    0.0, 0.0, 0.91822)
                 .finished();
 
             return internal::chromaticAdaptation(source, target, method);
@@ -84,9 +84,9 @@ namespace km
             using Eigen::Matrix3d;
             const Matrix3d method =
                 (Matrix3d() <<
-                    0.8951, -0.7502, 0.0389,
-                    0.2664, 1.7135, -0.0685,
-                    -0.1614, 0.0367, 1.0296)
+                    0.8951, 0.2664, -0.1614,
+                    -0.7502, 1.7135, 0.0367,
+                    0.0389, -0.0685, 1.0296)
                 .finished();
 
             return internal::chromaticAdaptation(source, target, method);
