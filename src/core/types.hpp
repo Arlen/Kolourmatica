@@ -39,69 +39,70 @@ inline Point3d nan_tri()
 }
 
 
-/// forward declarations
-struct XYZ;
-struct xyY;
-struct Lab;
-struct LCHab;
-struct Luv;
-struct LCHuv;
-struct Illuminant;
-struct RGB;
-struct AdobeRGB;
-struct AppleRGB;
-struct BestRGB;
-struct BetaRGB;
-struct BruceRGB;
-struct CIERGB;
-struct ColorMatchRGB;
-struct DonRGB4;
-struct ECIRGB;
-struct EktaSpacePS5;
-struct NTSCRGB;
-struct PAL_SECAMRGB;
-struct ProPhotoRGB;
-struct SMPTE_CRGB;
-struct WideGamutRGB;
-
-/// types
-struct XYZ
+namespace km
 {
-    Point3d tri;
-};
+    /// forward declarations
+    struct XYZ;
+    struct xyY;
+    struct Lab;
+    struct LCHab;
+    struct Luv;
+    struct LCHuv;
+    struct Illuminant;
+    struct RGB;
+    struct AdobeRGB;
+    struct AppleRGB;
+    struct BestRGB;
+    struct BetaRGB;
+    struct BruceRGB;
+    struct CIERGB;
+    struct ColorMatchRGB;
+    struct DonRGB4;
+    struct ECIRGB;
+    struct EktaSpacePS5;
+    struct NTSCRGB;
+    struct PAL_SECAMRGB;
+    struct ProPhotoRGB;
+    struct SMPTE_CRGB;
+    struct WideGamutRGB;
 
-struct xyY
-{
-    Point3d tri;
-};
+    /// types
+    struct XYZ
+    {
+        Point3d tri;
+    };
 
-struct Illuminant : XYZ
-{
+    struct xyY
+    {
+        Point3d tri;
+    };
 
-};
+    struct Illuminant : XYZ
+    {
 
-struct Lab
-{
-    Point3d tri;
-    Illuminant rw;
-};
+    };
 
-struct LCHab
-{
-    Point3d tri;
-    Illuminant rw;
-};
+    struct Lab
+    {
+        Point3d tri;
+        Illuminant rw;
+    };
 
-struct Luv
-{
-    Point3d tri;
-    Illuminant rw;
-};
+    struct LCHab
+    {
+        Point3d tri;
+        Illuminant rw;
+    };
 
-struct LCHuv
-{
-    Point3d tri;
-    Illuminant rw;
-};
+    struct Luv
+    {
+        Point3d tri;
+        Illuminant rw;
+    };
 
-
+    struct LCHuv
+    {
+        Point3d tri;
+        Illuminant rw;
+    };
+}

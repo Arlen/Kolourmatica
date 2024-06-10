@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010, 2011 Arlen Avakian
+|*  Copyright (C) 2010, 2011, 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,138 +19,107 @@
 |************************************************************************/
 
 
-#ifndef COLOUR_XYZ_HPP
-#define COLOUR_XYZ_HPP
+#pragma once
 
-#include "ColourSpace.hpp"
-#include "ForwardDeclarations.hpp"
-#include "Illuminant.hpp"
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
-
-using namespace Eigen;
+#include <types.hpp>
+#include <ColourSpace.hpp>
+#include <RGB.hpp>
 
 
-template <class Real>
-class Colour_XYZ : public ColourSpace<Real, Matrix<Real, 3, 1> >{
+namespace km
+{
+    inline auto convert_to_XYZ(const xyY &col) -> XYZ
+    {
+        /// X = (x * Y) / y
+        /// Y = Y
+        /// Z = ((1 - x - y) * Y) / y
 
-  typedef Colour_XYZ<Real> XYZ;
-  typedef Colour_xyY<Real> xyY;
-  typedef Colour_Lab<Real> Lab;
-  typedef Colour_LCHab<Real> LCHab;
-  typedef Colour_Luv<Real> Luv;
-  typedef Colour_LCHuv<Real> LCHuv;
-  typedef BaseIlluminant<Real> Illuminant;
-  typedef Matrix<Real, 3, 1> Coord3;
-  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+        const f64 y_inv = f64(1) / col.tri[1];
+        XYZ result;
+        result.tri[0] = col.tri[0] * col.tri[2] * y_inv;
+        result.tri[1] = col.tri[2];
+        result.tri[2] = (f64(1) - col.tri[0] - col.tri[1]) * col.tri[2] * y_inv;
 
-
-public:
-  Colour_XYZ(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
-
-  Colour_XYZ(const Real X = 1, const Real Y = 1, const Real Z = 1) :
-    ColourSpace<Real, Coord3>{Coord3(X, Y, Z)}{ }
-
-  Colour_XYZ(const XYZ& col) : ColourSpace<Real, Coord3>{col._coords}{ }
-
-
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{ return Parent::_coords; }
-
-  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
-
-    Parent::_coords = coords; return Parent::_coords;
-  }
-
-
-  XYZ& from(const xyY& col){
-
-    /*
-      X = (x * Y) / y
-      Y = Y
-      Z = ((1 - x - y) * Y) / y
-     */
-
-    Real y_inv = 1.0 / col[1];
-    Parent::_coords(0) = col[0] * col[2] * y_inv;
-    Parent::_coords(1) = col[2];
-    Parent::_coords(2) = (1.0 - col[0] - col[1]) * col[2] * y_inv;
-    return *this;
-  }
-
-  XYZ& from(const Lab& col, const Illuminant& rw){
-
-    Real fx, fy, fz, fxCube, fzCube, xr, yr, zr;
-    fy = (col[0] + 16.0) * Constants<Real>::_116_inv;
-    fx = (col[1] / 500.0) + fy;
-    fz = fy - (col[2] / 200.0);
-    fxCube = fx * fx * fx;
-    fzCube = fz * fz * fz;
-
-    if(fxCube > Constants<Real>::_cie_epsilon)
-      xr = fxCube;
-    else
-      xr = ((116.0 * fx) - 16.0) / Constants<Real>::_cie_kappa;
-
-    if(col[0] > Constants<Real>::_cie_ke){
-      Real tmp = (col[0] + 16.0) * Constants<Real>::_116_inv;
-      yr = tmp * tmp * tmp;
-    }else{
-      yr = col[0] / Constants<Real>::_cie_kappa;
+        return result;
     }
 
-    if(fzCube > Constants<Real>::_cie_epsilon)
-      zr = fzCube;
-    else
-      zr = ((116.0 * fz) - 16.0) / Constants<Real>::_cie_kappa;
+    inline auto convert_to_XYZ(const Lab &col) -> XYZ
+    {
+        f64 fx, fy, fz, fxCube, fzCube, xr, yr, zr;
+        fy = (col.tri[0] + 16.0) * constants::_116_inv;
+        fx = (col.tri[1] / 500.0) + fy;
+        fz = fy - (col.tri[2] / 200.0);
+        fxCube = fx * fx * fx;
+        fzCube = fz * fz * fz;
 
-    Parent::_coords(0) = xr * rw.colour_XYZ()[0];
-    Parent::_coords(1) = yr * rw.colour_XYZ()[1];
-    Parent::_coords(2) = zr * rw.colour_XYZ()[2];
-    return *this;
-  }
+        if (fxCube > constants::_cie_epsilon)
+            xr = fxCube;
+        else
+            xr = ((116.0 * fx) - 16.0) / constants::_cie_kappa;
 
-  XYZ& from(const LCHab& col, const Illuminant& rw){
+        if (col.tri[0] > constants::_cie_ke) {
+            f64 tmp = (col.tri[0] + 16.0) * constants::_116_inv;
+            yr = tmp * tmp * tmp;
+        } else {
+            yr = col.tri[0] / constants::_cie_kappa;
+        }
 
-    return from(Lab().from(col), rw);
-  }
+        if (fzCube > constants::_cie_epsilon)
+            zr = fzCube;
+        else
+            zr = ((116.0 * fz) - 16.0) / constants::_cie_kappa;
 
-  XYZ& from(const Luv& col, const Illuminant& rw){
+        XYZ result;
+        result.tri[0] = xr * col.rw.tri[0];
+        result.tri[1] = yr * col.rw.tri[1];
+        result.tri[2] = zr * col.rw.tri[2];
 
-    Real a, b, c, d, uo, vo, x, y, z;
-    ComputeUoVo<Real>(uo, vo, rw.colour_XYZ().coords());
+        return result;
+    }
 
-    c = -1.0 / 3.0;
-    a = (((52.0 * col[0]) /
-	  (col[1] + 13.0 * col[0] * uo)) - 1.0) / 3.0;
-    if( col[0] > Constants<Real>::_cie_ke )
-      y = pow( (col[0] + 16.0) * Constants<Real>::_116_inv, 3.0 );
-    else
-      y = col[0] * Constants<Real>::_cie_kappa_inv;
-   
-    b = -5.0 * y;
-    d = (((39.0 * col[0]) /
-	  (col[2] + 13.0 * col[0] * vo)) - 5.0) * y;
-    x = (d - b) / (a - c);
-    z = x * a + b;
+    inline auto convert_to_XYZ(const LCHab& col) -> XYZ
+    {
+        return convert_to_XYZ(convert_to_Lab(col));
+    }
 
-    Parent::_coords(0) = x;
-    Parent::_coords(1) = y;
-    Parent::_coords(2) = z;
-    return *this;
-  }
+    inline auto convert_to_XYZ(const Luv& col) -> XYZ
+    {
+        f64 a, b, c, d, uo, vo, x, y, z;
+        ComputeUoVo(uo, vo, col.rw.tri);
 
-  XYZ& from(const LCHuv& col, const Illuminant& rw){
+        c = -1.0 / 3.0;
+        a = (((52.0 * col.tri[0]) /
+          (col.tri[1] + 13.0 * col.tri[0] * uo)) - 1.0) / 3.0;
+        if( col.tri[0] > constants::_cie_ke )
+            y = pow( (col.tri[0] + 16.0) * constants::_116_inv, 3.0 );
+        else
+            y = col.tri[0] * constants::_cie_kappa_inv;
 
-    return from(Luv().from(col), rw);
-  }
+        b = -5.0 * y;
+        d = (((39.0 * col.tri[0]) /
+          (col.tri[2] + 13.0 * col.tri[0] * vo)) - 5.0) * y;
+        x = (d - b) / (a - c);
+        z = x * a + b;
 
-  XYZ& from(const RGB<Real>& col){
+        XYZ result;
+        result.tri[0] = x;
+        result.tri[1] = y;
+        result.tri[2] = z;
 
-    Coord3 tri = col.inverseCompanding(col.gamma(), col.coords());
-    Parent::_coords = col.m() * tri;
-    return *this;
-  }
-};
+        return result;
+    }
 
-#endif
+    inline auto convert_to_XYZ(const LCHuv& col) -> XYZ
+    {
+        return convert_to_XYZ(convert_to_Luv(col));
+    }
+
+    inline auto convert_to_XYZ(const RGB& col) -> XYZ
+    {
+        Point3d tri = col.inverseCompanding(col.gamma(), col.tri);
+        XYZ result;
+        result.tri = col.m() * tri;
+
+        return result;
+    }
+}

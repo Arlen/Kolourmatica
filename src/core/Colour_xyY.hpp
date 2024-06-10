@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010, 2011 Arlen Avakian
+|*  Copyright (C) 2010, 2011, 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,86 +19,51 @@
 |************************************************************************/
 
 
-#ifndef COLOUR_XYY_HPP
-#define COLOUR_XYY_HPP
+#pragma once
 
-#include "ColourSpace.hpp"
-#include "ForwardDeclarations.hpp"
-#include "Illuminant.hpp"
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
-
-using namespace Eigen;
+#include <types.hpp>
 
 
-template <class Real>
-class Colour_xyY : public ColourSpace<Real, Matrix<Real, 3, 1> >{
+namespace km
+{
+    inline auto convert_to_xyY(const XYZ& col) -> xyY
+    {
+        xyY result;
+        const f64 sum = col.tri.sum();
+        result.tri[0] = col.tri[0] / sum;
+        result.tri[1] = col.tri[1] / sum;
+        result.tri[2] = col.tri[1];
 
-  typedef Colour_XYZ<Real> XYZ;
-  typedef Colour_xyY<Real> xyY;
-  typedef Colour_Lab<Real> Lab;
-  typedef Colour_LCHab<Real> LCHab;
-  typedef Colour_Luv<Real> Luv;
-  typedef Colour_LCHuv<Real> LCHuv;
-  typedef BaseIlluminant<Real> Illuminant;
-  typedef Matrix<Real, 3, 1> Coord3;
-  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+        return result;
+    }
 
+    inline auto convert_to_xyY(const Illuminant& rw) -> xyY
+    {
+        return convert_to_xyY(static_cast<XYZ>(rw));
+    }
 
-public:
-  Colour_xyY(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
+    inline auto convert_to_xyY(const Lab& col) -> xyY
+    {
+        return convert_to_xyY(convert_to_XYZ(col));
+    }
 
-  Colour_xyY(const Real X = 1, const Real Y = 1, const Real Z = 1) :
-    ColourSpace<Real, Coord3>{Coord3(X, Y, Z)}{ }
+    inline auto convert_to_xyY(const LCHab& col) -> xyY
+    {
+        return convert_to_xyY(convert_to_Lab(col));
+    }
 
-  Colour_xyY(const xyY& col) : ColourSpace<Real, Coord3>{col._coords}{ }
+    inline auto convert_to_xyY(const Luv& col) -> xyY
+    {
+        return convert_to_xyY(convert_to_XYZ(col));
+    }
 
+    inline auto convert_to_xyY(const LCHuv& col) -> xyY
+    {
+        return convert_to_xyY(convert_to_Luv(col));
+    }
 
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{
-
-    XYZ xyz; xyz.from(*this); return xyz.coords();
-  }
-
-  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
-
-    this->from(XYZ(coords)); return Parent::_coords;
-  }
-
-
-  xyY& from(const XYZ& col){
-
-    Real sum = col.coords().sum();
-    Parent::_coords(0) = col[0] / sum;
-    Parent::_coords(1) = col[1] / sum;
-    Parent::_coords(2) = col[1];
-    return *this;
-  }
-
-  xyY& from(const Lab& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
-
-  xyY& from(const LCHab& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
-
-  xyY& from(const Luv& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
-
-  xyY& from(const LCHuv& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
-
-  xyY& from(const RGB<Real>& col){
-
-    return from(XYZ().from(col));
-  }
-};
-
-#endif
+    inline auto convert_to_xyY(const RGB& col) -> xyY
+    {
+        return convert_to_xyY(convert_to_XYZ(col));
+    }
+}
