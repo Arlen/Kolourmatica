@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010, 2011 Arlen Avakian
+|*  Copyright (C) 2010, 2011, 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,101 +19,66 @@
 |************************************************************************/
 
 
-#ifndef COLOUR_LUV_HPP
-#define COLOUR_LUV_HPP
+#pragma once
 
-#include "ColourSpace.hpp"
-#include "ForwardDeclarations.hpp"
-#include "Illuminant.hpp"
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
-
-using namespace Eigen;
+#include <types.hpp>
+#include <ColourSpace.hpp>
 
 
-template <class Real>
-class Colour_Luv : public ColourSpace<Real, Matrix<Real, 3, 1> >{
+namespace km
+{
+    inline auto convert_to_Luv(const XYZ& col, const Illuminant& rw) -> Luv
+    {
+        const f64 yr = col.tri[1] / rw.tri[1];
+        f64 up, vp, urp, vrp, L;
+        ComputeUoVo(up, vp, col.tri);
+        ComputeUoVo(urp, vrp, rw.tri);
 
-  typedef Colour_XYZ<Real> XYZ;
-  typedef Colour_xyY<Real> xyY;
-  typedef Colour_Lab<Real> Lab;
-  typedef Colour_LCHab<Real> LCHab;
-  typedef Colour_Luv<Real> Luv;
-  typedef Colour_LCHuv<Real> LCHuv;
-  typedef BaseIlluminant<Real> Illuminant;
-  typedef Matrix<Real, 3, 1> Coord3;
-  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+        if (yr > constants::_cie_epsilon)
+            L = 116.0 * pow(yr, 1.0/3.0) - 16.0;
+        else
+            L = constants::_cie_kappa * yr;
 
+        const f64 u = 13.0 * L * (up - urp);
+        const f64 v = 13.0 * L * (vp - vrp);
 
-public:
-  Colour_Luv(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
+        Luv result;
+        result.tri[0] = L;
+        result.tri[1] = u;
+        result.tri[2] = v;
+        result.rw     = rw;
 
-  Colour_Luv(const Real L = 100, const Real a = 0, const Real b = 0) :
-    ColourSpace<Real, Coord3>{Coord3(L, a, b)}{ }
+        return result;
+    }
 
-  Colour_Luv(const Luv& col) : ColourSpace<Real, Coord3>{col._coords}{ }
+    inline auto convert_to_Luv(const xyY& col, const Illuminant& rw) -> Luv
+    {
+        return convert_to_Luv(convert_to_XYZ(col), rw);
+    }
 
+    inline auto convert_to_Luv(const Lab& col, const Illuminant& rw) -> Luv
+    {
+        return convert_to_Luv(convert_to_XYZ(col), rw);
+    }
 
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{
+    inline auto convert_to_Luv(const LCHab& col, const Illuminant& rw) -> Luv
+    {
+        return convert_to_Luv(convert_to_XYZ(col), rw);
+    }
 
-    XYZ xyz; xyz.from(*this, *rw); return xyz.coords();
-  }
+    inline auto convert_to_Luv(const LCHuv& col) -> Luv
+    {
+        Luv result;
+        result.tri[0] = col.tri[0];
+        result.tri[1] = col.tri[1] * cos(col.tri[2] * constants::_radian);
+        result.tri[2] = col.tri[1] * sin(col.tri[2] * constants::_radian);
+        result.rw     = col.rw;
 
-  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
+        return result;
+    }
 
-    from(XYZ(coords), *rw); return Parent::_coords;
-  }
-
-
-  Luv& from(const XYZ& col, const Illuminant& rw){
-
-    Real yr, up, vp, urp, vrp, L, u, v;
-    yr = col[1] / rw.colour_XYZ()[1];
-    ComputeUoVo<Real>(up, vp, col.coords());
-    ComputeUoVo<Real>(urp, vrp, rw.colour_XYZ().coords());
-
-    if( yr > Constants<Real>::_cie_epsilon )
-      L = 116.0 * pow(yr, 1.0/3.0) - 16.0;
-    else
-      L = Constants<Real>::_cie_kappa * yr;
-
-    u = 13.0 * L * (up - urp);
-    v = 13.0 * L * (vp - vrp);
-
-    Parent::_coords(0) = L;
-    Parent::_coords(1) = u;
-    Parent::_coords(2) = v;
-    return *this;
-  }
-
-  Luv& from(const xyY& col, const Illuminant& rw){
-
-    return from(XYZ().from(col), rw);
-  }
-
-  Luv& from(const Lab& col, const Illuminant& rw){
-    
-    return from(XYZ().from(col, rw), rw);
-  }
-
-  Luv& from(const LCHab& col, const Illuminant& rw){
-    
-    return from(XYZ().from(col, rw), rw);
-  }
-
-  Luv& from(const LCHuv& col){
-
-    Parent::_coords(0) = col[0];
-    Parent::_coords(1) = col[1] * cos(col[2] * Constants<Real>::_radian);
-    Parent::_coords(2) = col[1] * sin(col[2] * Constants<Real>::_radian);
-    return *this;
-  }
-
-  Luv& from(const RGB<Real>& col, const Illuminant& rw){
-
-    return from(XYZ().from(col), rw);
-  }
-};
-
-#endif
+    inline auto convert_to_Luv(const RGB& col, const Illuminant& rw) -> Luv
+    {
+        return convert_to_Luv(convert_to_XYZ(col), rw);
+    }
+}

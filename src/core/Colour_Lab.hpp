@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010, 2011 Arlen Avakian
+|*  Copyright (C) 2010, 2011, 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,108 +19,75 @@
 |************************************************************************/
 
 
-#ifndef COLOUR_LAB_HPP
-#define COLOUR_LAB_HPP
+#pragma once
 
-#include "ColourSpace.hpp"
-#include "ForwardDeclarations.hpp"
-#include "Illuminant.hpp"
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
-
-using namespace Eigen;
+#include <types.hpp>
+#include <ColourSpace.hpp>
 
 
-template <class Real>
-class Colour_Lab : public ColourSpace<Real, Matrix<Real, 3, 1> >{
+namespace km
+{
+    inline auto convert_to_Lab(const XYZ& col, const Illuminant& rw) -> Lab
+    {
+        const f64 third = f64(1) / f64(3);
+        const f64 xr = col.tri[0] / rw.tri[0];
+        const f64 yr = col.tri[1] / rw.tri[1];
+        const f64 zr = col.tri[2] / rw.tri[2];
 
-  typedef Colour_XYZ<Real> XYZ;
-  typedef Colour_xyY<Real> xyY;
-  typedef Colour_Lab<Real> Lab;
-  typedef Colour_LCHab<Real> LCHab;
-  typedef Colour_Luv<Real> Luv;
-  typedef Colour_LCHuv<Real> LCHuv;
-  typedef BaseIlluminant<Real> Illuminant;
-  typedef Matrix<Real, 3, 1> Coord3;
-  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+        f64 fx, fy, fz;
+        if (xr > constants::_cie_epsilon)
+            fx = pow(xr, third);
+        else
+            fx = (constants::_cie_kappa * xr + 16.0) / 116.0;
 
+        if (yr > constants::_cie_epsilon)
+            fy = pow(yr, third);
+        else
+            fy = (constants::_cie_kappa * yr + 16.0) / 116.0;
 
-public:
-  Colour_Lab(const Coord3& tri) : ColourSpace<Real, Coord3>{tri}{ }
+        if (zr > constants::_cie_epsilon)
+            fz = pow(zr, third);
+        else
+            fz = (constants::_cie_kappa * zr + 16.0) / 116.0;
 
-  Colour_Lab(const Real L = 100, const Real a = 0, const Real b = 0) :
-    ColourSpace<Real, Coord3>{Coord3(L, a, b)}{ }
+        Lab result;
+        result.tri[0] = 116.0 * fy - 16.0;
+        result.tri[1] = 500.0 * (fx - fy);
+        result.tri[2] = 200.0 * (fy - fz);
+        result.rw     = rw;
 
-  Colour_Lab(const Lab& col) : ColourSpace<Real, Coord3>{col._coords}{ }
+        return result;
+    }
 
+    inline auto convert_to_Lab(const xyY& col, const Illuminant& rw) -> Lab
+    {
+        return convert_to_Lab(convert_to_XYZ(col), rw);
+    }
 
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{
+    inline auto convert_to_Lab(const LCHab& col) -> Lab
+    {
+        Lab result;
 
-    XYZ xyz; xyz.from(*this, *rw); return xyz.coords();
-  }
+        result.tri[0] = col.tri[0];
+        result.tri[1] = col.tri[1] * cos(col.tri[2] * constants::_radian);
+        result.tri[2] = col.tri[1] * sin(col.tri[2] * constants::_radian);
+        result.rw     = col.rw;
 
-  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
+        return result;
+    }
 
-    from(XYZ(coords), *rw); return Parent::_coords;
-  }
+    inline auto convert_to_Lab(const Luv& col, const Illuminant& rw) -> Lab
+    {
+        return convert_to_Lab(convert_to_XYZ(col), rw);
+    }
 
+    inline auto convert_to_Lab(const LCHuv& col, const Illuminant& rw) -> Lab
+    {
+        return convert_to_Lab(convert_to_XYZ(col), rw);
+    }
 
-  Lab& from(const XYZ& col, const Illuminant& rw){
-
-    Real xr, yr, zr, fx, fy, fz;
-    xr = col[0] / rw.colour_XYZ()[0];
-    yr = col[1] / rw.colour_XYZ()[1];
-    zr = col[2] / rw.colour_XYZ()[2];
-
-    if( xr > Constants<Real>::_cie_epsilon )
-      fx = pow(xr, Real(1.0/3.0));
-    else
-      fx = ((Constants<Real>::_cie_kappa * xr) + 16.0) / 116.0;
-
-    if( yr > Constants<Real>::_cie_epsilon )
-      fy = pow(yr, Real(1.0/3.0));
-    else
-      fy = ((Constants<Real>::_cie_kappa * yr) + 16.0) / 116.0;
-
-    if( zr > Constants<Real>::_cie_epsilon )
-      fz = pow(zr, Real(1.0/3.0));
-    else
-      fz = ((Constants<Real>::_cie_kappa * zr) + 16.0) / 116.0;
-
-    Parent::_coords(0) = 116.0 * fy - 16.0;
-    Parent::_coords(1) = 500.0 * (fx - fy);
-    Parent::_coords(2) = 200.0 * (fy - fz);
-    return *this;
-  }
-
-  Lab& from(const xyY& col, const Illuminant& rw){
-
-    return from(XYZ().from(col), rw);
-  }
-
-  Lab& from(const LCHab& col){
-
-    Parent::_coords(0) = col[0];
-    Parent::_coords(1) = col[1] * cos(col[2] * Constants<Real>::_radian);
-    Parent::_coords(2) = col[1] * sin(col[2] * Constants<Real>::_radian);
-    return *this;
-  }
-
-  Lab& from(const Luv& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw), rw);
-  }
-
-  Lab& from(const LCHuv& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw), rw);
-  }
-
-  Lab& from(const RGB<Real>& col, const Illuminant& rw){
-
-    return from(XYZ().from(col), rw);
-  }
-};
-
-#endif
+    inline auto convert_to_Lab(const RGB& col, const Illuminant& rw) -> Lab
+    {
+        return convert_to_Lab(convert_to_XYZ(col), rw);
+    }
+}
