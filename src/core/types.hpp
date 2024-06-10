@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include <Eigen/Core>
+#include <Eigen/Dense>
 
 
 using i32  = std::int32_t;
