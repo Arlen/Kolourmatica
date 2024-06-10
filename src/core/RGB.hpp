@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010, 2011 Arlen Avakian
+|*  Copyright (C) 2010, 2011, 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,206 +19,173 @@
 |************************************************************************/
 
 
-#ifndef RGB_HPP
-#define RGB_HPP
+#pragma once
 
-#include "ColourSpace.hpp"
-#include "ForwardDeclarations.hpp"
-#include "Illuminant.hpp"
-#include "ChromaticAdaptation.hpp"
-
-#include <Eigen/Core>
-#include <Eigen/Dense>
+#include <types.hpp>
+#include <ColourSpace.hpp>
 
 #include <functional>
 
-using namespace Eigen;
 
+namespace km
+{
+    /// used when converting XYZ to RGB
+    void gammaCompanding(f64 gamma, Point3d &coords);
 
-/* used when converting XYZ to RGB */
-template <class Real>
-void gammaCompanding(const Real gamma, Matrix<Real, 3, 1>& coords){
+    /// used when converting RGB to XYZ
+    Point3d inverseGammaCompanding(f64 gamma, const Point3d &coords);
 
-  Real p = Real(1.0) / gamma;
+    /// used when converting XYZ to sRGB
+    void sRGB_Companding(f64 gamma, Point3d &coords);
 
-  if(coords(0) < 0.0)
-    coords(0) = pow(-coords(0), p) * -1.0;
-  else
-    coords(0) = pow(coords(0), p);
-
-  if(coords(1) < 0.0)
-    coords(1) = pow(-coords(1), p) * -1.0;
-  else
-    coords(1) = pow(coords(1), p);
-
-  if(coords(2) < 0.0)
-    coords(2) = pow(-coords(2), p) * -1.0; 
-  else
-    coords(2) = pow(coords(2), p);
-}
-
-/* used when converting RGB to XYZ */
-template <class Real>
-Matrix<Real, 3, 1> inverseGammaCompanding(const Real gamma,
-					  const Matrix<Real, 3, 1>& coords){
-
-  Matrix<Real, 3, 1> tri;
-
-  if(coords(0) < 0.0)
-    tri(0) = pow(-coords(0), gamma) * -1.0;
-  else
-    tri(0) = pow(coords(0), gamma);
-
-  if(coords(1) < 0.0)
-    tri(1) = pow(-coords(1), gamma) * -1.0;
-  else
-    tri(1) = pow(coords(1), gamma);
-
-  if(coords(2) < 0.0)
-    tri(2) = pow(-coords(2), gamma) * -1.0;
-  else
-    tri(2) = pow(coords(2), gamma);
-
-  return tri;
+    /// used when converting sRGB to XYZ
+    Point3d inverse_sRGB_Companding(f64 gamma, const Point3d &coords);
 }
 
 
-template <class Real>
-class RGB : public ColourSpace<Real, Matrix<Real, 3, 1> >{
+namespace km
+{
+    struct RGB
+    {
+        using Companding        = std::function<void (f64, Point3d &)>;
+        using InverseCompanding = std::function<Point3d (f64, const Point3d &)>;
 
-  typedef Colour_XYZ<Real> XYZ;
-  typedef Colour_xyY<Real> xyY;
-  typedef Colour_Lab<Real> Lab;
-  typedef Colour_LCHab<Real> LCHab;
-  typedef Colour_Luv<Real> Luv;
-  typedef Colour_LCHuv<Real> LCHuv;
-  typedef BaseIlluminant<Real> Illuminant;
-  typedef Matrix<Real, 3, 1> Coord3;
-  typedef Matrix<Real, 3, 3> Matrix3;
-  typedef ColourSpace<Real, Matrix<Real, 3, 1> > Parent;
+        Point3d tri;
 
-  typedef std::function<void (const Real, Coord3& coords)> Companding;
-  typedef std::function<Coord3 (const Real,
-				const Coord3& coords)> InverseCompanding;
+        [[nodiscard]] const f64 &gamma() const;
 
-public:
-  const Real& gamma() const{ return _gamma; }
+        [[nodiscard]] const Eigen::Matrix3d &m() const;
 
-  const Matrix3& m() const{ return _m; }
+        [[nodiscard]] const Eigen::Matrix3d &m_1() const;
 
-  const Matrix3& m_1() const{ return _m_1; }
+        [[nodiscard]] const Illuminant &referenceWhite() const;
 
-  const Illuminant& referenceWhite() const{ return *_rw; }
+        [[nodiscard]] Point3d inverseCompanding(f64 gamma, const Point3d &coords) const;
 
-  void referenceWhite(const Illuminant*& rw){ rw = _rw; }
+        RGB &from(const XYZ &col);
 
-  Coord3 inverseCompanding(const Real gamma, const Coord3& coords) const{
+        RGB &from(const xyY &col);
 
-    return _inv_companding(gamma, coords);
-  }
+        RGB &from(const Lab &col);
+
+        RGB &from(const LCHab &col);
+
+        RGB &from(const Luv &col);
+
+        RGB &from(const LCHuv &col);
+
+        RGB(const RGB&) = default;
+
+    protected:
+        RGB(const Illuminant &rw,
+            const f64 gamma,
+            const xyY &redPrimary,
+            const xyY &greenPrimary,
+            const xyY &bluePrimary,
+            const Point3d &tri)
+            : tri(tri)
+            , _gamma(gamma)
+            , _m(computeConversionMatrix(redPrimary, greenPrimary, bluePrimary, rw))
+            , _m_1(_m.inverse())
+            , _companding(Companding(gammaCompanding))
+            , _inv_companding(InverseCompanding(inverseGammaCompanding))
+        {
+            _default_rw = rw;
+        }
+
+        /// so far only used by sRGB to initialize the companding functions.
+        RGB(const Illuminant &rw,
+            const f64 gamma,
+            const xyY &redPrimary,
+            const xyY &greenPrimary,
+            const xyY &bluePrimary,
+            const Companding &c,
+            const InverseCompanding &ic,
+            const Point3d &tri)
+            : tri(tri)
+            , _gamma(gamma)
+            , _m(computeConversionMatrix(redPrimary, greenPrimary, bluePrimary, rw))
+            , _m_1(_m.inverse())
+            , _companding(c)
+            , _inv_companding(ic)
+        {
+            _default_rw = rw;
+        }
+
+    private:
+        /// computes the conversion matrix from RGB to XYZ
+        static Eigen::Matrix3d
+        computeConversionMatrix(const xyY &redPrimary,
+                                const xyY &greenPrimary,
+                                const xyY &bluePrimary,
+                                const Illuminant &rw)
+        {
+            Eigen::Matrix3<f64> xyzs;
+            Eigen::Matrix3<f64> M;
+            Point3d S;
+            xyzs.col(0) = convert_to_XYZ(redPrimary).tri;
+            xyzs.col(1) = convert_to_XYZ(greenPrimary).tri;
+            xyzs.col(2) = convert_to_XYZ(bluePrimary).tri;
+            S = xyzs.inverse() * rw.tri;
+            M.col(0) = S(0) * xyzs.col(0);
+            M.col(1) = S(1) * xyzs.col(1);
+            M.col(2) = S(2) * xyzs.col(2);
+            return M;
+        }
+
+    protected:
+        Illuminant _default_rw;
+        f64 _gamma;
+        const Eigen::Matrix3d _m;
+        const Eigen::Matrix3d _m_1;
+        const Companding _companding;
+        const InverseCompanding _inv_companding;
+    };
+
+    inline auto as_xyY(f64 x, f64 y) -> xyY
+    {
+        xyY result;
+        result.tri = {x, y, 1};
+
+        return result;
+    }
+}
 
 
-  Coord3 to_XYZ(const Illuminant* const rw = nullptr) const{
+#define DECLARE_RGB_TYPE(NAME)                                      \
+    struct Colour_##NAME : public RGB {                             \
+        explicit Colour_##NAME(f64 r = 1, f64 g = 1, f64 b = 1);    \
+        explicit Colour_##NAME(const Point3d& tri);                 \
+        Colour_##NAME& operator=(const Colour_##NAME& other);};     \
 
-    XYZ xyz; xyz.from(*this); return xyz.coords();
-  }
+namespace km
+{
+    DECLARE_RGB_TYPE(AdobeRGB)
+    DECLARE_RGB_TYPE(AppleRGB)
+    DECLARE_RGB_TYPE(BestRGB)
+    DECLARE_RGB_TYPE(BetaRGB)
+    DECLARE_RGB_TYPE(BruceRGB)
+    DECLARE_RGB_TYPE(CIERGB)
+    DECLARE_RGB_TYPE(ColorMatchRGB)
+    DECLARE_RGB_TYPE(DonRGB4)
+    DECLARE_RGB_TYPE(ECIRGB)
+    DECLARE_RGB_TYPE(EktaSpacePS5)
+    DECLARE_RGB_TYPE(NTSCRGB)
+    DECLARE_RGB_TYPE(PAL_SECAMRGB)
+    DECLARE_RGB_TYPE(ProPhotoRGB)
+    DECLARE_RGB_TYPE(SMPTE_CRGB)
+    DECLARE_RGB_TYPE(WideGamutRGB)
+}
 
-  Coord3& from_XYZ(const Coord3& coords, const Illuminant* const rw = nullptr){
-
-    from(XYZ(coords)); return Parent::_coords;
-  }
-
-
-  RGB& from(const XYZ& col){
-
-    Parent::_coords = _m_1 * col.coords();
-    _companding(_gamma, Parent::_coords);
-    return *this;
-  }
-
-  RGB& from(const xyY& col){ return from(XYZ().from(col)); }
-
-  RGB& from(const Lab& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
-
-  RGB& from(const LCHab& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
-
-  RGB& from(const Luv& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
-
-  RGB& from(const LCHuv& col, const Illuminant& rw){
-
-    return from(XYZ().from(col, rw));
-  }
+#undef DECLARE_RGB_TYPE
 
 
-protected:
-  RGB(const Illuminant& rw,
-      const Real gamma,
-      const xyY& redPrimary,
-      const xyY& greenPrimary,
-      const xyY& bluePrimary,
-      const Coord3& tri) :
-    ColourSpace<Real, Coord3>(tri),
-    _gamma(gamma),
-    _m(computeConversionMatrix(redPrimary, greenPrimary, bluePrimary, rw)),
-    _m_1(_m.inverse()),
-    _companding(Companding( gammaCompanding<Real> )),
-    _inv_companding(InverseCompanding( inverseGammaCompanding<Real> )){ }
-
-  /* so far only used by sRGB to initialize the companding functions. */
-  RGB(const Illuminant& rw,
-      const Real gamma,
-      const xyY& redPrimary,
-      const xyY& greenPrimary,
-      const xyY& bluePrimary,
-      const Companding& c,
-      const InverseCompanding& ic,
-      const Coord3& tri) :
-    ColourSpace<Real, Coord3>(tri),
-    _gamma(gamma),
-    _m(computeConversionMatrix(redPrimary, greenPrimary, bluePrimary, rw)),
-    _m_1(_m.inverse()),
-    _companding(c),
-    _inv_companding(ic){ }
-
-private:
-  /*
-   * computes the conversion matrix from RGB to XYZ
-   */
-  Matrix3 computeConversionMatrix(const xyY& redPrimary,
-				  const xyY& greenPrimary,
-				  const xyY& bluePrimary,
-				  const Illuminant& rw){
-
-    Matrix3 xyzs;
-    Matrix3 M;
-    Coord3 S;
-    XYZ xyz;
-    xyzs.col(0) = xyz.from(redPrimary).coords();
-    xyzs.col(1) = xyz.from(greenPrimary).coords();
-    xyzs.col(2) = xyz.from(bluePrimary).coords();
-    S = xyzs.inverse() * rw.colour_XYZ().coords();
-    M.col(0) = S(0) * xyzs.col(0);
-    M.col(1) = S(1) * xyzs.col(1);
-    M.col(2) = S(2) * xyzs.col(2);
-    return M;
-  }
-
-protected:
-  Illuminant* _rw;
-  Real _gamma;
-  const Matrix3 _m;
-  const Matrix3 _m_1;
-  const Companding _companding;
-  const InverseCompanding _inv_companding;
-};
-
-#endif
+namespace km
+{
+    struct Colour_sRGB : RGB
+    {
+        explicit Colour_sRGB(f64 r = 1, f64 g = 1, f64 b = 1);
+        explicit Colour_sRGB(const Point3d& tri);
+        Colour_sRGB& operator=(const Colour_sRGB& other);
+    };
+}
