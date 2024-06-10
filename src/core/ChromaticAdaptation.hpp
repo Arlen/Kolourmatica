@@ -23,27 +23,12 @@
 
 #include <Illuminant.hpp>
 
-#include <Eigen/Core>
-
 
 namespace km::internal
 {
-    inline Eigen::Matrix3d
-    chromaticAdaptation(const Illuminant &src, const Illuminant &tar, const Eigen::Matrix3d &m)
-    {
-        using Eigen::Matrix3d;
-
-        Point3d S = m * src.tri;
-        Point3d D = m * tar.tri;
-        Matrix3d tmp = Matrix3d::Zero();
-        tmp(0, 0) = D(0) / S(0);
-        tmp(1, 1) = D(1) / S(1);
-        tmp(2, 2) = D(2) / S(2);
-
-        return m.inverse() * tmp * m;
-    }
+    Eigen::Matrix3d
+    chromaticAdaptation(const Illuminant &src, const Illuminant &tar, const Eigen::Matrix3d &m);
 }
-
 
 namespace km
 {
@@ -55,49 +40,21 @@ namespace km
 
     struct XYZScalingCA final : ChromaticAdaptation
     {
-        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override
-        {
-            return internal::chromaticAdaptation(source, target, Eigen::Matrix3d::Identity());
-        }
+        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override;
     };
 
     struct VonKriesCA final : ChromaticAdaptation
     {
-        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override
-        {
-            using Eigen::Matrix3d;
-            const Matrix3d method =
-                (Matrix3d() <<
-                    0.40024, 0.7076, -0.08081,
-                    -0.2263, 1.16532, 0.0457,
-                    0.0, 0.0, 0.91822)
-                .finished();
-
-            return internal::chromaticAdaptation(source, target, method);
-        }
+        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override;
     };
 
     struct BradfordCA final : ChromaticAdaptation
     {
-        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override
-        {
-            using Eigen::Matrix3d;
-            const Matrix3d method =
-                (Matrix3d() <<
-                    0.8951, 0.2664, -0.1614,
-                    -0.7502, 1.7135, 0.0367,
-                    0.0389, -0.0685, 1.0296)
-                .finished();
-
-            return internal::chromaticAdaptation(source, target, method);
-        }
+        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override;
     };
 
     struct BypassCA final : ChromaticAdaptation
     {
-        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override
-        {
-            return Eigen::Matrix3d::Identity();
-        }
+        Eigen::Matrix3d apply(const Illuminant& source, const Illuminant& target) override;
     };
 }
