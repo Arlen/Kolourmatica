@@ -22,6 +22,7 @@
 #pragma once
 
 #include <ColourSpace.hpp>
+#include <enums.hpp>
 #include <types.hpp>
 
 
@@ -98,4 +99,6 @@ namespace km
     
     auto F12_1931_2() -> Illuminant;
     auto F12_1964_10() -> Illuminant;
+
+    auto getRefWhite(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant;
 }

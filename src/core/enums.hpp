@@ -39,6 +39,7 @@ enum class name : i32 {                                          \
 namespace enums
 {
     KM_DEFINE_ENUM(RefWhite, KM_REF_WHITES_SEQ)
+    KM_DEFINE_ENUM(RefWhiteFov, KM_REF_WHITE_FOV_SEQ)
     KM_DEFINE_ENUM(ColourSpace, KM_COLOUR_SPACES_SEQ)
 
     static RefWhite RefWhiteArray[] = {
@@ -62,6 +63,11 @@ namespace enums
         RefWhite::F10,
         RefWhite::F11,
         RefWhite::F12
+    };
+
+    static RefWhiteFov RefWhiteFovArray[] = {
+        RefWhiteFov::_1931_2,
+        RefWhiteFov::_1964_10
     };
 
     static ColourSpace ColourSpaceArray[] = {

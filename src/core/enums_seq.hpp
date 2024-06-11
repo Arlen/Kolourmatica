@@ -22,7 +22,7 @@
     (F11)   \
     (F12)   \
 
-#define KM_REF_WHITE_YEAR_ANGLE_SEQ \
+#define KM_REF_WHITE_FOV_SEQ \
     (_1931_2)   \
     (_1964_10)  \
 
