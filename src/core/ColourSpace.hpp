@@ -40,6 +40,7 @@ namespace constants
 
 namespace km
 {
+    auto convert_to_XYZ(const XYZ&) -> XYZ;
     auto convert_to_XYZ(const xyY&) -> XYZ;
     auto convert_to_XYZ(const Lab&) -> XYZ;
     auto convert_to_XYZ(const LCHab&) -> XYZ;

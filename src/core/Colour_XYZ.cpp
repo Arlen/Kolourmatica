@@ -23,6 +23,11 @@
 #include <RGB.hpp>
 
 
+auto km::convert_to_XYZ(const XYZ& col) -> XYZ
+{
+    return col;
+}
+
 auto km::convert_to_XYZ(const xyY &col) -> XYZ
 {
     /// X = (x * Y) / y
