@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2011 Arlen Avakian
+|*  Copyright (C) 2011, 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,106 +19,99 @@
 |************************************************************************/
 
 
-#ifndef CONSOLE_HPP
-#define CONSOLE_HPP
+#pragma once
 
-#include "Typedefs.hpp"
+#include <ChromaticAdaptation.hpp>
+#include <converter.hpp>
+#include <types.hpp>
 
-#include <QtGui/QWidget>
-
-#include <Eigen/Core>
+#include <QtWidgets/QWidget>
 
 #include <tuple>
 #include <vector>
 
-using namespace Eigen;
-using std::tuple;
-using std::vector;
-
-
-class View;
 
 class QComboBox;
-class QLineEdit;
-class QPushButton;
 class QGraphicsScene;
 class QGraphicsView;
-class QHBoxLayout;
-class QVBoxLayout;
 class QGridLayout;
+class QHBoxLayout;
+class QLineEdit;
+class QPushButton;
+class QTextEdit;
+class QVBoxLayout;
+class View;
 
 
-class Console : public QWidget{
-
-Q_OBJECT
+class Console : public QWidget
+{
+    Q_OBJECT
 
 public:
-  Console();
-  ~Console();
+    explicit Console(QWidget* parent = nullptr);
 
 private:
-  typedef tuple<QComboBox*, QLineEdit*, QLineEdit*, QLineEdit*, QPushButton*> Input;
-  typedef tuple<QComboBox*, QLineEdit*, QLineEdit*, QLineEdit*> Output;
-  typedef Matrix<Real, 3, 3> Matrix3;
-  typedef Matrix<Real, 3, 1> Vector3;
-  typedef ColourSpace<Real, Vector3> BaseColourSpace;
+    using Input  = std::tuple<QComboBox *, QLineEdit *, QLineEdit *, QLineEdit *, QPushButton *>;
+    using Output = std::tuple<QComboBox *, QLineEdit *, QLineEdit *, QLineEdit *>;
 
-  void initWidgets();
-  void setupViews(QVBoxLayout* layout);
-  void setupViewButtons(QHBoxLayout* layout);
-  void setupControls(QGridLayout* layout);
-  void doCompute();
-  void clearInput();
-  void clearOutput();
-  void setDoubleValidator(QLineEdit* const lineEdit);
-  void setSrcRefWhiteDisabled(bool disable);
-  void setDstRefWhiteDisabled(bool disable);
+    void initWidgets();
 
-  QComboBox* _comboBox1;
-  QComboBox* _comboBox2;
-  QComboBox* _comboBox3;
-  QComboBox* _comboBox4;
-  QPushButton* _front;
-  QPushButton* _left;
-  QPushButton* _right;
-  QPushButton* _top;
-  QPushButton* _bottom;
-  View* _frontView;
-  View* _leftView;
-  View* _rightView;
-  View* _topView;
-  View* _bottomView;
+    void setupViews(QVBoxLayout *layout);
 
-  ColourSpace<Real, Vector3>* _result;
-  QGraphicsScene* _scene;
-  QGraphicsView* _view;
-  int _fromIndex;
-  int _toIndex;
-  int _srwIndex;
-  int _drwIndex;
-  int _srcObsIndex;
-  int _dstObsIndex;
-  int _camIndex;
-  Input _input;
-  Output _output;
-  vector<BaseColourSpace*> _cs;
-  vector<Illuminant*> _rw;
-  vector<Matrix3> _am;
+    void setupViewButtons(QHBoxLayout *layout);
+
+    void setupControls(QGridLayout *layout);
+
+    void doCompute();
+
+    void clearInput();
+
+    void clearOutput();
+
+    void setDoubleValidator(QLineEdit *const lineEdit);
+
+    void setSrcRefWhiteDisabled(bool disable);
+
+    void setDstRefWhiteDisabled(bool disable);
+
+    QComboBox *_srwCombo{};
+    QComboBox *_srwFovCombo{};
+    QComboBox *_drwCombo{};
+    QComboBox *_drwFovCombo{};
+    QPushButton *_front{};
+    QPushButton *_left{};
+    QPushButton *_right{};
+    QPushButton *_top{};
+    QPushButton *_bottom{};
+    View *_frontView{};
+    View *_leftView{};
+    View *_rightView{};
+    View *_topView{};
+    View *_bottomView{};
+
+    km::Illuminant _srw;
+    km::Illuminant _drw;
+    int _camIndex;
+    Input _input;
+    Output _output;
+
+    std::vector<std::unique_ptr<km::ChromaticAdaptation>> _cam;
+    km::Converter conv;
 
 private slots:
-  void setFrom(int index);
-  void setTo(int index);
-  void setSrcRefWhite(int index);
-  void setDstRefWhite(int index);
-  void setSrcObserver(int index);
-  void setDstObserver(int index);
-  void setAdaptationMethod(int index);
-  void frontView();
-  void leftView();
-  void rightView();
-  void topView();
-  void bottomView();
-  void compute();
-};
+    void setFrom(int index);
 
-#endif
+    void setTo(int index);
+
+    void setSrcRefWhite(int index);
+
+    void setDstRefWhite(int index);
+
+    void setSrcObserver(int index);
+
+    void setDstObserver(int index);
+
+    void setAdaptationMethod(int index);
+
+    void compute();
+};
