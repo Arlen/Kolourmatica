@@ -100,5 +100,6 @@ namespace km
     auto F12_1931_2() -> Illuminant;
     auto F12_1964_10() -> Illuminant;
 
-    auto get_ref_white(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant;
+    /// Given index and fov enums, returns CIE standard illuminant
+    auto get_illuminant(enums::RefWhite index, enums::RefWhiteFov fov) -> Illuminant;
 }

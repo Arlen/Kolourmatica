@@ -82,13 +82,13 @@ auto km::F11_1964_10()  -> Illuminant { return internal::as_illuminant(0.38541, 
 auto km::F12_1931_2()   -> Illuminant { return internal::as_illuminant(0.43695, 0.40441); }
 auto km::F12_1964_10()  -> Illuminant { return internal::as_illuminant(0.44256, 0.39717); }
 
-auto km::get_ref_white(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant
+auto km::get_illuminant(enums::RefWhite index, enums::RefWhiteFov fov) -> Illuminant
 {
     const auto invalid_rw = Illuminant{nan_tri()};
 
     switch (fov) {
         case enums::RefWhiteFov::_1931_2:
-            switch (rw) {
+            switch (index) {
                 using enums::RefWhite;
                 case RefWhite::A:   return A_1931_2();
                 case RefWhite::B:   return B_1931_2();
@@ -114,7 +114,7 @@ auto km::get_ref_white(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant
                     return invalid_rw;
             }
         case enums::RefWhiteFov::_1964_10:
-            switch (rw) {
+            switch (index) {
                 using enums::RefWhite;
                 case RefWhite::A:   return A_1964_10();
                 case RefWhite::B:   return B_1964_10();

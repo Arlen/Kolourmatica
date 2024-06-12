@@ -118,7 +118,7 @@ namespace enums
             case RefWhite::F10:     return {"F10"};
             case RefWhite::F11:     return {"F11"};
             case RefWhite::F12:     return {"F12"};
-            case RefWhite::INVALID: return {"INVALID"};
+            default:                return {"INVALID"};
         }
     }
 
@@ -147,7 +147,7 @@ namespace enums
             case ColourSpace::SMPTEC_RGB:     return {"SMPTE-C RGB"};
             case ColourSpace::sRGB:           return {"sRGB"};
             case ColourSpace::Wide_Gamut_RGB: return {"Wide Gamut RGB"};
-            case ColourSpace::INVALID:        return {"INVALID"};
+            default:                          return {"INVALID"};
         }
     }
 }
