@@ -51,21 +51,22 @@ namespace km
     struct LCHuv;
     struct Illuminant;
     struct RGB;
-    struct AdobeRGB;
-    struct AppleRGB;
-    struct BestRGB;
-    struct BetaRGB;
-    struct BruceRGB;
-    struct CIERGB;
-    struct ColorMatchRGB;
-    struct DonRGB4;
-    struct ECIRGB;
-    struct EktaSpacePS5;
-    struct NTSCRGB;
-    struct PAL_SECAMRGB;
-    struct ProPhotoRGB;
-    struct SMPTE_CRGB;
-    struct WideGamutRGB;
+    struct Colour_AdobeRGB;
+    struct Colour_AppleRGB;
+    struct Colour_BestRGB;
+    struct Colour_BetaRGB;
+    struct Colour_BruceRGB;
+    struct Colour_CIERGB;
+    struct Colour_ColorMatchRGB;
+    struct Colour_DonRGB4;
+    struct Colour_ECIRGB;
+    struct Colour_EktaSpacePS5;
+    struct Colour_NTSCRGB;
+    struct Colour_PAL_SECAMRGB;
+    struct Colour_ProPhotoRGB;
+    struct Colour_SMPTE_CRGB;
+    struct Colour_sRGB;
+    struct Colour_WideGamutRGB;
 
     /// types
     struct XYZ
