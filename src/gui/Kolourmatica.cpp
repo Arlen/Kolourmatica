@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2010 Arlen Avakian
+|*  Copyright (C) 2010, 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,14 +19,21 @@
 |************************************************************************/
 
 
-#include "Console.hpp"
-#include <QtGui/QApplication>
+#include <Console.hpp>
+
+#include <QtWidgets/QApplication>
+
+#include <iostream>
 
 
-int main(int argc, char* argv[]){
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    auto *console = new Console;
+    console->show();
 
-  QApplication app(argc, argv);
-  Console console;
-  console.show();
-  return app.exec();
+    std::cout << "Kolourmatica 2024.6" << std::endl;
+    std::cout << "Copyright (C) 2010-2024 Arlen Avakian" << std::endl;
+
+    return QApplication::exec();
 }
