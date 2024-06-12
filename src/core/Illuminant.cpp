@@ -82,7 +82,7 @@ auto km::F11_1964_10()  -> Illuminant { return internal::as_illuminant(0.38541, 
 auto km::F12_1931_2()   -> Illuminant { return internal::as_illuminant(0.43695, 0.40441); }
 auto km::F12_1964_10()  -> Illuminant { return internal::as_illuminant(0.44256, 0.39717); }
 
-auto km::getRefWhite(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant
+auto km::get_ref_white(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant
 {
     const auto invalid_rw = Illuminant{nan_tri()};
 

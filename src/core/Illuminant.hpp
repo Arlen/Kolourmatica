@@ -100,5 +100,5 @@ namespace km
     auto F12_1931_2() -> Illuminant;
     auto F12_1964_10() -> Illuminant;
 
-    auto getRefWhite(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant;
+    auto get_ref_white(enums::RefWhite rw, enums::RefWhiteFov fov) -> Illuminant;
 }
