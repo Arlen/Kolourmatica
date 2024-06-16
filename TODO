@@ -1,5 +1,3 @@
 
-1. View: implement a way to destroy running thread(s) when Kolourmatica is closed while rendering.
-2. View: implement zooming.
-3. View: implement heads-up-display.
-4. View: improve rendering speed by solving the surface equations.
+1. View: implement zooming.
+2. View: implement heads-up-display.
