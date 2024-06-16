@@ -1,8 +1,10 @@
 Kolourmatica
 ============
 
+
 A simple colour space calculator for GNU/Linux.
 
+![screenshot](./Screenshot_20240616_124305.png)
 
 Requirements
 ------------
