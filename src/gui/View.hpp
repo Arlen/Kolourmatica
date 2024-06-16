@@ -1,5 +1,5 @@
 /***********************************************************************
-|*  Copyright (C) 2011 Arlen Avakian
+|*  Copyright (C) 2024 Arlen Avakian
 |*
 |*  This file is part of Kolourmatica.
 |*
@@ -19,190 +19,66 @@
 |************************************************************************/
 
 
-#ifndef VIEW_HPP
-#define VIEW_HPP
+#pragma once
 
-#include "Typedefs.hpp"
 
-#include <QtGui/QGraphicsWidget>
-#include <QtCore/QThread>
-#include <QtCore/QTimer>
-#include <QtCore/QStack>
+#include <QWidget>
 
-#include <Eigen/Core>
+#include <RGB.hpp>
+#include <converter.hpp>
+#include <enums.hpp>
+#include <types.hpp>
 
+#include <functional>
 #include <vector>
 
-using Eigen::Matrix;
-using std::vector;
 
-class Renderer;
-
-
-struct Camera{
-
-  Real& left(){ return _data[_leftIndex]; }
-  Real& right(){ return _data[_rightIndex]; }
-  Real& top(){ return _data[_topIndex]; }
-  Real& bottom(){ return _data[_bottomIndex]; }
-  Real& front(){ return _data[_frontIndex]; }
-  Real& back(){ return _data[_backIndex]; }
-  Real& rayDir(){ return _data[_rayDirIndex]; }
-
-  Real _data[7];
-  unsigned _leftIndex;
-  unsigned _rightIndex;
-  unsigned _topIndex;
-  unsigned _bottomIndex;
-  unsigned _frontIndex;
-  unsigned _backIndex;
-  unsigned _rayDirIndex;
-  unsigned _x;
-  unsigned _y;
-  unsigned _z;
-  std::function<bool (const Real)> _pred;
-};
+namespace km
+{
+    auto canvas_to_viewport(const QPoint& p, const QSize& size) -> Point2d;
+    auto get_rgb_corners() -> std::vector<Point3d>;
+    auto dist_to_closest_side(const Point3d& p) -> f64;
+}
 
 
-class View : public QGraphicsWidget{
+class View : public QWidget
+{
+    using SegmentFn = std::function<km::Segment (const Point2d&)>;
 
-  Q_OBJECT
-
-  typedef Matrix<Real, 3, 3> Matrix3;
-  typedef Matrix<Real, 3, 1> Vector3;
-  typedef ColourSpace<Real, Vector3> BaseColourSpace;
-
-signals:
-  void renderingStarted();
-  void renderingStopped();
-  void viewSizeChanged();
-  void saved();
+    Q_OBJECT
 
 public:
-  enum class Side { Front, Left, Right, Top, Bottom };
+    explicit View(QWidget* parent = nullptr);
 
-  View(Side side);
-  // ~View
-  void paint(QPainter*, const QStyleOptionGraphicsItem*, QWidget*);
+    void setFrom(enums::ColourSpace index);
 
-public slots:
-  void setFrom(int index);
-  void setTo(int index);
-  void setSrcRefWhite(int index);
-  void setDstRefWhite(int index);
-  void setSrcObserver(int index);
-  void setDstObserver(int index);
-  void setAdaptationMethod(int index);
+    void setTo(enums::ColourSpace index);
+
+    void setSrcRefWhite(const km::Illuminant& rw);
 
 protected:
-  void mousePressEvent(QGraphicsSceneMouseEvent* event);
-  void mouseMoveEvent(QGraphicsSceneMouseEvent* event);
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
-  void hoverLeaveEvent(QGraphicsSceneHoverEvent* event);
-  void hoverMoveEvent (QGraphicsSceneHoverEvent* event);
+    void paintEvent(QPaintEvent *event) override;
 
 private:
-  enum class Region { None, Top, Bottom, Left, Right, TopLeft, TopRight,
-      BottomLeft, BottomRight };
+    km::BBox getBB();
 
-  int idealThreadCount() const;
-  void resetView(qreal w, qreal h);
-  void setupCamera(int fromIndex);
-  void paintResizeHandle(qreal len, qreal gap, qreal width, QPainter* painter);
-  void restartRendering();
+    static km::Segment getSegment_Lab(const Point2d& p);
+    static km::Segment getSegment_LCHab(const Point2d& p);
+    static km::Segment getSegment_Luv(const Point2d& p);
+    static km::Segment getSegment_LCHuv(const Point2d& p);
+    static km::Segment getSegment_xyY(const Point2d& p);
+    static km::Segment getSegment_default(const Point2d& p);
 
-  uchar* _activeBuffer;
-  qreal _resizeHandleOffsetX;
-  qreal _resizeHandleOffsetY;
-  qreal _resizeHandleThickness;
-  qreal _resizeHandleLength;
-  qreal _resizeHandleGap;
-  int _imageWidth;
-  int _imageHeight;
-  int _fromIndex;
-  int _toIndex;
-  int _srwIndex;
-  int _drwIndex;
-  int _srcObsIndex;
-  int _dstObsIndex;
-  int _camIndex;
-  Camera _camera;
+    static bool isValidSource(enums::ColourSpace index);
+    static bool isValidTarget(enums::ColourSpace index);
 
-  QStack<bool> _threads;
-  QImage _renderedImage;
-  QTimer _timer;
-  bool _showResizeHandle;
-  bool _dirty;
-  bool _showImage;
-  Region _region;
-  Side _side;
+    static i32 getRayIndex(enums::ColourSpace);
 
-private slots:
-  void updateView();
-  void saveToImage();
-  void startStopRendering();
-  void render();
-  void setViewSize();
-  void deleteThread(QThread* thread);
+    enums::ColourSpace fromIndex;
+    enums::ColourSpace toIndex;
+
+    km::Illuminant srcRefWhite;
+    SegmentFn getSegment;
+
+    km::Converter conv;
 };
-
-
-class Thread : public QThread{
-
-Q_OBJECT
-
-signals:
-  void expired(QThread* thread);
-
-public:
-  Thread();
-
-private slots:
-  void deleteMe();
-};
-
-
-class Renderer : public QObject{
-
-Q_OBJECT
-
-  typedef Matrix<Real, 3, 3> Matrix3;
-  typedef Matrix<Real, 3, 1> Vector3;
-  typedef ColourSpace<Real, Vector3> BaseColourSpace;
-
-signals:
-  void dispatched(int oldY, int y, int width, int height);
-  void rendered();
-  void finished();
-
-public:
-  Renderer(uchar* const buffer, Camera camera, int imageHeight,
-	   int fromIndex, int toIndex, int camIndex, int y, int width, int height, int srwIndex,
-	   int drwIndex);
-  ~Renderer();
-
-public slots:
-  void dispatch();
-  void render(int oldY, int y, int width, int height);
-  void abort();
-
-private:
-  uchar* _buffer;
-  Camera _camera;
-  const Illuminant* _srw;
-  const Illuminant* _drw;
-  int _imageHeight;
-  int _fromIndex;
-  int _toIndex;
-  int _camIndex;
-  int _oldY;
-  int _y;
-  int _width;
-  int _height;
-  Matrix3 _cam;
-  vector<BaseColourSpace*> _cs;
-  vector<Illuminant*> _rw;
-  bool _abort;
-};
-
-#endif
