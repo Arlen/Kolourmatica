@@ -26,13 +26,11 @@
 #include <enums.hpp>
 
 #include <QtWidgets/QComboBox>
-#include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QTextEdit>
 
 
 namespace
@@ -58,7 +56,7 @@ Console::Console(QWidget* parent) : QWidget(parent)
     _cam.push_back(std::make_unique<km::BradfordCA>());
     _cam.push_back(std::make_unique<km::BypassCA>());
 
-    _camIndex = 2;
+    _camIndex = 3;
 
     initWidgets();
     setAdaptationMethod(_camIndex);
@@ -79,18 +77,7 @@ void Console::initWidgets()
     layoutA->setSpacing(0);
 
     /// adding views.
-    setupViews(layoutA);
-
-    /// adding view buttons.
-    auto *layoutB1 = new QHBoxLayout;
-    setupViewButtons(layoutB1);
-    layoutA->addLayout(layoutB1);
-
-    connect(_front,  &QPushButton::toggled, [this]{ _frontView->setVisible(_front->isChecked());   });
-    connect(_left,   &QPushButton::toggled, [this]{ _leftView->setVisible(_left->isChecked());     });
-    connect(_right,  &QPushButton::toggled, [this]{ _rightView->setVisible(_right->isChecked());   });
-    connect(_top,    &QPushButton::toggled, [this]{ _topView->setVisible(_top->isChecked());       });
-    connect(_bottom, &QPushButton::toggled, [this]{ _bottomView->setVisible(_bottom->isChecked()); });
+    setupView(layoutA);
 
     /// adding controls.
     auto *widget = new QWidget;
@@ -103,70 +90,11 @@ void Console::initWidgets()
     clearOutput();
 }
 
-void Console::setupViews(QVBoxLayout *layout)
+void Console::setupView(QVBoxLayout *layout)
 {
-    auto* scene = new QGraphicsScene(this);
-    scene->setSceneRect(-1000, -1000, 2000, 2000);
+    _view = new View(this);
 
-    auto* view = new QGraphicsView(scene);
-    view->setFrameShape(QFrame::NoFrame);
-    view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    view->setDragMode(QGraphicsView::ScrollHandDrag);
-    view->setBackgroundBrush(QBrush(QColor(32, 32, 32, 255)));
-
-    _frontView  = new View(View::Side::Front);
-    _leftView   = new View(View::Side::Left);
-    _rightView  = new View(View::Side::Right);
-    _topView    = new View(View::Side::Top);
-    _bottomView = new View(View::Side::Bottom);
-
-    _frontView->setVisible(false);
-    _leftView->setVisible(false);
-    _rightView->setVisible(false);
-    _topView->setVisible(false);
-    _bottomView->setVisible(false);
-
-    scene->addItem(_frontView);
-    scene->addItem(_leftView);
-    scene->addItem(_rightView);
-    scene->addItem(_topView);
-    scene->addItem(_bottomView);
-
-    layout->addWidget(view);
-}
-
-void Console::setupViewButtons(QHBoxLayout *layout)
-{
-    _front  = new QPushButton("Front");
-    _left   = new QPushButton("Left");
-    _right  = new QPushButton("Right");
-    _top    = new QPushButton("Top");
-    _bottom = new QPushButton("Bottom");
-
-    _front->setDisabled(true);
-    _left->setDisabled(true);
-    _right->setDisabled(true);
-    _top->setDisabled(true);
-    _bottom->setDisabled(true);
-
-    _front->setCheckable(true);
-    _left->setCheckable(true);
-    _right->setCheckable(true);
-    _top->setCheckable(true);
-    _bottom->setCheckable(true);
-
-    layout->addWidget(_front);
-    layout->addWidget(_left);
-    layout->addWidget(_right);
-    layout->addWidget(_top);
-    layout->addWidget(_bottom);
-
-    connect(_front,  &QPushButton::toggled, [this]{ _front->setText(viewButtonText("Front", _front->isChecked()));    });
-    connect(_left,   &QPushButton::toggled, [this]{ _left->setText(viewButtonText("Left", _left->isChecked()));       });
-    connect(_right,  &QPushButton::toggled, [this]{ _right->setText(viewButtonText("Right", _right->isChecked()));    });
-    connect(_top,    &QPushButton::toggled, [this]{ _top->setText(viewButtonText("Top", _top->isChecked()));          });
-    connect(_bottom, &QPushButton::toggled, [this]{ _bottom->setText(viewButtonText("Bottom", _bottom->isChecked())); });
+    layout->addWidget(_view);
 }
 
 void Console::setupControls(QGridLayout *layout)
@@ -237,15 +165,9 @@ void Console::setupControls(QGridLayout *layout)
 
     get<0>(_input)->setCurrentIndex(0);
     connect(get<0>(_input), &QComboBox::currentIndexChanged, this, &Console::setFrom);
-    for (View *view: {_frontView, _leftView, _rightView, _topView, _bottomView}) {
-        connect(get<0>(_input), &QComboBox::currentIndexChanged, view, &View::setFrom);
-    }
 
     get<0>(_output)->setCurrentIndex(1);
     connect(get<0>(_output), &QComboBox::currentIndexChanged, this, &Console::setTo);
-    for (View *view: {_frontView, _leftView, _rightView, _topView, _bottomView}) {
-        connect(get<0>(_output), &QComboBox::currentIndexChanged, view, &View::setTo);
-    }
 
     /// the reference white and chromatic adaptation lines.
     auto *label3 = new QLabel(" Source Ref. White ");
@@ -300,38 +222,22 @@ void Console::setupControls(QGridLayout *layout)
     }
 
     connect(_srwCombo, &QComboBox::currentIndexChanged, this, &Console::setSrcRefWhite);
-    for (View *view: {_frontView, _leftView, _rightView, _topView, _bottomView}) {
-        connect(_srwCombo, &QComboBox::currentIndexChanged, view, &View::setSrcRefWhite);
-    }
 
     connect(_drwCombo, &QComboBox::currentIndexChanged, this, &Console::setDstRefWhite);
-    for (View *view: {_frontView, _leftView, _rightView, _topView, _bottomView}) {
-        connect(_drwCombo, &QComboBox::currentIndexChanged, view, &View::setDstRefWhite);
-    }
 
     _srwFovCombo->addItem(" 1931 2" + QString(QChar(730)));
     _srwFovCombo->addItem(" 1964 10" + QString(QChar(730)));
     connect(_srwFovCombo, &QComboBox::currentIndexChanged, this, &Console::setSrcObserver);
-    for (View *view: {_frontView, _leftView, _rightView, _topView, _bottomView}) {
-        connect(_srwFovCombo, &QComboBox::currentIndexChanged, view, &View::setSrcObserver);
-    }
 
     _drwFovCombo->addItem(" 1931 2" + QString(QChar(730)));
     _drwFovCombo->addItem(" 1964 10" + QString(QChar(730)));
     connect(_drwFovCombo, &QComboBox::currentIndexChanged, this, &Console::setDstObserver);
-    for (View *view: {_frontView, _leftView, _rightView, _topView, _bottomView}) {
-        connect(_drwFovCombo, &QComboBox::currentIndexChanged, view, &View::setDstObserver);
-    }
 
     for (const char *s: {"XYZ Scaling", "Von Kries", "Bradford", "None"}) {
         comboBox5->addItem(s);
     }
     comboBox5->setCurrentIndex(_camIndex);
     connect(comboBox5, &QComboBox::currentIndexChanged, this, &Console::setAdaptationMethod);
-
-    for (View *view: {_frontView, _leftView, _rightView, _topView, _bottomView}) {
-        connect(comboBox5, &QComboBox::currentIndexChanged, view, &View::setAdaptationMethod);
-    }
 }
 
 void Console::doCompute()
@@ -349,8 +255,8 @@ void Console::doCompute()
     tri(1) = get<2>(_input)->text().toFloat();
     tri(2) = get<3>(_input)->text().toFloat();
 
-    const auto toIndex   = get<0>(_input)->currentIndex();
-    const auto fromIndex = get<0>(_output)->currentIndex();
+    const auto toIndex   = get<0>(_output)->currentIndex();
+    const auto fromIndex = get<0>(_input)->currentIndex();
 
     conv.set_colour_value(static_cast<enums::ColourSpace>(fromIndex), tri, _srw);
     xyz.tri = conv.to_XYZ(static_cast<enums::ColourSpace>(fromIndex)).tri;
@@ -422,6 +328,8 @@ void Console::setFrom(int fromIndex)
         /// which has it's own defined illuminant
         _srw = conv.get_rgb_illuminant(static_cast<enums::ColourSpace>(fromIndex));
     }
+
+    _view->setFrom(static_cast<enums::ColourSpace>(fromIndex));
 }
 
 void Console::setTo(int toIndex)
@@ -437,19 +345,7 @@ void Console::setTo(int toIndex)
         _drw = conv.get_rgb_illuminant(static_cast<enums::ColourSpace>(toIndex));
     }
 
-    if (!disabled) {
-        _front->setChecked(false);
-        _left->setChecked(false);
-        _right->setChecked(false);
-        _top->setChecked(false);
-        _bottom->setChecked(false);
-    }
-
-    _front->setDisabled(!disabled);
-    _left->setDisabled(!disabled);
-    _right->setDisabled(!disabled);
-    _top->setDisabled(!disabled);
-    _bottom->setDisabled(!disabled);
+    _view->setTo(static_cast<enums::ColourSpace>(toIndex));
 }
 
 void Console::setSrcRefWhite(int index)
@@ -457,6 +353,8 @@ void Console::setSrcRefWhite(int index)
     clearOutput();
     const auto srwFovIndex = _srwFovCombo->currentIndex();
     _srw = km::get_illuminant(static_cast<enums::RefWhite>(index), static_cast<enums::RefWhiteFov>(srwFovIndex));
+
+    _view->setSrcRefWhite(_srw);
 }
 
 void Console::setDstRefWhite(int index)
@@ -471,6 +369,8 @@ void Console::setSrcObserver(int index)
     clearOutput();
     const auto srwIndex = _srwCombo->currentIndex();
     _srw = km::get_illuminant(static_cast<enums::RefWhite>(srwIndex), static_cast<enums::RefWhiteFov>(index));
+
+    _view->setSrcRefWhite(_srw);
 }
 
 void Console::setDstObserver(int index)

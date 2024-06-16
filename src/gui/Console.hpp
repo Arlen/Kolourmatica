@@ -32,13 +32,9 @@
 
 
 class QComboBox;
-class QGraphicsScene;
-class QGraphicsView;
 class QGridLayout;
-class QHBoxLayout;
 class QLineEdit;
 class QPushButton;
-class QTextEdit;
 class QVBoxLayout;
 class View;
 
@@ -56,9 +52,7 @@ private:
 
     void initWidgets();
 
-    void setupViews(QVBoxLayout *layout);
-
-    void setupViewButtons(QHBoxLayout *layout);
+    void setupView(QVBoxLayout *layout);
 
     void setupControls(QGridLayout *layout);
 
@@ -78,16 +72,7 @@ private:
     QComboBox *_srwFovCombo{};
     QComboBox *_drwCombo{};
     QComboBox *_drwFovCombo{};
-    QPushButton *_front{};
-    QPushButton *_left{};
-    QPushButton *_right{};
-    QPushButton *_top{};
-    QPushButton *_bottom{};
-    View *_frontView{};
-    View *_leftView{};
-    View *_rightView{};
-    View *_topView{};
-    View *_bottomView{};
+    View* _view;
 
     km::Illuminant _srw;
     km::Illuminant _drw;
