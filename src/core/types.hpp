@@ -28,11 +28,13 @@
 
 
 using i32  = std::int32_t;
+using u32  = std::uint32_t;
 using f32  = float;
 using f64  = double;
 using real = f64;
 
 using Point3d = Eigen::Vector3<f64>;
+using Point2d = Eigen::Vector2<f64>;
 
 inline Point3d nan_tri()
 {
@@ -106,5 +108,17 @@ namespace km
     {
         Point3d tri;
         Illuminant rw;
+    };
+
+    struct BBox
+    {
+        Point3d min{1,1,1};
+        Point3d max{0,0,0};
+    };
+
+    struct Segment
+    {
+        Point3d a;
+        Point3d b;
     };
 }
