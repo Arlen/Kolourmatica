@@ -16,7 +16,7 @@ Requirements
 Build
 -------
 
-    $ git clone git://github.com/Arlen/Kolourmatica.git
+    $ git clone https://github.com/Arlen/Kolourmatica.git
     $ cd Kolourmatica
     $ cmake .
     $ make
